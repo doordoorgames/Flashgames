@@ -24,16 +24,9 @@ interface GameViewProps {
   playerName: string;
 }
 
-type Phase =
-  | "waiting"
-  | "round-info"
-  | "countdown"
-  | "flash"
-  | "answering"
-  | "reveal"
-  | "gameover";
+type Phase = "waiting" | "round-info" | "countdown" | "flash" | "answering" | "reveal" | "gameover";
 
-export default function GameView({ code, playerId, isAdmin, playerName }: GameViewProps) {
+export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
   const [phase, setPhase] = useState<Phase>("waiting");
   const [roundInfo, setRoundInfo] = useState<RoundInfo | null>(null);
   const [countdown, setCountdown] = useState(3);
@@ -74,7 +67,7 @@ export default function GameView({ code, playerId, isAdmin, playerName }: GameVi
     socket.on("flash-hide", () => {
       setPhase("answering");
       setTimeLeft(10);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 80);
     });
 
     socket.on("answering-start", (data: { timeLimit: number }) => {
@@ -82,19 +75,14 @@ export default function GameView({ code, playerId, isAdmin, playerName }: GameVi
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = setInterval(() => {
         setTimeLeft((t) => {
-          if (t <= 1) {
-            clearInterval(timerRef.current!);
-            return 0;
-          }
+          if (t <= 1) { clearInterval(timerRef.current!); return 0; }
           return t - 1;
         });
       }, 1000);
     });
 
     socket.on("answer-received", (data: { playerId: string; playerName: string; answer: string }) => {
-      if (isAdmin) {
-        setAdminAnswers((prev) => [...prev, data]);
-      }
+      if (isAdmin) setAdminAnswers((prev) => [...prev, data]);
     });
 
     socket.on("round-reveal", (data: RevealData) => {
@@ -113,271 +101,190 @@ export default function GameView({ code, playerId, isAdmin, playerName }: GameVi
     });
 
     return () => {
-      socket.off("round-start");
-      socket.off("countdown-tick");
-      socket.off("flash-show");
-      socket.off("flash-hide");
-      socket.off("answering-start");
-      socket.off("answer-received");
-      socket.off("round-reveal");
-      socket.off("game-over");
-      socket.off("error-msg");
+      ["round-start","countdown-tick","flash-show","flash-hide","answering-start",
+       "answer-received","round-reveal","game-over","error-msg"].forEach(e => socket.off(e));
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [isAdmin]);
 
   const submitAnswer = () => {
     if (submitted || !answer.trim()) return;
-    const socket = getSocket();
-    socket.emit("submit-answer", { code, answer: answer.trim() });
+    getSocket().emit("submit-answer", { code, answer: answer.trim() });
     setSubmitted(true);
   };
 
-  const handleNextRound = () => {
-    const socket = getSocket();
-    socket.emit("next-round", { code });
-  };
-
-  const handleStartGame = () => {
-    const socket = getSocket();
-    socket.emit("start-game", { code });
-  };
-
-  if (phase === "waiting") {
-    return (
-      <div className="game-screen">
-        <div className="billboard-scene">
-          <img src="/billboard-bg.png" className="billboard-bg" alt="" />
-          <div className="billboard-panel">
-            <div className="billboard-content">
-              {isAdmin ? (
-                <div className="admin-start-box">
-                  <p className="billboard-text">Ready to play!</p>
-                  {errorMsg && <p className="error-msg">{errorMsg}</p>}
-                  <button className="btn-primary" onClick={handleStartGame} style={{ marginTop: 16 }}>
-                    Start Game
-                  </button>
-                </div>
-              ) : (
-                <p className="billboard-text waiting-dots">Waiting for host</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "round-info" && roundInfo) {
-    return (
-      <div className="game-screen">
-        <div className="billboard-scene">
-          <img src="/billboard-bg.png" className="billboard-bg" alt="" />
-          <div className="billboard-panel">
-            <div className="billboard-content round-info-content">
-              <div className={`difficulty-badge diff-${roundInfo.difficulty.toLowerCase()}`}>
-                {roundInfo.difficulty}
-              </div>
-              <p className="round-label">Round {roundInfo.roundNumber} / {roundInfo.totalRounds}</p>
-              <p className="flash-duration-hint">Flash: {roundInfo.flashDurationMs}ms</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "countdown") {
-    return (
-      <div className="game-screen">
-        <div className="billboard-scene">
-          <img src="/billboard-bg.png" className="billboard-bg" alt="" />
-          <div className="billboard-panel">
-            <div className="billboard-content">
-              <div className="countdown-number">{countdown}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "flash" && currentItem) {
-    return (
-      <div className="game-screen">
-        <div className="billboard-scene">
-          <img src="/billboard-bg.png" className="billboard-bg" alt="" />
-          <div className="billboard-panel">
-            <div className="billboard-content flash-content">
-              {currentItem.type === "image" && currentItem.mediaUrl ? (
-                <img
-                  src={currentItem.mediaUrl}
-                  alt="flash"
-                  className="flash-image"
-                  draggable={false}
-                />
-              ) : (
-                <p className="flash-text">{currentItem.prompt}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "answering") {
-    return (
-      <div className="game-screen answering-screen">
-        <div className="billboard-scene answering-bg">
-          <img src="/billboard-bg.png" className="billboard-bg dimmed" alt="" />
-          <div className="billboard-panel billboard-empty">
-            <div className="billboard-content">
-              <p className="billboard-gone-text">?</p>
-            </div>
-          </div>
-        </div>
-        <div className="answer-overlay">
-          <div className="answer-box">
-            <div className="timer-bar-wrap">
-              <div className="timer-bar" style={{ width: `${(timeLeft / 10) * 100}%` }} />
-            </div>
-            <p className="time-left">{timeLeft}s</p>
-            {submitted ? (
-              <p className="submitted-msg">Answer submitted!</p>
-            ) : (
-              <>
-                <input
-                  ref={inputRef}
-                  className="answer-input"
-                  placeholder="Type your answer..."
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") submitAnswer(); }}
-                  autoFocus
-                  disabled={timeLeft === 0}
-                />
-                <button
-                  className="btn-primary btn-submit"
-                  onClick={submitAnswer}
-                  disabled={!answer.trim() || timeLeft === 0}
-                >
-                  Submit
-                </button>
-              </>
-            )}
-            {isAdmin && adminAnswers.length > 0 && (
-              <div className="admin-live-answers">
-                <p className="admin-answers-title">Live Answers:</p>
-                {adminAnswers.map((a, i) => (
-                  <div key={i} className="admin-answer-row">
-                    <span className="ans-player">{a.playerName}</span>
-                    <span className="ans-val">{a.answer}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "reveal" && revealData) {
-    const myAnswer = revealData.answers.find((a) => a.playerId === playerId);
-    const myScore = revealData.leaderboard.find((p) => p.id === playerId)?.score ?? 0;
-
-    return (
-      <div className="game-screen">
-        <div className="billboard-scene">
-          <img src="/billboard-bg.png" className="billboard-bg" alt="" />
-          <div className="billboard-panel">
-            <div className="billboard-content reveal-content">
-              <p className="correct-answer-label">Correct Answer</p>
-              {revealData.item.type === "image" && revealData.item.mediaUrl ? (
-                <img src={revealData.item.mediaUrl} alt="answer" className="reveal-image" />
-              ) : (
-                <p className="correct-answer-text">{revealData.item.correctAnswer}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="reveal-overlay">
-          <div className="reveal-panel">
-            {myAnswer && (
-              <div className={`my-result ${myAnswer.isCorrect ? "correct" : "wrong"}`}>
-                {myAnswer.isCorrect ? (
-                  <p>Correct! +{myAnswer.pointsEarned} pts</p>
-                ) : (
-                  <p>Wrong — better luck next time!</p>
-                )}
-                <p className="my-score">Your total: {myScore} pts</p>
-              </div>
-            )}
-
-            <div className="answers-grid">
-              {revealData.answers.map((a, i) => (
-                <div
-                  key={i}
-                  className={`answer-card ${a.isCorrect ? "ans-correct" : "ans-wrong"}`}
-                >
-                  <span className="ans-name">{a.playerName}</span>
-                  <span className="ans-answer">{a.answer}</span>
-                  {a.isCorrect && <span className="ans-points">+{a.pointsEarned}</span>}
-                </div>
-              ))}
-            </div>
-
-            <div className="leaderboard-mini">
-              <h4>Leaderboard</h4>
-              {revealData.leaderboard.slice(0, 5).map((p, i) => (
-                <div key={p.id} className={`lb-row ${p.id === playerId ? "lb-me" : ""}`}>
-                  <span className="lb-rank">#{i + 1}</span>
-                  <span className="lb-name">{p.name}</span>
-                  <span className="lb-score">{p.score} pts</span>
-                </div>
-              ))}
-            </div>
-
-            {isAdmin && (
-              <button className="btn-primary btn-next" onClick={handleNextRound}>
-                {revealData.isLastRound ? "Show Final Results" : "Next Round →"}
-              </button>
-            )}
-            {!isAdmin && (
-              <p className="waiting-next">Waiting for host...</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleNextRound = () => getSocket().emit("next-round", { code });
+  const handleStartGame = () => getSocket().emit("start-game", { code });
 
   if (phase === "gameover") {
     return (
       <div className="gameover-screen">
         <div className="gameover-card">
           <h2 className="gameover-title">Final Results</h2>
-          <p className="gameover-subtitle">Flash / لمحة</p>
-          <div className="final-leaderboard">
+          <p className="gameover-sub">Flash / لمحة</p>
+          <div className="final-lb">
             {finalLeaderboard.map((p, i) => (
               <div key={p.id} className={`final-lb-row ${i === 0 ? "winner" : ""} ${p.id === playerId ? "lb-me" : ""}`}>
-                <span className="final-rank">
-                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
-                </span>
+                <span className="final-rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</span>
                 <span className="final-name">{p.name}</span>
                 <span className="final-score">{p.score} pts</span>
               </div>
             ))}
           </div>
-          <button className="btn-primary" onClick={() => window.location.reload()}>
-            Play Again
-          </button>
+          <button className="entry-btn" onClick={() => window.location.reload()}>Play Again</button>
         </div>
       </div>
     );
   }
 
-  return null;
+  const billboardContent = (() => {
+    if (phase === "waiting") {
+      if (isAdmin) {
+        return (
+          <div className="bb-center">
+            {errorMsg && <p className="bb-error">{errorMsg}</p>}
+            <button className="bb-start-btn" onClick={handleStartGame}>Begin!</button>
+          </div>
+        );
+      }
+      return <p className="bb-wait">Waiting...</p>;
+    }
+    if (phase === "round-info" && roundInfo) {
+      return (
+        <div className="bb-center">
+          <div className={`bb-diff diff-${roundInfo.difficulty.toLowerCase()}`}>{roundInfo.difficulty}</div>
+          <p className="bb-round">Round {roundInfo.roundNumber} / {roundInfo.totalRounds}</p>
+        </div>
+      );
+    }
+    if (phase === "countdown") {
+      return <div className="bb-countdown">{countdown}</div>;
+    }
+    if (phase === "flash" && currentItem) {
+      return currentItem.type === "image" && currentItem.mediaUrl
+        ? <img src={currentItem.mediaUrl} alt="" className="bb-flash-img" draggable={false} />
+        : <p className="bb-flash-text">{currentItem.prompt}</p>;
+    }
+    if (phase === "answering") {
+      return <p className="bb-question-mark">?</p>;
+    }
+    if (phase === "reveal" && revealData) {
+      return revealData.item.type === "image" && revealData.item.mediaUrl
+        ? (
+          <div className="bb-center">
+            <p className="bb-answer-label">Answer</p>
+            <img src={revealData.item.mediaUrl} alt="" className="bb-reveal-img" />
+          </div>
+        )
+        : (
+          <div className="bb-center">
+            <p className="bb-answer-label">Answer</p>
+            <p className="bb-answer-text">{revealData.item.correctAnswer}</p>
+          </div>
+        );
+    }
+    return null;
+  })();
+
+  return (
+    <div className="game-screen">
+      <img src="/billboard-bg.png" className="game-bg" alt="" />
+
+      {roundInfo && phase !== "waiting" && (
+        <div className="game-hud">
+          <span className="hud-round">Round {roundInfo.roundNumber}/9</span>
+          <span className={`hud-diff diff-${roundInfo.difficulty.toLowerCase()}`}>{roundInfo.difficulty}</span>
+        </div>
+      )}
+
+      <div className="bb-overlay">
+        {billboardContent}
+      </div>
+
+      {phase === "answering" && (
+        <div className="answer-dock">
+          <div className="timer-track">
+            <div className="timer-fill" style={{ width: `${(timeLeft / 10) * 100}%` }} />
+          </div>
+          <div className="timer-num">{timeLeft}s</div>
+          {submitted ? (
+            <p className="submitted-ok">✓ Answer submitted!</p>
+          ) : (
+            <div className="answer-row">
+              <input
+                ref={inputRef}
+                className="answer-field"
+                placeholder="Type your answer..."
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submitAnswer(); }}
+                disabled={timeLeft === 0}
+                autoFocus
+              />
+              <button
+                className="submit-btn"
+                onClick={submitAnswer}
+                disabled={!answer.trim() || timeLeft === 0}
+              >Go</button>
+            </div>
+          )}
+          {isAdmin && adminAnswers.length > 0 && (
+            <div className="admin-live">
+              <p className="admin-live-title">Live answers:</p>
+              {adminAnswers.map((a, i) => (
+                <div key={i} className="admin-live-row">
+                  <span>{a.playerName}</span>
+                  <span className="live-ans">{a.answer}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {phase === "reveal" && revealData && (
+        <div className="reveal-dock">
+          {(() => {
+            const myAns = revealData.answers.find((a) => a.playerId === playerId);
+            const myScore = revealData.leaderboard.find((p) => p.id === playerId)?.score ?? 0;
+            return (
+              <>
+                {myAns && (
+                  <div className={`my-result ${myAns.isCorrect ? "result-correct" : "result-wrong"}`}>
+                    {myAns.isCorrect ? `✓ Correct! +${myAns.pointsEarned} pts` : "✗ Wrong!"}
+                    <span className="my-total"> Total: {myScore} pts</span>
+                  </div>
+                )}
+                <div className="answers-list">
+                  {revealData.answers.map((a, i) => (
+                    <div key={i} className={`ans-pill ${a.isCorrect ? "ans-right" : "ans-wrong"}`}>
+                      <span className="ans-who">{a.playerName}</span>
+                      <span className="ans-what">{a.answer}</span>
+                      {a.isCorrect && <span className="ans-pts">+{a.pointsEarned}</span>}
+                    </div>
+                  ))}
+                </div>
+                <div className="mini-lb">
+                  {revealData.leaderboard.slice(0, 5).map((p, i) => (
+                    <div key={p.id} className={`mini-lb-row ${p.id === playerId ? "lb-me" : ""}`}>
+                      <span className="mini-rank">#{i + 1}</span>
+                      <span className="mini-name">{p.name}</span>
+                      <span className="mini-score">{p.score}</span>
+                    </div>
+                  ))}
+                </div>
+                {isAdmin ? (
+                  <button className="entry-btn next-btn" onClick={handleNextRound}>
+                    {revealData.isLastRound ? "See Final Results" : "Next Round →"}
+                  </button>
+                ) : (
+                  <p className="wait-host">Waiting for host...</p>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      )}
+    </div>
+  );
 }

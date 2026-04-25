@@ -3,6 +3,15 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import * as XLSX from "xlsx";
+import {
+  getAdminItems,
+  setAdminItems,
+  addAdminItem,
+  removeAdminItem,
+  reorderAdminItems,
+  clearAdminItems,
+} from "../game/adminStore.js";
+import type { GameItem } from "../game/gameState.js";
 
 const router = Router();
 
@@ -21,6 +30,27 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+router.get("/api/admin/items", (_req, res) => {
+  res.json({ items: getAdminItems() });
+});
+
+router.post("/api/admin/items/clear", (_req, res) => {
+  clearAdminItems();
+  res.json({ ok: true });
+});
+
+router.post("/api/admin/items/remove", (req, res) => {
+  const { index } = req.body as { index: number };
+  removeAdminItem(index);
+  res.json({ items: getAdminItems() });
+});
+
+router.post("/api/admin/items/reorder", (req, res) => {
+  const { fromIndex, toIndex } = req.body as { fromIndex: number; toIndex: number };
+  reorderAdminItems(fromIndex, toIndex);
+  res.json({ items: getAdminItems() });
+});
+
 router.post("/api/upload/excel", upload.single("file"), (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: "No file uploaded" });
@@ -34,14 +64,23 @@ router.post("/api/upload/excel", upload.single("file"), (req, res) => {
       header: 1,
       defval: "",
     });
-    const items: string[] = [];
+
     for (const row of rows) {
-      if (Array.isArray(row) && row[0] !== undefined && row[0] !== "") {
-        items.push(String(row[0]).trim());
+      if (Array.isArray(row) && row[0] !== undefined && String(row[0]).trim() !== "") {
+        const val = String(row[0]).trim();
+        const item: GameItem = {
+          type: "text",
+          prompt: val,
+          correctAnswer: val,
+          acceptedAnswers: [],
+          flashDurationMs: 600,
+        };
+        addAdminItem(item);
       }
     }
-    res.json({ items });
-  } catch (err) {
+
+    res.json({ items: getAdminItems() });
+  } catch {
     res.status(500).json({ error: "Failed to parse Excel file" });
   }
 });
@@ -52,7 +91,35 @@ router.post("/api/upload/image", upload.single("image"), (req, res) => {
     return;
   }
   const url = `/api/uploads/${req.file.filename}`;
-  res.json({ url, filename: req.file.filename });
+  const label = (req.body as { label?: string }).label || req.file.originalname.replace(/\.[^.]+$/, "");
+
+  const item: GameItem = {
+    type: "image",
+    prompt: label,
+    mediaUrl: url,
+    correctAnswer: label,
+    acceptedAnswers: [],
+    flashDurationMs: 600,
+  };
+  addAdminItem(item);
+
+  res.json({ url, filename: req.file.filename, item, items: getAdminItems() });
+});
+
+router.post("/api/admin/items/label", (req, res) => {
+  const { index, label, acceptedAnswers } = req.body as {
+    index: number;
+    label: string;
+    acceptedAnswers?: string[];
+  };
+  const items = getAdminItems();
+  if (index >= 0 && index < items.length) {
+    items[index].prompt = label;
+    items[index].correctAnswer = label;
+    if (acceptedAnswers) items[index].acceptedAnswers = acceptedAnswers;
+    setAdminItems(items);
+  }
+  res.json({ items: getAdminItems() });
 });
 
 router.get("/api/uploads/:filename", (req, res) => {

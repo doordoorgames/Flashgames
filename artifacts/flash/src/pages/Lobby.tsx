@@ -13,41 +13,39 @@ export default function Lobby({ code, players, isAdmin, itemCount, onStartGame }
   return (
     <div className="lobby-screen">
       <div className="lobby-card">
-        <h2 className="lobby-title">Flash / لمحة</h2>
-        <div className="room-code-box">
-          <p className="room-code-label">Room Code</p>
-          <p className="room-code">{code}</p>
-          <p className="room-code-hint">Share this code with players</p>
+        <div className="lobby-brand">Flash / لمحة</div>
+
+        <div className="room-code-display">
+          <p className="rcd-label">Room Code</p>
+          <p className="rcd-code">{code}</p>
+          <p className="rcd-hint">Share this with your players</p>
         </div>
 
-        <div className="players-section">
-          <h3 className="players-title">Players ({players.length})</h3>
-          <div className="players-list">
+        <div className="lobby-players">
+          <p className="lobby-players-title">Players in room ({players.length})</p>
+          <div className="lobby-players-list">
             {players.map((p) => (
-              <div key={p.id} className="player-chip">
-                <span className="player-dot" />
-                <span className="player-name">{p.name}</span>
-                {p.isAdmin && <span className="admin-badge">HOST</span>}
+              <div key={p.id} className="lobby-player">
+                <span className="lobby-dot" />
+                <span className="lobby-pname">{p.name}</span>
+                {p.isAdmin && <span className="lobby-host-tag">HOST</span>}
               </div>
             ))}
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="admin-controls">
-            <p className="item-count-info">{itemCount} items loaded · 9 rounds</p>
+        {isAdmin ? (
+          <div className="lobby-admin-area">
+            <p className="lobby-items-info">{itemCount} game items loaded</p>
             <button
-              className="btn-primary btn-large"
+              className="entry-btn"
               onClick={onStartGame}
-              disabled={players.length < 1}
             >
-              Start Game
+              Begin Game
             </button>
           </div>
-        )}
-
-        {!isAdmin && (
-          <p className="waiting-msg">Waiting for host to start the game...</p>
+        ) : (
+          <p className="lobby-waiting">The host will start the game soon...</p>
         )}
       </div>
     </div>

@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import Home from "@/pages/Home";
-import AdminSetup from "@/pages/AdminSetup";
+import CreateRoom from "@/pages/CreateRoom";
+import JoinRoom from "@/pages/JoinRoom";
 import Lobby from "@/pages/Lobby";
 import GameView from "@/pages/GameView";
+import AdminPage from "@/pages/AdminPage";
 import { getSocket } from "@/lib/socket";
 import type { Player } from "@/lib/types";
 
 const queryClient = new QueryClient();
 
-type AppPhase = "home" | "admin-setup" | "lobby" | "game";
+type AppPhase = "home" | "create" | "join" | "lobby" | "game";
 
 interface GameSession {
   code: string;
@@ -22,7 +25,6 @@ function FlashApp() {
   const [phase, setPhase] = useState<AppPhase>("home");
   const [session, setSession] = useState<GameSession | null>(null);
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
-  const [lobbyAdminId, setLobbyAdminId] = useState("");
   const [itemCount, setItemCount] = useState(0);
 
   useEffect(() => {
@@ -30,7 +32,6 @@ function FlashApp() {
 
     socket.on("lobby-update", (data: { players: Player[]; adminId: string; itemCount: number }) => {
       setLobbyPlayers(data.players);
-      setLobbyAdminId(data.adminId);
       setItemCount(data.itemCount);
     });
 
@@ -56,27 +57,30 @@ function FlashApp() {
     setPhase("lobby");
   };
 
-  const handleRoomCreated = (code: string, playerId: string, name: string) => {
-    setSession({ code, playerId, playerName: name, isAdmin: true });
-    setPhase("lobby");
-  };
-
   const handleStartGame = () => {
     if (!session) return;
-    const socket = getSocket();
-    socket.emit("start-game", { code: session.code });
+    getSocket().emit("start-game", { code: session.code });
   };
 
   return (
     <div className="app-root">
       {phase === "home" && (
         <Home
-          onAdminSetup={() => setPhase("admin-setup")}
-          onJoined={handleJoined}
+          onCreateGame={() => setPhase("create")}
+          onJoinGame={() => setPhase("join")}
         />
       )}
-      {phase === "admin-setup" && (
-        <AdminSetup onRoomCreated={handleRoomCreated} />
+      {phase === "create" && (
+        <CreateRoom
+          onBack={() => setPhase("home")}
+          onRoomCreated={(code, playerId, name) => handleJoined(code, playerId, name, true)}
+        />
+      )}
+      {phase === "join" && (
+        <JoinRoom
+          onBack={() => setPhase("home")}
+          onJoined={(code, playerId, name) => handleJoined(code, playerId, name, false)}
+        />
       )}
       {phase === "lobby" && session && (
         <Lobby
@@ -103,7 +107,14 @@ function FlashApp() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <FlashApp />
+      <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, "") ?? ""}>
+        <Switch>
+          <Route path="/admin" component={AdminPage} />
+          <Route>
+            <FlashApp />
+          </Route>
+        </Switch>
+      </WouterRouter>
     </QueryClientProvider>
   );
 }

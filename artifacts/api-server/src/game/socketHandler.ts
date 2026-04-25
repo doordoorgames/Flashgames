@@ -9,15 +9,25 @@ import {
 import type { Room, Player, PlayerAnswer, GameItem } from "./gameState.js";
 import { ROUND_CONFIG, TOTAL_ROUNDS, ANSWER_TIME_LIMIT } from "./gameState.js";
 import { isCorrectAnswer, calculatePoints } from "./scoring.js";
+import { getAdminItems } from "./adminStore.js";
 
 export function setupSocketHandlers(io: Server): void {
   io.on("connection", (socket) => {
     socket.on(
       "create-room",
       (
-        data: { playerName: string; items: GameItem[] },
-        cb: (res: { code: string; playerId: string }) => void
+        data: { playerName: string },
+        cb: (res: { code: string; playerId: string; error?: string }) => void
       ) => {
+        const items = getAdminItems();
+        if (items.length < TOTAL_ROUNDS) {
+          cb({
+            code: "",
+            playerId: "",
+            error: `Not enough items loaded in admin panel. Need at least ${TOTAL_ROUNDS}, have ${items.length}.`,
+          });
+          return;
+        }
         const code = generateRoomCode();
         const player: Player = {
           id: socket.id,
@@ -25,13 +35,14 @@ export function setupSocketHandlers(io: Server): void {
           score: 0,
           isAdmin: true,
         };
+        const shuffled = [...items].sort(() => Math.random() - 0.5);
         const room: Room = {
           code,
           adminId: socket.id,
           players: new Map([[socket.id, player]]),
           phase: "lobby",
           currentRound: 0,
-          items: data.items,
+          items: shuffled,
           currentAnswers: new Map(),
           roundResults: [],
         };

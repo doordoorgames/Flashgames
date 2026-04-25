@@ -514,16 +514,16 @@ html, body, #root {
 }
 
 .bb-flash-text {
-  font-family: 'Anton', 'Inter', sans-serif;
-  font-size: clamp(2rem, 9vw, 4.5rem);
+  font-family: 'Bebas Neue', 'Anton', sans-serif;
+  font-size: clamp(3rem, 12vw, 6rem);
   font-weight: 900;
   color: #000000;
   text-align: center;
   text-transform: uppercase;
-  line-height: 1.1;
+  line-height: 1;
   word-break: break-word;
   padding: 0 8px;
-  transform: translateY(70px);
+  transform: translateY(270px);
   text-shadow: 3.5px 3.5px 0px #ffffff;
 }
 

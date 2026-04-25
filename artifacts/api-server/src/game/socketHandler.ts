@@ -99,6 +99,10 @@ export function setupSocketHandlers(io: Server): void {
       const room = getRoom(data.code);
       if (!room || socket.id !== room.adminId) return;
       if (room.phase !== "reveal") return;
+      if (room.autoNextTimeout) {
+        clearTimeout(room.autoNextTimeout);
+        room.autoNextTimeout = undefined;
+      }
       if (room.currentRound >= TOTAL_ROUNDS) {
         room.phase = "leaderboard";
         setRoom(data.code, room);
@@ -278,4 +282,20 @@ function revealAnswers(io: Server, code: string, item: GameItem): void {
     leaderboard: getLeaderboard(room),
     isLastRound: room.currentRound >= TOTAL_ROUNDS,
   });
+
+  room.autoNextTimeout = setTimeout(() => {
+    const r = getRoom(code);
+    if (!r || r.phase !== "reveal") return;
+    if (r.autoNextTimeout) {
+      r.autoNextTimeout = undefined;
+    }
+    if (r.currentRound >= TOTAL_ROUNDS) {
+      r.phase = "leaderboard";
+      setRoom(code, r);
+      io.to(code).emit("game-over", { players: getLeaderboard(r) });
+    } else {
+      startNextRound(io, code);
+    }
+  }, 10000);
+  setRoom(code, room);
 }

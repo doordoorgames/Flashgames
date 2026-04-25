@@ -203,10 +203,6 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
 
       {phase === "answering" && (
         <div className="answer-dock">
-          <div className="timer-track">
-            <div className="timer-fill" style={{ width: `${(timeLeft / 10) * 100}%` }} />
-          </div>
-          <div className="timer-num">{timeLeft}s</div>
           {submitted ? (
             <p className="submitted-ok">✓ Answer submitted!</p>
           ) : (
@@ -228,6 +224,10 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
               >Go</button>
             </div>
           )}
+          <div className="timer-track">
+            <div className="timer-fill" style={{ width: `${(timeLeft / 10) * 100}%` }} />
+          </div>
+          <div className="timer-num">{timeLeft}s</div>
           {isAdmin && adminAnswers.length > 0 && (
             <div className="admin-live">
               <p className="admin-live-title">Live answers:</p>

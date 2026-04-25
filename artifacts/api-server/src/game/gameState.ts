@@ -50,6 +50,7 @@ export interface Room {
   currentAnswers: Map<string, PlayerAnswer>;
   roundResults: RoundResult[];
   flashTimeout?: ReturnType<typeof setTimeout>;
+  autoNextTimeout?: ReturnType<typeof setTimeout>;
 }
 
 export const ROUND_CONFIG: Array<{

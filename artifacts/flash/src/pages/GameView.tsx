@@ -163,7 +163,11 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
     if (phase === "flash" && currentItem) {
       return currentItem.type === "image" && currentItem.mediaUrl
         ? <img src={currentItem.mediaUrl} alt="" className="bb-flash-img" draggable={false} />
-        : <p className="bb-flash-text">{currentItem.prompt}</p>;
+        : (
+          <div className="bb-flash-wrap">
+            <p className="bb-flash-text">{currentItem.prompt}</p>
+          </div>
+        );
     }
     if (phase === "answering") {
       return <p className="bb-question-mark">?</p>;

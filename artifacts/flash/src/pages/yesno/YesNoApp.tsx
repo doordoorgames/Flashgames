@@ -26,16 +26,18 @@ interface YNLobbyState {
   questionCount: number;
 }
 
-interface YNRoundState {
+export interface YNRoundState {
+  askerPlayerId: string;
+  askerPlayerName: string;
   hotSeatPlayerId: string;
   hotSeatPlayerName: string;
   question: string;
   questionNumber: number;
   leaderboard: YNPlayer[];
-  playerNumber: number;
-  totalPlayers: number;
-  isLastPlayer: boolean;
-  nextPlayerName: string | null;
+  pairNumber: number;
+  totalPairs: number;
+  isLastPair: boolean;
+  nextAskedName: string | null;
 }
 
 interface Props {
@@ -50,7 +52,10 @@ export default function YesNoApp({ onBack }: Props) {
   const [roundState, setRoundState] = useState<YNRoundState | null>(null);
   const [answersThisRound, setAnswersThisRound] = useState<string[]>([]);
   const [lastViolation, setLastViolation] = useState<{ type: string; answer: string } | null>(null);
-  const [roundResult, setRoundResult] = useState<{ passed: boolean; answersGiven: number; violation: string; isLastPlayer: boolean; nextPlayerName: string | null } | null>(null);
+  const [roundResult, setRoundResult] = useState<{
+    passed: boolean; answersGiven: number; violation: string;
+    isLastPair: boolean; nextAskedName: string | null;
+  } | null>(null);
   const [finalLeaderboard, setFinalLeaderboard] = useState<YNPlayer[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
@@ -89,8 +94,15 @@ export default function YesNoApp({ onBack }: Props) {
       }
     });
 
-    socket.on("yn:round-over", (data: { passed: boolean; violation: string; answersGiven: number; hotSeatPlayerId: string; leaderboard: YNPlayer[]; isLastPlayer: boolean; nextPlayerName: string | null }) => {
-      setRoundResult({ passed: data.passed, answersGiven: data.answersGiven, violation: data.violation, isLastPlayer: data.isLastPlayer, nextPlayerName: data.nextPlayerName });
+    socket.on("yn:round-over", (data: {
+      passed: boolean; violation: string; answersGiven: number;
+      hotSeatPlayerId: string; leaderboard: YNPlayer[];
+      isLastPair: boolean; nextAskedName: string | null;
+    }) => {
+      setRoundResult({
+        passed: data.passed, answersGiven: data.answersGiven, violation: data.violation,
+        isLastPair: data.isLastPair, nextAskedName: data.nextAskedName,
+      });
       setGamePhase("between-rounds");
       setLobbyState(prev => ({ ...prev, players: data.leaderboard }));
     });
@@ -182,7 +194,7 @@ export default function YesNoApp({ onBack }: Props) {
     );
   }
 
-  if ((phase === "lobby") && session) {
+  if (phase === "lobby" && session) {
     return (
       <YesNoLobby
         session={session}

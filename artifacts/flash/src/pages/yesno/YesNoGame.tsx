@@ -1,30 +1,18 @@
 import { useState, useEffect } from "react";
-import type { YNSession, YNPlayer } from "./YesNoApp";
-
-interface RoundState {
-  hotSeatPlayerId: string;
-  hotSeatPlayerName: string;
-  question: string;
-  questionNumber: number;
-  leaderboard: YNPlayer[];
-  playerNumber: number;
-  totalPlayers: number;
-  isLastPlayer: boolean;
-  nextPlayerName: string | null;
-}
+import type { YNSession, YNPlayer, YNRoundState } from "./YesNoApp";
 
 interface RoundResult {
   passed: boolean;
   answersGiven: number;
   violation: string;
-  isLastPlayer: boolean;
-  nextPlayerName: string | null;
+  isLastPair: boolean;
+  nextAskedName: string | null;
 }
 
 interface Props {
   session: YNSession;
   gamePhase: "round" | "between-rounds" | "gameover";
-  roundState: RoundState | null;
+  roundState: YNRoundState | null;
   currentQuestion: string;
   currentQuestionNumber: number;
   answersThisRound: string[];
@@ -43,9 +31,10 @@ interface Props {
 export default function YesNoGame({
   session, gamePhase, roundState, currentQuestion, currentQuestionNumber,
   answersThisRound, lastViolation, roundResult, finalLeaderboard, lobbyPlayers,
-  onSubmitAnswer, onNextQuestion, onFailPlayer, onEndGame, onReturnToLobby, onNextPlayer,
+  onNextQuestion, onFailPlayer, onEndGame, onNextPlayer,
 }: Props) {
   const [shake, setShake] = useState(false);
+  const isAsker = roundState?.askerPlayerId === session.playerId;
   const isHotSeat = roundState?.hotSeatPlayerId === session.playerId;
   const questionCount = answersThisRound.length;
 
@@ -105,14 +94,19 @@ export default function YesNoGame({
       </div>
 
       <div className="yn-top-ui">
-        <div className="yn-player-indicator">
-          <span className="yn-indicator-label">
-            UNDER QUESTIONING
-            {roundState && (
-              <span className="yn-turn-counter"> · {roundState.playerNumber}/{roundState.totalPlayers}</span>
-            )}
-          </span>
-          <span className="yn-indicator-name">{roundState?.hotSeatPlayerName}</span>
+        <div className="yn-roles-display">
+          <div className="yn-role-chip yn-role-asker">
+            <span className="yn-role-label">ASKING</span>
+            <span className="yn-role-name">{roundState?.askerPlayerName}</span>
+          </div>
+          <div className="yn-role-arrow">→</div>
+          <div className="yn-role-chip yn-role-asked">
+            <span className="yn-role-label">ANSWERING</span>
+            <span className="yn-role-name">{roundState?.hotSeatPlayerName}</span>
+          </div>
+          {roundState && (
+            <div className="yn-pair-counter">{roundState.pairNumber}/{roundState.totalPairs}</div>
+          )}
         </div>
 
         <div className="yn-scoreboard">
@@ -127,7 +121,7 @@ export default function YesNoGame({
       </div>
 
       <div className="yn-question-area">
-        <div className="yn-question-panel">
+        <div className={`yn-question-panel ${isHotSeat ? "yn-question-panel--hotseat" : ""}`}>
           <div className="yn-q-number">Q{currentQuestionNumber}</div>
           <p className="yn-q-text">{currentQuestion}</p>
           <div className="yn-scanline" />
@@ -144,33 +138,34 @@ export default function YesNoGame({
         <div className="yn-progress-label-only">{questionCount} / 10</div>
       </div>
 
-      {gamePhase === "round" && isHotSeat && lastViolation && (
-        <div className="yn-answer-area">
-          <div className="yn-violation-banner">
-            {lastViolation.type === "yes" && `❌ You said "yes"!`}
-            {lastViolation.type === "no" && `❌ You said "no"!`}
-            {lastViolation.type === "repeat" && `❌ Repeated answer!`}
-            {lastViolation.type === "manual" && `❌ Failed by host`}
-          </div>
-        </div>
-      )}
-
-      {gamePhase === "round" && !isHotSeat && (
-        <div className="yn-watching">
-          <p className="yn-watching-label">
-            {session.isAdmin ? "Admin Controls" : `Watching ${roundState?.hotSeatPlayerName}...`}
-          </p>
-          {answersThisRound.length > 0 && (
-            <div className="yn-answers-feed">
-              {answersThisRound.slice(-5).map((a, i) => (
-                <span key={i} className="yn-feed-item">{a}</span>
-              ))}
+      {gamePhase === "round" && (
+        <div className="yn-bottom-zone">
+          {isAsker && (
+            <div className="yn-asker-controls">
+              <div className="yn-asker-badge">You are asking</div>
+              <div className="yn-asker-btns">
+                <button className="yn-next-q-btn" onClick={onNextQuestion}>Next Question →</button>
+                <button className="yn-fail-btn-red" onClick={onFailPlayer}>Fail</button>
+              </div>
             </div>
           )}
-          {session.isAdmin && (
-            <div className="yn-admin-controls">
-              <button className="yn-next-q-btn" onClick={onNextQuestion}>Next Question →</button>
-              <button className="yn-fail-btn" onClick={onFailPlayer}>✗ Fail Player</button>
+          {isHotSeat && (
+            <div className="yn-hotseat-badge">
+              You are being questioned — answer verbally!
+            </div>
+          )}
+          {!isAsker && !isHotSeat && (
+            <div className="yn-spectator-label">
+              {session.isAdmin
+                ? <span>Admin · <button className="yn-end-inline-btn" onClick={onEndGame}>End Game</button></span>
+                : `Watching · ${roundState?.askerPlayerName} is asking`
+              }
+            </div>
+          )}
+          {session.isAdmin && !isAsker && (
+            <div className="yn-admin-override">
+              <button className="yn-next-q-btn yn-next-q-sm" onClick={onNextQuestion}>Next Q</button>
+              <button className="yn-fail-btn-red yn-fail-sm" onClick={onFailPlayer}>Fail</button>
             </div>
           )}
         </div>
@@ -198,6 +193,12 @@ export default function YesNoGame({
                 </p>
               </>
             )}
+
+            <p className="yn-role-swap-note">
+              <strong>{roundState?.hotSeatPlayerName}</strong> is now the Asker
+              {roundResult?.nextAskedName && <> · <strong>{roundResult.nextAskedName}</strong> is next in the hot seat</>}
+            </p>
+
             <div className="yn-mini-lb">
               {lobbyPlayers.map((p, i) => (
                 <div key={p.id} className={`mini-lb-row ${p.id === session.playerId ? "lb-me" : ""}`}>
@@ -207,21 +208,17 @@ export default function YesNoGame({
                 </div>
               ))}
             </div>
+
             {session.isAdmin && (
               <div className="yn-between-admin">
-                {roundResult?.isLastPlayer ? (
+                {roundResult?.isLastPair ? (
                   <button className="yn-submit-btn" onClick={onEndGame}>
                     See Final Results →
                   </button>
                 ) : (
                   <>
-                    {roundResult?.nextPlayerName && (
-                      <p className="yn-next-player-hint">
-                        Next up: <strong>{roundResult.nextPlayerName}</strong>
-                      </p>
-                    )}
                     <button className="yn-submit-btn" onClick={onNextPlayer}>
-                      Next Player →
+                      Next Round →
                     </button>
                     <button className="yn-end-btn" style={{ marginTop: 8 }} onClick={onEndGame}>End Game</button>
                   </>

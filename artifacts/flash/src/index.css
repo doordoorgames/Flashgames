@@ -1440,14 +1440,21 @@ html, body, #root {
 .yn-room-code .rcd-code { color: #9effc0; }
 
 .yn-score-badge {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 2px 7px;
-  background: rgba(15,80,30,0.3);
-  color: #6cff9a;
-  border-radius: 5px;
-  border: 1px solid rgba(60,180,80,0.25);
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 3px 9px;
+  background: rgba(0,0,0,0.18);
+  color: #000000;
+  border-radius: 6px;
   margin-left: auto;
+}
+
+.yn-progress-label-only {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(108,255,154,0.55);
+  text-align: right;
+  padding-right: 4px;
 }
 
 .yn-error-banner {
@@ -1476,24 +1483,27 @@ html, body, #root {
   color: rgba(108,255,154,0.5);
 }
 
-.yn-player-select { display: flex; flex-direction: column; gap: 7px; }
+.yn-player-select { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
 
 .yn-player-select-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  background: rgba(10,30,15,0.7);
-  border: 1px solid rgba(60,180,80,0.22);
-  border-radius: 9px;
-  color: #9effc0;
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: 12px;
+  padding: 18px 22px;
+  background: #f5c800;
+  border: none;
+  border-radius: 12px;
+  color: #000000;
+  font-size: 1.15rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  width: 100%;
 }
 
-.yn-player-select-btn:hover { background: rgba(15,50,25,0.9); border-color: rgba(108,255,154,0.4); }
+.yn-player-select-btn:hover { background: #ffd400; transform: scale(1.02); }
+.yn-player-select-btn:active { transform: scale(0.98); }
 
 .yn-player-icon { font-size: 1rem; }
 .yn-me-tag { font-size: 0.65rem; color: rgba(108,255,154,0.55); }
@@ -1987,11 +1997,13 @@ html, body, #root {
 }
 
 .yn-select-title {
-  font-size: 0.8rem;
+  font-size: 1.5rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(108,255,154,0.5);
-  margin-bottom: 4px;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 /* Shake & edge pulse */

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { YNSession, YNPlayer } from "./YesNoApp";
 
 interface RoundState {
@@ -39,20 +39,9 @@ export default function YesNoGame({
   answersThisRound, lastViolation, roundResult, finalLeaderboard, lobbyPlayers,
   onSubmitAnswer, onNextQuestion, onFailPlayer, onEndGame, onReturnToLobby, onSelectPlayer,
 }: Props) {
-  const [input, setInput] = useState("");
-  const [submitted, setSubmitted] = useState(false);
   const [shake, setShake] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const isHotSeat = roundState?.hotSeatPlayerId === session.playerId;
   const questionCount = answersThisRound.length;
-
-  useEffect(() => {
-    setInput("");
-    setSubmitted(false);
-    if (isHotSeat && gamePhase === "round") {
-      setTimeout(() => inputRef.current?.focus(), 200);
-    }
-  }, [currentQuestion, gamePhase, isHotSeat]);
 
   useEffect(() => {
     if (lastViolation) {
@@ -60,13 +49,6 @@ export default function YesNoGame({
       setTimeout(() => setShake(false), 600);
     }
   }, [lastViolation]);
-
-  const handleSubmit = () => {
-    const ans = input.trim();
-    if (!ans) return;
-    onSubmitAnswer(ans);
-    setInput("");
-  };
 
   const last3 = answersThisRound.slice(-3);
 
@@ -172,37 +154,17 @@ export default function YesNoGame({
           ))}
         </div>
 
-        <div className="yn-progress-track">
-          <div className="yn-progress-fill" style={{ width: `${(questionCount / 10) * 100}%` }} />
-          <span className="yn-progress-label">{questionCount} / 10</span>
-        </div>
+        <div className="yn-progress-label-only">{questionCount} / 10</div>
       </div>
 
-      {gamePhase === "round" && isHotSeat && (
+      {gamePhase === "round" && isHotSeat && lastViolation && (
         <div className="yn-answer-area">
-          <div className="yn-answer-row">
-            <input
-              ref={inputRef}
-              className="yn-answer-input"
-              placeholder="Your answer (not yes or no)..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") handleSubmit(); }}
-              maxLength={120}
-              disabled={submitted}
-            />
-            <button className="yn-go-btn" onClick={handleSubmit} disabled={!input.trim() || submitted}>
-              Answer
-            </button>
+          <div className="yn-violation-banner">
+            {lastViolation.type === "yes" && `❌ You said "yes"!`}
+            {lastViolation.type === "no" && `❌ You said "no"!`}
+            {lastViolation.type === "repeat" && `❌ Repeated answer!`}
+            {lastViolation.type === "manual" && `❌ Failed by host`}
           </div>
-          {lastViolation && (
-            <div className="yn-violation-banner">
-              {lastViolation.type === "yes" && `❌ You said "yes"!`}
-              {lastViolation.type === "no" && `❌ You said "no"!`}
-              {lastViolation.type === "repeat" && `❌ Repeated answer!`}
-              {lastViolation.type === "manual" && `❌ Failed by host`}
-            </div>
-          )}
         </div>
       )}
 

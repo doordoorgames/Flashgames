@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from "socket.io";
 import app from "./app.js";
 import { logger } from "./lib/logger.js";
 import { setupSocketHandlers } from "./game/socketHandler.js";
+import { setupYesNoHandlers } from "./game/yesnoHandler.js";
 
 const rawPort = process.env["PORT"];
 
@@ -29,6 +30,7 @@ const io = new SocketIOServer(server, {
 });
 
 setupSocketHandlers(io);
+setupYesNoHandlers(io);
 
 server.listen(port, (err?: Error) => {
   if (err) {

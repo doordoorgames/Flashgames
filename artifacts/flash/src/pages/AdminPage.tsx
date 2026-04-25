@@ -6,6 +6,8 @@ interface ServerItem extends GameItem {
 }
 
 export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState<"flash" | "yesno">("flash");
+
   const [items, setItems] = useState<ServerItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -15,19 +17,29 @@ export default function AdminPage() {
   const excelRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
+  const [ynQuestions, setYnQuestions] = useState<string[]>([]);
+  const ynCsvRef = useRef<HTMLInputElement>(null);
+
   const fetchItems = async () => {
     const res = await fetch("/api/admin/items");
     const data = await res.json();
     setItems((data.items as GameItem[]).map((item, i) => ({ ...item, _index: i })));
   };
 
+  const fetchYnQuestions = async () => {
+    const res = await fetch("/api/admin/yesno-questions");
+    const data = await res.json();
+    setYnQuestions(data.questions || []);
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchYnQuestions();
   }, []);
 
   const toast = (msg: string) => {
     setStatus(msg);
-    setTimeout(() => setStatus(""), 3000);
+    setTimeout(() => setStatus(""), 3500);
   };
 
   const handleExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +54,7 @@ export default function AdminPage() {
       if (data.error) { toast("Error: " + data.error); }
       else {
         setItems((data.items as GameItem[]).map((item, i) => ({ ...item, _index: i })));
-        toast(`Added words/numbers from Excel — ${data.items.length} total items`);
+        toast(`Excel uploaded — ${data.items.length} total items`);
       }
     } catch { toast("Failed to upload Excel"); }
     setLoading(false);
@@ -72,6 +84,32 @@ export default function AdminPage() {
     e.target.value = "";
   };
 
+  const handleYnCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      const res = await fetch("/api/upload/yesno-csv", { method: "POST", body: form });
+      const data = await res.json();
+      if (data.error) { toast("Error: " + data.error); }
+      else {
+        setYnQuestions(data.questions || []);
+        toast(`Added ${data.added} questions — ${data.questions.length} total`);
+      }
+    } catch { toast("Failed to upload CSV"); }
+    setLoading(false);
+    e.target.value = "";
+  };
+
+  const clearYnQuestions = async () => {
+    if (!confirm("Clear all Yes/No questions?")) return;
+    await fetch("/api/admin/yesno-questions/clear", { method: "POST" });
+    setYnQuestions([]);
+    toast("Questions cleared");
+  };
+
   const removeItem = async (index: number) => {
     const res = await fetch("/api/admin/items/remove", {
       method: "POST",
@@ -95,7 +133,7 @@ export default function AdminPage() {
   };
 
   const clearAll = async () => {
-    if (!confirm("Clear all items?")) return;
+    if (!confirm("Clear all Flash items?")) return;
     await fetch("/api/admin/items/clear", { method: "POST" });
     setItems([]);
     toast("All items cleared");
@@ -124,7 +162,8 @@ export default function AdminPage() {
     toast("Saved");
   };
 
-  const ready = items.length >= 9;
+  const flashReady = items.length >= 9;
+  const ynReady = ynQuestions.length >= 1;
 
   return (
     <div className="admin-page">
@@ -139,123 +178,162 @@ export default function AdminPage() {
       </header>
 
       <div className="admin-body">
-        <div className="admin-stats">
-          <div className={`stat-chip ${ready ? "stat-ready" : "stat-warn"}`}>
-            <span className="stat-num">{items.length}</span>
-            <span className="stat-label">items loaded</span>
-          </div>
-          <div className="stat-chip">
-            <span className="stat-num">9</span>
-            <span className="stat-label">rounds per game</span>
-          </div>
-          <div className={`stat-chip ${ready ? "stat-ready" : "stat-warn"}`}>
-            {ready ? "✓ Ready to play" : `Need ${9 - items.length} more`}
-          </div>
-        </div>
-
         {status && <div className="admin-toast">{status}</div>}
 
-        <div className="admin-sections">
-          <div className="admin-section">
-            <h2 className="admin-section-title">Upload Words / Numbers</h2>
-            <p className="admin-section-desc">
-              Excel file (.xlsx, .xls) — one word or number per row in column A.
-              Numbers must match exactly. Words support fuzzy matching (typos OK).
-            </p>
-            <button
-              className="admin-upload-btn"
-              onClick={() => excelRef.current?.click()}
-              disabled={loading}
-            >
-              <span>📊</span> Choose Excel File
-            </button>
-            <input ref={excelRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={handleExcel} />
-          </div>
-
-          <div className="admin-section">
-            <h2 className="admin-section-title">Upload Images (PNG)</h2>
-            <p className="admin-section-desc">
-              Upload PNG images with transparent backgrounds. They flash inside the billboard during the game.
-              The filename (without extension) becomes the correct answer. You can edit it below.
-            </p>
-            <button
-              className="admin-upload-btn"
-              onClick={() => imgRef.current?.click()}
-              disabled={loading}
-            >
-              <span>🖼️</span> Choose PNG Images
-            </button>
-            <input ref={imgRef} type="file" accept="image/png,image/webp" multiple style={{ display: "none" }} onChange={handleImages} />
-          </div>
+        <div className="admin-tabs">
+          <button
+            className={`admin-tab ${activeTab === "flash" ? "admin-tab-active" : ""}`}
+            onClick={() => setActiveTab("flash")}
+          >
+            ⚡ Flash Game
+            <span className={`admin-tab-badge ${flashReady ? "badge-ready" : "badge-warn"}`}>
+              {items.length}
+            </span>
+          </button>
+          <button
+            className={`admin-tab ${activeTab === "yesno" ? "admin-tab-active yn-tab-active" : ""}`}
+            onClick={() => setActiveTab("yesno")}
+          >
+            🚫 Yes / No
+            <span className={`admin-tab-badge ${ynReady ? "badge-ready" : "badge-warn"}`}>
+              {ynQuestions.length}
+            </span>
+          </button>
         </div>
 
-        <div className="admin-items-section">
-          <div className="admin-items-header">
-            <h2 className="admin-section-title">Game Items ({items.length})</h2>
-            {items.length > 0 && (
-              <button className="admin-clear-btn" onClick={clearAll}>Clear All</button>
-            )}
-          </div>
-
-          {items.length === 0 ? (
-            <div className="admin-empty">
-              <p>No items yet. Upload an Excel file or PNG images above.</p>
+        {activeTab === "flash" && (
+          <>
+            <div className="admin-stats">
+              <div className={`stat-chip ${flashReady ? "stat-ready" : "stat-warn"}`}>
+                <span className="stat-num">{items.length}</span>
+                <span className="stat-label">items loaded</span>
+              </div>
+              <div className="stat-chip">
+                <span className="stat-num">9</span>
+                <span className="stat-label">rounds per game</span>
+              </div>
+              <div className={`stat-chip ${flashReady ? "stat-ready" : "stat-warn"}`}>
+                {flashReady ? "✓ Ready to play" : `Need ${9 - items.length} more`}
+              </div>
             </div>
-          ) : (
-            <div className="admin-items-list">
-              {items.map((item, i) => (
-                <div key={i} className="admin-item-row">
-                  <span className="admin-item-num">{i + 1}</span>
 
-                  {item.type === "image" && item.mediaUrl ? (
-                    <img src={item.mediaUrl} alt={item.prompt} className="admin-item-img" />
-                  ) : (
-                    <span className="admin-item-type-dot text-dot">T</span>
-                  )}
+            <div className="admin-sections">
+              <div className="admin-section">
+                <h2 className="admin-section-title">Upload Words / Numbers</h2>
+                <p className="admin-section-desc">
+                  Excel file (.xlsx, .xls) — one word or number per row in column A.
+                  Words support fuzzy matching (typos OK). Numbers must match exactly.
+                </p>
+                <button className="admin-upload-btn" onClick={() => excelRef.current?.click()} disabled={loading}>
+                  <span>📊</span> Choose Excel File
+                </button>
+                <input ref={excelRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={handleExcel} />
+              </div>
 
-                  <div className="admin-item-info">
-                    {editIndex === i ? (
-                      <div className="admin-edit-form">
-                        <input
-                          className="admin-edit-input"
-                          value={editLabel}
-                          onChange={(e) => setEditLabel(e.target.value)}
-                          placeholder="Correct answer / label"
-                        />
-                        <input
-                          className="admin-edit-input"
-                          value={editAnswers}
-                          onChange={(e) => setEditAnswers(e.target.value)}
-                          placeholder="Extra accepted answers, comma separated"
-                        />
-                        <div className="admin-edit-actions">
-                          <button className="admin-save-btn" onClick={saveEdit}>Save</button>
-                          <button className="admin-cancel-btn" onClick={() => setEditIndex(null)}>Cancel</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <span className="admin-item-label">{item.prompt}</span>
-                        {item.acceptedAnswers.length > 0 && (
-                          <span className="admin-item-alts">Also: {item.acceptedAnswers.join(", ")}</span>
+              <div className="admin-section">
+                <h2 className="admin-section-title">Upload Images (PNG)</h2>
+                <p className="admin-section-desc">
+                  Upload PNG images. They flash inside the billboard. Filename (without extension) becomes the correct answer.
+                </p>
+                <button className="admin-upload-btn" onClick={() => imgRef.current?.click()} disabled={loading}>
+                  <span>🖼️</span> Choose PNG Images
+                </button>
+                <input ref={imgRef} type="file" accept="image/png,image/webp" multiple style={{ display: "none" }} onChange={handleImages} />
+              </div>
+            </div>
+
+            <div className="admin-items-section">
+              <div className="admin-items-header">
+                <h2 className="admin-section-title">Game Items ({items.length})</h2>
+                {items.length > 0 && <button className="admin-clear-btn" onClick={clearAll}>Clear All</button>}
+              </div>
+              {items.length === 0 ? (
+                <div className="admin-empty"><p>No items yet. Upload an Excel file or PNG images above.</p></div>
+              ) : (
+                <div className="admin-items-list">
+                  {items.map((item, i) => (
+                    <div key={i} className="admin-item-row">
+                      <span className="admin-item-num">{i + 1}</span>
+                      {item.type === "image" && item.mediaUrl
+                        ? <img src={item.mediaUrl} alt={item.prompt} className="admin-item-img" />
+                        : <span className="admin-item-type-dot text-dot">T</span>}
+                      <div className="admin-item-info">
+                        {editIndex === i ? (
+                          <div className="admin-edit-form">
+                            <input className="admin-edit-input" value={editLabel} onChange={e => setEditLabel(e.target.value)} placeholder="Label / correct answer" />
+                            <input className="admin-edit-input" value={editAnswers} onChange={e => setEditAnswers(e.target.value)} placeholder="Extra answers, comma separated" />
+                            <div className="admin-edit-actions">
+                              <button className="admin-save-btn" onClick={saveEdit}>Save</button>
+                              <button className="admin-cancel-btn" onClick={() => setEditIndex(null)}>Cancel</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="admin-item-label">{item.prompt}</span>
+                            {item.acceptedAnswers.length > 0 && <span className="admin-item-alts">Also: {item.acceptedAnswers.join(", ")}</span>}
+                          </>
                         )}
-                      </>
-                    )}
-                  </div>
-
-                  <span className={`admin-item-badge ${item.type}`}>{item.type}</span>
-
-                  <div className="admin-item-btns">
-                    <button className="admin-icon-btn" onClick={() => moveItem(i, -1)} disabled={i === 0} title="Move up">↑</button>
-                    <button className="admin-icon-btn" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} title="Move down">↓</button>
-                    <button className="admin-icon-btn" onClick={() => startEdit(item)} title="Edit label">✏️</button>
-                    <button className="admin-icon-btn danger" onClick={() => removeItem(i)} title="Remove">×</button>
-                  </div>
+                      </div>
+                      <span className={`admin-item-badge ${item.type}`}>{item.type}</span>
+                      <div className="admin-item-btns">
+                        <button className="admin-icon-btn" onClick={() => moveItem(i, -1)} disabled={i === 0}>↑</button>
+                        <button className="admin-icon-btn" onClick={() => moveItem(i, 1)} disabled={i === items.length - 1}>↓</button>
+                        <button className="admin-icon-btn" onClick={() => startEdit(item)}>✏️</button>
+                        <button className="admin-icon-btn danger" onClick={() => removeItem(i)}>×</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
+
+        {activeTab === "yesno" && (
+          <>
+            <div className="admin-stats">
+              <div className={`stat-chip ${ynReady ? "stat-ready" : "stat-warn"}`}>
+                <span className="stat-num">{ynQuestions.length}</span>
+                <span className="stat-label">questions loaded</span>
+              </div>
+              <div className={`stat-chip ${ynReady ? "stat-ready" : "stat-warn"}`}>
+                {ynReady ? "✓ Ready to play" : "Upload questions below"}
+              </div>
+            </div>
+
+            <div className="admin-section" style={{ maxWidth: 520 }}>
+              <h2 className="admin-section-title">Upload Questions</h2>
+              <p className="admin-section-desc">
+                Excel / CSV file — one question per row in column A. Players must answer each question without saying "yes" or "no".
+                Example questions: "Have you traveled abroad?" · "Do you own a pet?"
+              </p>
+              <button className="admin-upload-btn yn-upload-btn" onClick={() => ynCsvRef.current?.click()} disabled={loading}>
+                <span>📋</span> Choose Excel / CSV
+              </button>
+              <input ref={ynCsvRef} type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={handleYnCsv} />
+            </div>
+
+            <div className="admin-items-section">
+              <div className="admin-items-header">
+                <h2 className="admin-section-title">Questions ({ynQuestions.length})</h2>
+                {ynQuestions.length > 0 && <button className="admin-clear-btn" onClick={clearYnQuestions}>Clear All</button>}
+              </div>
+              {ynQuestions.length === 0 ? (
+                <div className="admin-empty"><p>No questions yet. Upload a file above.</p></div>
+              ) : (
+                <div className="admin-items-list">
+                  {ynQuestions.map((q, i) => (
+                    <div key={i} className="admin-item-row">
+                      <span className="admin-item-num">{i + 1}</span>
+                      <span className="admin-item-type-dot text-dot" style={{ background: "rgba(15,80,30,0.3)", color: "#6cff9a" }}>Q</span>
+                      <span className="admin-item-label" style={{ flex: 1 }}>{q}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

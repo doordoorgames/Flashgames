@@ -1,12 +1,14 @@
 interface HomeProps {
   onCreateGame: () => void;
   onJoinGame: () => void;
+  onBack?: () => void;
 }
 
-export default function Home({ onCreateGame, onJoinGame }: HomeProps) {
+export default function Home({ onCreateGame, onJoinGame, onBack }: HomeProps) {
   return (
     <div className="home-screen">
       <div className="home-inner">
+        {onBack && <button className="back-btn" style={{ alignSelf: "flex-start" }} onClick={onBack}>← Games</button>}
         <div className="home-logo">
           <span className="logo-flash">Flash</span>
           <span className="logo-sep">/</span>

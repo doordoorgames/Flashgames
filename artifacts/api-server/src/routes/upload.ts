@@ -11,6 +11,11 @@ import {
   reorderAdminItems,
   clearAdminItems,
 } from "../game/adminStore.js";
+import {
+  getYesNoQuestions,
+  addYesNoQuestions,
+  clearYesNoQuestions,
+} from "../game/yesnoStore.js";
 import type { GameItem } from "../game/gameState.js";
 
 const router = Router();
@@ -120,6 +125,36 @@ router.post("/api/admin/items/label", (req, res) => {
     setAdminItems(items);
   }
   res.json({ items: getAdminItems() });
+});
+
+router.get("/api/admin/yesno-questions", (_req, res) => {
+  res.json({ questions: getYesNoQuestions() });
+});
+
+router.post("/api/admin/yesno-questions/clear", (_req, res) => {
+  clearYesNoQuestions();
+  res.json({ ok: true, questions: [] });
+});
+
+router.post("/api/upload/yesno-csv", upload.single("file"), (req, res) => {
+  if (!req.file) { res.status(400).json({ error: "No file uploaded" }); return; }
+  try {
+    const workbook = XLSX.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    const newQ: string[] = [];
+    for (const row of rows) {
+      if (Array.isArray(row) && row[0] !== undefined) {
+        const val = String(row[0]).trim();
+        if (val && val.toLowerCase() !== "question") newQ.push(val);
+      }
+    }
+    addYesNoQuestions(newQ);
+    res.json({ questions: getYesNoQuestions(), added: newQ.length });
+  } catch {
+    res.status(500).json({ error: "Failed to parse file" });
+  }
 });
 
 router.get("/api/uploads/:filename", (req, res) => {

@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Switch, Route, Router as WouterRouter } from "wouter";
+import ModeSelect from "@/pages/ModeSelect";
 import Home from "@/pages/Home";
 import CreateRoom from "@/pages/CreateRoom";
 import JoinRoom from "@/pages/JoinRoom";
 import Lobby from "@/pages/Lobby";
 import GameView from "@/pages/GameView";
 import AdminPage from "@/pages/AdminPage";
+import YesNoApp from "@/pages/yesno/YesNoApp";
 import { getSocket } from "@/lib/socket";
 import type { Player } from "@/lib/types";
 
 const queryClient = new QueryClient();
 
-type AppPhase = "home" | "create" | "join" | "lobby" | "game";
+type AppMode = "select" | "flash" | "yesno";
+type FlashPhase = "home" | "create" | "join" | "lobby" | "game";
 
 interface GameSession {
   code: string;
@@ -21,30 +24,24 @@ interface GameSession {
   isAdmin: boolean;
 }
 
-function FlashApp() {
-  const [phase, setPhase] = useState<AppPhase>("home");
+function FlashApp({ onBack }: { onBack: () => void }) {
+  const [phase, setPhase] = useState<FlashPhase>("home");
   const [session, setSession] = useState<GameSession | null>(null);
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
   const [itemCount, setItemCount] = useState(0);
 
   useEffect(() => {
     const socket = getSocket();
-
     socket.on("lobby-update", (data: { players: Player[]; adminId: string; itemCount: number }) => {
       setLobbyPlayers(data.players);
       setItemCount(data.itemCount);
     });
-
     socket.on("room-closed", () => {
       alert("The host has left. Room closed.");
       setPhase("home");
       setSession(null);
     });
-
-    socket.on("round-start", () => {
-      setPhase("game");
-    });
-
+    socket.on("round-start", () => setPhase("game"));
     return () => {
       socket.off("lobby-update");
       socket.off("room-closed");
@@ -62,44 +59,22 @@ function FlashApp() {
     getSocket().emit("start-game", { code: session.code });
   };
 
+  if (phase === "home") return <Home onCreateGame={() => setPhase("create")} onJoinGame={() => setPhase("join")} onBack={onBack} />;
+  if (phase === "create") return <CreateRoom onBack={() => setPhase("home")} onRoomCreated={(code, playerId, name) => handleJoined(code, playerId, name, true)} />;
+  if (phase === "join") return <JoinRoom onBack={() => setPhase("home")} onJoined={(code, playerId, name) => handleJoined(code, playerId, name, false)} />;
+  if (phase === "lobby" && session) return <Lobby code={session.code} players={lobbyPlayers} isAdmin={session.isAdmin} playerId={session.playerId} itemCount={itemCount} onStartGame={handleStartGame} />;
+  if (phase === "game" && session) return <GameView code={session.code} playerId={session.playerId} isAdmin={session.isAdmin} playerName={session.playerName} />;
+  return null;
+}
+
+function MainApp() {
+  const [mode, setMode] = useState<AppMode>("select");
+
   return (
     <div className="app-root">
-      {phase === "home" && (
-        <Home
-          onCreateGame={() => setPhase("create")}
-          onJoinGame={() => setPhase("join")}
-        />
-      )}
-      {phase === "create" && (
-        <CreateRoom
-          onBack={() => setPhase("home")}
-          onRoomCreated={(code, playerId, name) => handleJoined(code, playerId, name, true)}
-        />
-      )}
-      {phase === "join" && (
-        <JoinRoom
-          onBack={() => setPhase("home")}
-          onJoined={(code, playerId, name) => handleJoined(code, playerId, name, false)}
-        />
-      )}
-      {phase === "lobby" && session && (
-        <Lobby
-          code={session.code}
-          players={lobbyPlayers}
-          isAdmin={session.isAdmin}
-          playerId={session.playerId}
-          itemCount={itemCount}
-          onStartGame={handleStartGame}
-        />
-      )}
-      {phase === "game" && session && (
-        <GameView
-          code={session.code}
-          playerId={session.playerId}
-          isAdmin={session.isAdmin}
-          playerName={session.playerName}
-        />
-      )}
+      {mode === "select" && <ModeSelect onSelectFlash={() => setMode("flash")} onSelectYesNo={() => setMode("yesno")} />}
+      {mode === "flash" && <FlashApp onBack={() => setMode("select")} />}
+      {mode === "yesno" && <YesNoApp onBack={() => setMode("select")} />}
     </div>
   );
 }
@@ -111,7 +86,7 @@ export default function App() {
         <Switch>
           <Route path="/admin" component={AdminPage} />
           <Route>
-            <FlashApp />
+            <MainApp />
           </Route>
         </Switch>
       </WouterRouter>

@@ -1,0 +1,175 @@
+PROJECT: YES / NO (AELA) – INTERROGATION ROOM UI
+
+GOAL:
+Create a full-screen 1920x1080 responsive web game interface using a dark “mossy green interrogation room” theme based on the provided reference image (two figures at a table under a spotlight). The design must feel tense, minimal, and cinematic, NOT cartoonish.
+
+----------------------------------------
+
+GLOBAL LAYOUT RULES (DO NOT BREAK):
+- Lock content inside a centered 1920x1080 container
+- Left and right overflow areas must ALWAYS be filled with the SAME dark grey as the top sky
+- Top 20% of screen = flat dark grey (#2b2b2b) for URL bar blending
+- All key gameplay UI must be in the TOP HALF (TikTok comments block bottom)
+- No rounded “bubble” UI — use sharp, clean rectangles
+- Maintain minimalist composition — no clutter
+
+----------------------------------------
+
+BACKGROUND DESIGN:
+
+Create layered background:
+
+1) TOP SKY:
+- Solid dark grey (#2b2b2b)
+- Add subtle noise grain animation (very light)
+- Add tiny red "REC ●" blinking in top corner (opacity 0.6)
+
+2) MAIN SCENE (CENTER):
+- Recreate interrogation setup:
+  - Table centered horizontally
+  - Two silhouette figures (left standing, right seated)
+  - Use FLAT VECTOR STYLE (no realism, no faces)
+- Color palette shift:
+  - Replace brown tones with mossy greens:
+    - Deep background: #0f1a14
+    - Mid tone: #1c2b22
+    - Light spill: #2f4f3a
+- Add subtle fog overlay (very light, slow movement)
+
+3) SPOTLIGHT:
+- Overhead cone light
+- Color: desaturated yellow-green (#b7c97a)
+- Soft gradient edges
+- Slight flicker every ~6–10 seconds
+
+----------------------------------------
+
+NEON SYSTEM (IMPORTANT):
+
+Add subtle neon accents to avoid flat look:
+- Thin rectangular frame around gameplay area
+- Color: dim green (#6cff9a at 20% opacity)
+- VERY subtle pulse animation (slow breathing effect)
+
+----------------------------------------
+
+QUESTION PANEL:
+
+- Position: upper-middle of screen
+- Style:
+  - Rectangular, sharp edges
+  - Background: #16231c
+  - Border: thin muted green glow
+- Text:
+  - White (#ffffff)
+  - Clean sans-serif
+- Add very subtle scanline effect (low opacity)
+
+----------------------------------------
+
+GAMEPLAY ELEMENTS:
+
+1) PLAYER TURN INDICATOR:
+- Top center
+- Example:
+  “PLAYER 2 UNDER QUESTIONING”
+- Small, sharp, minimal
+
+2) FORBIDDEN WORDS VISUAL:
+- Faint floating text in background:
+  “YES ✖”   “NO ✖”
+- Low opacity (10–15%)
+- Occasionally glitch flicker
+
+3) MEMORY TRACKER (IMPORTANT FEATURE):
+- Show last 3 answers given by player
+- Small rectangular chips
+- Positioned under question panel
+- If repeated answer:
+  → Flash red
+  → Screen slight shake (quick)
+
+----------------------------------------
+
+PROGRESSION FEEDBACK:
+
+- After 5 questions:
+  → Slight light flicker
+- After 8 questions:
+  → Add subtle red edge pulse
+- At 10 (point achieved):
+  → Bright green flash
+  → Confetti burst (clean, not childish)
+  → Score increments
+
+----------------------------------------
+
+ROOM SYSTEM:
+
+- Create / Join room
+- 5-digit random code
+- Admin panel:
+  - Start game
+  - Upload Excel (.csv)
+  - Next question
+  - End round
+
+----------------------------------------
+
+CSV INPUT FORMAT:
+
+Single column:
+question
+
+Example:
+Have you traveled before?
+Do you own a car?
+Did you eat today?
+
+----------------------------------------
+
+SCORING SYSTEM:
+
+- Each player answers sequentially
+- If player reaches 10 questions WITHOUT:
+  - saying "yes" or "no"
+  - repeating an answer
+→ +1 point
+
+Display scoreboard:
+- Top right
+- Minimal list style
+
+----------------------------------------
+
+ANIMATIONS:
+
+- Keep all animations subtle and smooth
+- No exaggerated cartoon effects
+- Focus on tension:
+  - flickers
+  - pulses
+  - fades
+
+----------------------------------------
+
+FINAL RULE:
+
+Do NOT make it colorful or playful.
+This must feel like:
+- psychological pressure
+- interrogation
+- controlled tension
+
+NOT:
+- party balloons
+- bright gradients
+- childish UI
+
+----------------------------------------
+
+DELIVER:
+- Fully working frontend + basic backend
+- Clean structure
+- Mobile + desktop responsive
+- Maintain exact visual constraints

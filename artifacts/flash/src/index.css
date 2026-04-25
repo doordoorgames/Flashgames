@@ -30,7 +30,10 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at top, #2a1050 0%, #0d0a1a 70%);
+  background:
+    linear-gradient(rgba(18, 6, 38, 0.62), rgba(8, 3, 18, 0.72)),
+    url('/city-bg.png') center/cover no-repeat;
+  background-attachment: fixed;
   padding: 32px 20px;
 }
 
@@ -1171,7 +1174,10 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at top, #1a0d2e 0%, #0a0612 70%);
+  background:
+    linear-gradient(rgba(18, 6, 38, 0.62), rgba(8, 3, 18, 0.72)),
+    url('/city-bg.png') center/cover no-repeat;
+  background-attachment: fixed;
   padding: 32px 20px;
 }
 
@@ -1300,7 +1306,10 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 30%, #0d2017 0%, #070f0a 70%);
+  background:
+    linear-gradient(rgba(18, 6, 38, 0.62), rgba(8, 3, 18, 0.72)),
+    url('/city-bg.png') center/cover no-repeat;
+  background-attachment: fixed;
   padding: 24px 20px;
 }
 

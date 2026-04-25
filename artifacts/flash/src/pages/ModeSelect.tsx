@@ -21,7 +21,7 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo }: ModeSelectP
               </p>
               <div className="mode-card-tags">
                 <span className="mode-tag">9 rounds</span>
-                <span className="mode-tag">600 → 150ms</span>
+                <span className="mode-tag">300 → 100ms</span>
                 <span className="mode-tag">Memory</span>
               </div>
             </div>

@@ -1665,6 +1665,11 @@ html, body, #root {
   color: rgba(108,255,154,0.45);
 }
 
+.yn-turn-counter {
+  opacity: 0.7;
+  font-size: 0.5rem;
+}
+
 .yn-indicator-name {
   font-size: 0.95rem;
   font-weight: 800;
@@ -1964,6 +1969,17 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   gap: 7px;
+}
+
+.yn-next-player-hint {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  margin: 0;
+}
+
+.yn-next-player-hint strong {
+  color: #f5c800;
 }
 
 .yn-end-btn {

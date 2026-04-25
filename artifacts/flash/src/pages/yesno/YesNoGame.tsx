@@ -7,17 +7,23 @@ interface RoundState {
   question: string;
   questionNumber: number;
   leaderboard: YNPlayer[];
+  playerNumber: number;
+  totalPlayers: number;
+  isLastPlayer: boolean;
+  nextPlayerName: string | null;
 }
 
 interface RoundResult {
   passed: boolean;
   answersGiven: number;
   violation: string;
+  isLastPlayer: boolean;
+  nextPlayerName: string | null;
 }
 
 interface Props {
   session: YNSession;
-  gamePhase: "selecting" | "round" | "between-rounds" | "gameover";
+  gamePhase: "round" | "between-rounds" | "gameover";
   roundState: RoundState | null;
   currentQuestion: string;
   currentQuestionNumber: number;
@@ -31,13 +37,13 @@ interface Props {
   onFailPlayer: () => void;
   onEndGame: () => void;
   onReturnToLobby: () => void;
-  onSelectPlayer: (id: string) => void;
+  onNextPlayer: () => void;
 }
 
 export default function YesNoGame({
   session, gamePhase, roundState, currentQuestion, currentQuestionNumber,
   answersThisRound, lastViolation, roundResult, finalLeaderboard, lobbyPlayers,
-  onSubmitAnswer, onNextQuestion, onFailPlayer, onEndGame, onReturnToLobby, onSelectPlayer,
+  onSubmitAnswer, onNextQuestion, onFailPlayer, onEndGame, onReturnToLobby, onNextPlayer,
 }: Props) {
   const [shake, setShake] = useState(false);
   const isHotSeat = roundState?.hotSeatPlayerId === session.playerId;
@@ -73,30 +79,6 @@ export default function YesNoGame({
     );
   }
 
-  if (gamePhase === "selecting") {
-    return (
-      <div className="yn-room-scene yn-selecting">
-        <div className="yn-scene-bg" />
-        <div className="yn-grain" />
-        <div className="yn-spotlight" />
-        <div className="yn-rec"><span className="yn-rec-dot" />REC</div>
-        <div className="yn-select-screen">
-          <p className="yn-select-title">Select next player for the hot seat</p>
-          <div className="yn-player-select">
-            {lobbyPlayers.map(p => (
-              <button key={p.id} className="yn-player-select-btn" onClick={() => onSelectPlayer(p.id)}>
-                <span className="yn-player-icon">🔍</span>
-                <span>{p.name}</span>
-                <span className="yn-score-badge">{p.score} pts</span>
-              </button>
-            ))}
-          </div>
-          <button className="yn-end-btn" onClick={onEndGame}>End Game</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`yn-room-scene ${shake ? "yn-shake" : ""} ${questionCount >= 8 ? "yn-edge-pulse" : ""}`}>
       <div className="yn-scene-bg" />
@@ -124,7 +106,12 @@ export default function YesNoGame({
 
       <div className="yn-top-ui">
         <div className="yn-player-indicator">
-          <span className="yn-indicator-label">UNDER QUESTIONING</span>
+          <span className="yn-indicator-label">
+            UNDER QUESTIONING
+            {roundState && (
+              <span className="yn-turn-counter"> · {roundState.playerNumber}/{roundState.totalPlayers}</span>
+            )}
+          </span>
           <span className="yn-indicator-name">{roundState?.hotSeatPlayerName}</span>
         </div>
 
@@ -222,15 +209,23 @@ export default function YesNoGame({
             </div>
             {session.isAdmin && (
               <div className="yn-between-admin">
-                <p className="yn-select-label" style={{ marginBottom: 8 }}>Select next player:</p>
-                {lobbyPlayers.map(p => (
-                  <button key={p.id} className="yn-player-select-btn" onClick={() => onSelectPlayer(p.id)}>
-                    <span>🔍</span>
-                    <span>{p.name}</span>
-                    <span className="yn-score-badge">{p.score} pts</span>
+                {roundResult?.isLastPlayer ? (
+                  <button className="yn-submit-btn" onClick={onEndGame}>
+                    See Final Results →
                   </button>
-                ))}
-                <button className="yn-end-btn" style={{ marginTop: 10 }} onClick={onEndGame}>End Game</button>
+                ) : (
+                  <>
+                    {roundResult?.nextPlayerName && (
+                      <p className="yn-next-player-hint">
+                        Next up: <strong>{roundResult.nextPlayerName}</strong>
+                      </p>
+                    )}
+                    <button className="yn-submit-btn" onClick={onNextPlayer}>
+                      Next Player →
+                    </button>
+                    <button className="yn-end-btn" style={{ marginTop: 8 }} onClick={onEndGame}>End Game</button>
+                  </>
+                )}
               </div>
             )}
             {!session.isAdmin && (

@@ -32,6 +32,10 @@ interface YNRoundState {
   question: string;
   questionNumber: number;
   leaderboard: YNPlayer[];
+  playerNumber: number;
+  totalPlayers: number;
+  isLastPlayer: boolean;
+  nextPlayerName: string | null;
 }
 
 interface Props {
@@ -42,11 +46,11 @@ export default function YesNoApp({ onBack }: Props) {
   const [phase, setPhase] = useState<YNPhase>("home");
   const [session, setSession] = useState<YNSession | null>(null);
   const [lobbyState, setLobbyState] = useState<YNLobbyState>({ players: [], adminId: "", questionCount: 0 });
-  const [gamePhase, setGamePhase] = useState<"selecting" | "round" | "between-rounds" | "gameover">("selecting");
+  const [gamePhase, setGamePhase] = useState<"round" | "between-rounds" | "gameover">("round");
   const [roundState, setRoundState] = useState<YNRoundState | null>(null);
   const [answersThisRound, setAnswersThisRound] = useState<string[]>([]);
   const [lastViolation, setLastViolation] = useState<{ type: string; answer: string } | null>(null);
-  const [roundResult, setRoundResult] = useState<{ passed: boolean; answersGiven: number; violation: string } | null>(null);
+  const [roundResult, setRoundResult] = useState<{ passed: boolean; answersGiven: number; violation: string; isLastPlayer: boolean; nextPlayerName: string | null } | null>(null);
   const [finalLeaderboard, setFinalLeaderboard] = useState<YNPlayer[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
@@ -85,10 +89,10 @@ export default function YesNoApp({ onBack }: Props) {
       }
     });
 
-    socket.on("yn:round-over", (data: { passed: boolean; violation: string; answersGiven: number; hotSeatPlayerId: string; leaderboard: YNPlayer[] }) => {
-      setRoundResult({ passed: data.passed, answersGiven: data.answersGiven, violation: data.violation });
+    socket.on("yn:round-over", (data: { passed: boolean; violation: string; answersGiven: number; hotSeatPlayerId: string; leaderboard: YNPlayer[]; isLastPlayer: boolean; nextPlayerName: string | null }) => {
+      setRoundResult({ passed: data.passed, answersGiven: data.answersGiven, violation: data.violation, isLastPlayer: data.isLastPlayer, nextPlayerName: data.nextPlayerName });
       setGamePhase("between-rounds");
-      setLobbyState(prev => ({ ...prev, ...{ players: data.leaderboard } }));
+      setLobbyState(prev => ({ ...prev, players: data.leaderboard }));
     });
 
     socket.on("yn:game-over", (data: { leaderboard: YNPlayer[] }) => {
@@ -119,9 +123,14 @@ export default function YesNoApp({ onBack }: Props) {
     setPhase("lobby");
   };
 
-  const startRound = (hotSeatPlayerId: string) => {
+  const startGame = () => {
     if (!session) return;
-    getSocket().emit("yn:start-round", { code: session.code, hotSeatPlayerId });
+    getSocket().emit("yn:start-round", { code: session.code });
+  };
+
+  const nextPlayer = () => {
+    if (!session) return;
+    getSocket().emit("yn:next-player", { code: session.code });
   };
 
   const submitAnswer = (answer: string) => {
@@ -147,7 +156,7 @@ export default function YesNoApp({ onBack }: Props) {
   const returnToLobby = () => {
     if (!session) return;
     getSocket().emit("yn:return-lobby", { code: session.code });
-    setGamePhase("selecting");
+    setGamePhase("round");
   };
 
   if (phase === "game" && session) {
@@ -168,7 +177,7 @@ export default function YesNoApp({ onBack }: Props) {
         onFailPlayer={failPlayer}
         onEndGame={endGame}
         onReturnToLobby={returnToLobby}
-        onSelectPlayer={startRound}
+        onNextPlayer={nextPlayer}
       />
     );
   }
@@ -179,7 +188,7 @@ export default function YesNoApp({ onBack }: Props) {
         session={session}
         lobbyState={lobbyState}
         errorMsg={errorMsg}
-        onStartRound={startRound}
+        onStartGame={startGame}
         onBack={onBack}
       />
     );

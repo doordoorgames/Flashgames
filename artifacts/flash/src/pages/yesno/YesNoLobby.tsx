@@ -10,13 +10,13 @@ interface Props {
   session: YNSession;
   lobbyState: LobbyState;
   errorMsg: string;
-  onStartRound: (hotSeatPlayerId: string) => void;
+  onStartGame: () => void;
   onBack: () => void;
 }
 
-export default function YesNoLobby({ session, lobbyState, errorMsg, onStartRound, onBack }: Props) {
+export default function YesNoLobby({ session, lobbyState, errorMsg, onStartGame, onBack }: Props) {
   const { players, questionCount } = lobbyState;
-  const isReady = questionCount >= 1;
+  const isReady = questionCount >= 1 && players.length >= 1;
 
   return (
     <div className="yn-lobby-screen">
@@ -47,29 +47,21 @@ export default function YesNoLobby({ session, lobbyState, errorMsg, onStartRound
 
         {session.isAdmin ? (
           <div className="yn-lobby-admin">
-            <p className={`yn-q-count ${isReady ? "yn-q-ready" : "yn-q-warn"}`}>
-              {isReady ? `✓ ${questionCount} questions loaded` : `⚠ No questions loaded — upload at /admin`}
+            <p className={`yn-q-count ${questionCount >= 1 ? "yn-q-ready" : "yn-q-warn"}`}>
+              {questionCount >= 1 ? `✓ ${questionCount} questions loaded` : `⚠ No questions loaded — upload at /admin`}
             </p>
-            {players.length >= 1 && isReady ? (
+            {isReady ? (
               <>
-                <p className="yn-select-label">Select who goes in the hot seat:</p>
-                <div className="yn-player-select">
-                  {players.map(p => (
-                    <button
-                      key={p.id}
-                      className="yn-player-select-btn"
-                      onClick={() => onStartRound(p.id)}
-                    >
-                      <span className="yn-player-icon">🔍</span>
-                      <span>{p.name}</span>
-                      {p.id === session.playerId && <span className="yn-me-tag">you</span>}
-                    </button>
-                  ))}
-                </div>
+                <p className="yn-select-label" style={{ marginBottom: 12, opacity: 0.8 }}>
+                  Player order will be randomised automatically.
+                </p>
+                <button className="yn-submit-btn" onClick={onStartGame}>
+                  Start Game →
+                </button>
               </>
             ) : (
               <p className="yn-waiting-hint">
-                {!isReady ? "Upload questions at /admin first." : "Waiting for players to join..."}
+                {questionCount < 1 ? "Upload questions at /admin first." : "Waiting for players to join..."}
               </p>
             )}
           </div>

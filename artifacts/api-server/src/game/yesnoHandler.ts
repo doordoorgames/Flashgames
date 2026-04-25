@@ -18,6 +18,8 @@ interface YesNoRoom {
   currentQuestionIndex: number;
   answersThisRound: string[];
   questionCount: number;
+  playerQueue: string[];
+  currentQueueIndex: number;
 }
 
 const yesnoRooms = new Map<string, YesNoRoom>();
@@ -80,6 +82,62 @@ function getLeaderboard(room: YesNoRoom): YesNoPlayer[] {
   return Array.from(room.players.values()).sort((a, b) => b.score - a.score);
 }
 
+function getNextPlayerName(room: YesNoRoom): string | null {
+  const nextIndex = room.currentQueueIndex + 1;
+  if (nextIndex >= room.playerQueue.length) return null;
+  const nextId = room.playerQueue[nextIndex];
+  return room.players.get(nextId)?.name ?? null;
+}
+
+function startPlayerRound(io: Server, code: string): void {
+  const room = yesnoRooms.get("YN" + code);
+  if (!room) return;
+
+  const questions = getYesNoQuestions();
+  if (questions.length === 0) {
+    io.to("YN" + code).emit("yn:error", { message: "No questions uploaded. Go to /admin to upload questions." });
+    return;
+  }
+
+  const hotSeatPlayerId = room.playerQueue[room.currentQueueIndex];
+  const hotSeatPlayer = room.players.get(hotSeatPlayerId);
+
+  if (!hotSeatPlayer) {
+    room.currentQueueIndex++;
+    if (room.currentQueueIndex >= room.playerQueue.length) {
+      room.phase = "gameover";
+      yesnoRooms.set("YN" + code, room);
+      io.to("YN" + code).emit("yn:game-over", { leaderboard: getLeaderboard(room) });
+      return;
+    }
+    startPlayerRound(io, code);
+    return;
+  }
+
+  room.phase = "round";
+  room.questions = [...questions].sort(() => Math.random() - 0.5);
+  room.hotSeatPlayerId = hotSeatPlayerId;
+  room.currentQuestionIndex = 0;
+  room.answersThisRound = [];
+  room.questionCount = 0;
+  yesnoRooms.set("YN" + code, room);
+
+  const isLastPlayer = room.currentQueueIndex >= room.playerQueue.length - 1;
+  const nextPlayerName = getNextPlayerName(room);
+
+  io.to("YN" + code).emit("yn:round-started", {
+    hotSeatPlayerId,
+    hotSeatPlayerName: hotSeatPlayer.name,
+    question: room.questions[0],
+    questionNumber: 1,
+    leaderboard: getLeaderboard(room),
+    playerNumber: room.currentQueueIndex + 1,
+    totalPlayers: room.playerQueue.length,
+    isLastPlayer,
+    nextPlayerName,
+  });
+}
+
 export function setupYesNoHandlers(io: Server): void {
   io.on("connection", (socket: Socket) => {
 
@@ -96,6 +154,8 @@ export function setupYesNoHandlers(io: Server): void {
         currentQuestionIndex: 0,
         answersThisRound: [],
         questionCount: 0,
+        playerQueue: [],
+        currentQueueIndex: 0,
       };
       yesnoRooms.set("YN" + code, room);
       socket.join("YN" + code);
@@ -114,31 +174,35 @@ export function setupYesNoHandlers(io: Server): void {
       emitLobbyUpdate(io, data.code);
     });
 
-    socket.on("yn:start-round", (data: { code: string; hotSeatPlayerId: string }) => {
+    socket.on("yn:start-round", (data: { code: string }) => {
       const room = yesnoRooms.get("YN" + data.code);
       if (!room || socket.id !== room.adminId) return;
-      const questions = getYesNoQuestions();
-      if (questions.length === 0) {
-        io.to("YN" + data.code).emit("yn:error", { message: "No questions uploaded. Go to /admin to upload questions." });
+
+      const playerIds = Array.from(room.players.keys());
+      const shuffled = [...playerIds].sort(() => Math.random() - 0.5);
+      room.playerQueue = shuffled;
+      room.currentQueueIndex = 0;
+      yesnoRooms.set("YN" + data.code, room);
+
+      startPlayerRound(io, data.code);
+    });
+
+    socket.on("yn:next-player", (data: { code: string }) => {
+      const room = yesnoRooms.get("YN" + data.code);
+      if (!room || socket.id !== room.adminId) return;
+      if (room.phase !== "between-rounds") return;
+
+      room.currentQueueIndex++;
+      yesnoRooms.set("YN" + data.code, room);
+
+      if (room.currentQueueIndex >= room.playerQueue.length) {
+        room.phase = "gameover";
+        yesnoRooms.set("YN" + data.code, room);
+        io.to("YN" + data.code).emit("yn:game-over", { leaderboard: getLeaderboard(room) });
         return;
       }
-      const hotSeatPlayer = room.players.get(data.hotSeatPlayerId);
-      if (!hotSeatPlayer) return;
 
-      room.phase = "round";
-      room.questions = [...questions].sort(() => Math.random() - 0.5);
-      room.hotSeatPlayerId = data.hotSeatPlayerId;
-      room.currentQuestionIndex = 0;
-      room.answersThisRound = [];
-      room.questionCount = 0;
-
-      io.to("YN" + data.code).emit("yn:round-started", {
-        hotSeatPlayerId: data.hotSeatPlayerId,
-        hotSeatPlayerName: hotSeatPlayer.name,
-        question: room.questions[0],
-        questionNumber: 1,
-        leaderboard: getLeaderboard(room),
-      });
+      startPlayerRound(io, data.code);
     });
 
     socket.on("yn:submit-answer", (data: { code: string; answer: string }) => {
@@ -153,6 +217,9 @@ export function setupYesNoHandlers(io: Server): void {
 
       if (violation) {
         room.phase = "between-rounds";
+        yesnoRooms.set("YN" + data.code, room);
+        const isLastPlayer = room.currentQueueIndex >= room.playerQueue.length - 1;
+        const nextPlayerName = getNextPlayerName(room);
         io.to("YN" + data.code).emit("yn:answer-result", {
           answer,
           violation,
@@ -165,12 +232,15 @@ export function setupYesNoHandlers(io: Server): void {
           answersGiven: room.questionCount,
           hotSeatPlayerId: room.hotSeatPlayerId,
           leaderboard: getLeaderboard(room),
+          isLastPlayer,
+          nextPlayerName,
         });
         return;
       }
 
       room.answersThisRound.push(answer);
       room.questionCount++;
+      yesnoRooms.set("YN" + data.code, room);
 
       io.to("YN" + data.code).emit("yn:answer-result", {
         answer,
@@ -186,12 +256,17 @@ export function setupYesNoHandlers(io: Server): void {
           room.players.set(room.hotSeatPlayerId!, player);
         }
         room.phase = "between-rounds";
+        yesnoRooms.set("YN" + data.code, room);
+        const isLastPlayer = room.currentQueueIndex >= room.playerQueue.length - 1;
+        const nextPlayerName = getNextPlayerName(room);
         io.to("YN" + data.code).emit("yn:round-over", {
           passed: true,
           violation: null,
           answersGiven: 10,
           hotSeatPlayerId: room.hotSeatPlayerId,
           leaderboard: getLeaderboard(room),
+          isLastPlayer,
+          nextPlayerName,
         });
       }
     });
@@ -203,6 +278,7 @@ export function setupYesNoHandlers(io: Server): void {
 
       room.currentQuestionIndex = (room.currentQuestionIndex + 1) % room.questions.length;
       const q = room.questions[room.currentQuestionIndex];
+      yesnoRooms.set("YN" + data.code, room);
       io.to("YN" + data.code).emit("yn:question-changed", {
         question: q,
         questionNumber: room.questionCount + 1,
@@ -214,12 +290,17 @@ export function setupYesNoHandlers(io: Server): void {
       if (!room || socket.id !== room.adminId) return;
       if (room.phase !== "round") return;
       room.phase = "between-rounds";
+      yesnoRooms.set("YN" + data.code, room);
+      const isLastPlayer = room.currentQueueIndex >= room.playerQueue.length - 1;
+      const nextPlayerName = getNextPlayerName(room);
       io.to("YN" + data.code).emit("yn:round-over", {
         passed: false,
         violation: "manual",
         answersGiven: room.questionCount,
         hotSeatPlayerId: room.hotSeatPlayerId,
         leaderboard: getLeaderboard(room),
+        isLastPlayer,
+        nextPlayerName,
       });
     });
 
@@ -227,6 +308,7 @@ export function setupYesNoHandlers(io: Server): void {
       const room = yesnoRooms.get("YN" + data.code);
       if (!room || socket.id !== room.adminId) return;
       room.phase = "gameover";
+      yesnoRooms.set("YN" + data.code, room);
       io.to("YN" + data.code).emit("yn:game-over", {
         leaderboard: getLeaderboard(room),
       });
@@ -239,6 +321,9 @@ export function setupYesNoHandlers(io: Server): void {
       room.hotSeatPlayerId = null;
       room.answersThisRound = [];
       room.questionCount = 0;
+      room.playerQueue = [];
+      room.currentQueueIndex = 0;
+      yesnoRooms.set("YN" + data.code, room);
       emitLobbyUpdate(io, data.code);
     });
 

@@ -428,19 +428,17 @@ html, body, #root {
 }
 
 /* Billboard content overlay — positioned over the white rectangle in the image */
-/* Image is 1080×1920. White rectangle ≈ top 25%–53%, left 10%–90% */
+/* New image: billboard panel ≈ top 17%–48%, left 5%–95% */
 .bb-overlay {
   position: absolute;
   z-index: 20;
-  /* These values overlay the white billboard rectangle */
-  top: 24.5%;
-  left: 9%;
-  right: 9%;
-  height: 28%;
+  top: 17%;
+  left: 5%;
+  right: 5%;
+  height: 31%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 .bb-center {
@@ -523,7 +521,6 @@ html, body, #root {
   line-height: 1;
   word-break: break-word;
   padding: 0 8px;
-  transform: translateY(270px);
   text-shadow: 3.5px 3.5px 0px #ffffff;
 }
 

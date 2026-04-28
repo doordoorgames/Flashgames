@@ -35,7 +35,7 @@ function generateCode(): string {
 function generateAction(): BombAction {
   const roll = Math.random();
   if (roll < 0.33) {
-    return { type: "tap", required: 10 };
+    return { type: "tap", required: 10 + Math.floor(Math.random() * 16) };
   } else if (roll < 0.66) {
     const dirs = ["up", "down", "left", "right"];
     const pattern = Array.from({ length: 4 }, () => dirs[Math.floor(Math.random() * dirs.length)]);

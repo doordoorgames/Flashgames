@@ -58,7 +58,6 @@ function TapAction({ required, onComplete }: { required: number; onComplete: () 
       <button
         className={`bomb-tap-btn ${flash ? "bomb-tap-flash" : ""}`}
         onPointerDown={handleTap}
-        onTouchStart={e => { e.preventDefault(); handleTap(); }}
       >
         TAP!
       </button>

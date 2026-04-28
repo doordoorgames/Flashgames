@@ -69,7 +69,10 @@ function launchRound(io: Server, code: string): void {
   const ids = Array.from(room.players.keys());
   const firstHolder = ids[Math.floor(Math.random() * ids.length)];
   const action = generateAction();
-  const timerMs = (20 + Math.floor(Math.random() * 26)) * 1000;
+  const playerCount = room.players.size;
+  const minS = 75 + (playerCount - 2) * 30;
+  const maxS = 105 + (playerCount - 2) * 30;
+  const timerMs = (minS + Math.floor(Math.random() * (maxS - minS + 1))) * 1000;
 
   room.phase = "playing";
   room.bombHolderId = firstHolder;

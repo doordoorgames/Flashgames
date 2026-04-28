@@ -1,0 +1,81 @@
+You are a senior full-stack developer. Build a real-time multiplayer web game called "The Bomb" (Hot Potato style) optimized for mobile browsers.
+
+TECH STACK:
+
+- Frontend: React (with Vite)
+- Backend: Node.js + Express
+- Real-time: Socket.io
+- State: In-memory (no database needed for MVP)
+
+CORE GAMEPLAY:
+
+- 4–10 players join a room via a room code
+- One player is randomly assigned the bomb
+- A hidden timer (20–45 seconds) starts when the round begins
+- Players must pass the bomb before it explodes
+- To pass the bomb, the player must complete a quick action (see below)
+- When the timer ends, the player holding the bomb loses
+
+ACTIONS (randomly assigned each time a player receives the bomb):
+Implement at least 4:
+
+1. Tap button rapidly (e.g. 10 taps)
+2. Swipe pattern (simple directional sequence)
+3. Input a 8 digit code 4 by 4 (numeral keyboard)
+
+GAME RULES:
+
+- Player must complete the action to pass the bomb
+- If they fail, they retry immediately (no elimination)
+- Cannot pass the bomb back to the previous player
+- Add small delay (0.5–1 second) on failed action
+- After passing, the next player immediately receives a new random action
+
+REAL-TIME FEATURES:
+
+- Show current bomb holder to all players
+- Smooth transitions when bomb is passed
+- Display player list in room
+- Show visual and audio feedback (shake, pulse, ticking sound)
+
+TIMER LOGIC:
+
+- Timer is controlled on the server
+- Timer is hidden from players
+- Server emits explosion event when time is up
+- Game resets after explosion
+
+UI REQUIREMENTS (mobile-first):
+
+- Large central action area
+- Clear instruction text (e.g. “Tap 10 times!”)
+- Visual feedback on success/failure
+- Bomb animation (pulse or shake)
+- Simple join/create room screen
+
+FILE STRUCTURE:
+
+- /client (React app)
+- /server (Node + Socket.io)
+
+DELIVER:
+
+1. Full backend code (Express + Socket.io server)
+2. Frontend React app with main components:
+   - Lobby (create/join room)
+   - Game room
+   - Action component
+3. Socket events (join, start game, pass bomb, explode)
+4. Clear instructions to run both frontend and backend in Replit
+
+EXTRA (if possible):
+
+- Add sound effects (tick, explosion)
+- Add simple animations (CSS or framer-motion)
+- Keep code clean and commented
+
+IMPORTANT:
+
+- Prioritize working MVP over perfection
+- Keep logic simple and responsive
+- Make it playable with multiple browser tabs for testing

@@ -1,14 +1,15 @@
 interface ModeSelectProps {
   onSelectFlash: () => void;
   onSelectYesNo: () => void;
+  onSelectBomb: () => void;
 }
 
-export default function ModeSelect({ onSelectFlash, onSelectYesNo }: ModeSelectProps) {
+export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb }: ModeSelectProps) {
   return (
     <div className="mode-screen">
       <div className="mode-inner">
         <h1 className="mode-title">Choose Your Game</h1>
-        <p className="mode-sub">Two games, one room code system</p>
+        <p className="mode-sub">Three games, one room code system</p>
 
         <div className="mode-cards">
           <button className="mode-card mode-card-flash" onClick={onSelectFlash}>
@@ -39,6 +40,22 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo }: ModeSelectP
                 <span className="mode-tag yn-tag">Interrogation</span>
                 <span className="mode-tag yn-tag">10 questions</span>
                 <span className="mode-tag yn-tag">Under pressure</span>
+              </div>
+            </div>
+          </button>
+
+          <button className="mode-card mode-card-bomb" onClick={onSelectBomb}>
+            <div className="mode-card-icon">💣</div>
+            <div className="mode-card-content">
+              <span className="mode-card-name">The Bomb</span>
+              <span className="mode-card-ar">القنبلة</span>
+              <p className="mode-card-desc">
+                Pass the bomb before it explodes! Complete the challenge fast or boom — you lose.
+              </p>
+              <div className="mode-card-tags">
+                <span className="mode-tag bomb-tag">Hot potato</span>
+                <span className="mode-tag bomb-tag">Hidden timer</span>
+                <span className="mode-tag bomb-tag">Challenges</span>
               </div>
             </div>
           </button>

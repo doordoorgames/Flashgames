@@ -1250,6 +1250,13 @@ html, body, #root {
 .mode-card-yesno { border-color: rgba(50,120,60,0.3); background: rgba(10,25,14,0.85); }
 .mode-card-yesno:hover { border-color: rgba(108,255,154,0.4); box-shadow: 0 4px 28px rgba(20,100,40,0.25); }
 
+.mode-card-bomb { border-color: rgba(200,80,0,0.3); background: rgba(25,10,5,0.9); }
+.mode-card-bomb:hover { border-color: rgba(255,120,20,0.55); box-shadow: 0 4px 28px rgba(200,80,0,0.25); }
+.mode-card-bomb .mode-card-name { color: #ffb347; }
+.mode-card-bomb .mode-card-ar { color: rgba(255,150,50,0.5); }
+.mode-card-bomb .mode-card-desc { color: rgba(220,150,100,0.6); }
+.bomb-tag { background: rgba(200,80,0,0.15) !important; border-color: rgba(200,100,0,0.3) !important; color: #ffb347 !important; }
+
 .mode-card-icon { font-size: 2.4rem; }
 
 .mode-card-content { display: flex; flex-direction: column; gap: 4px; }
@@ -2257,3 +2264,424 @@ html, body, #root {
   width: 100%;
 }
 .yn-role-swap-note strong { color: #f5c800; }
+
+/* ═══════════════════════════════════════════
+   THE BOMB GAME STYLES
+═══════════════════════════════════════════ */
+
+/* Entry screen */
+.bomb-entry-screen {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 20%, #2a0d00 0%, #0d0500 70%);
+  padding: 24px 20px;
+}
+.bomb-entry-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(30,10,5,0.96);
+  border: 1px solid rgba(200,80,0,0.28);
+  border-radius: 20px;
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.bomb-entry-icon { font-size: 3rem; text-align: center; display: block; }
+.bomb-entry-header { display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.bomb-entry-title { font-size: 1.8rem; font-weight: 900; color: #ffb347; text-align: center; }
+.bomb-entry-desc { font-size: 0.85rem; color: rgba(220,150,100,0.65); line-height: 1.5; text-align: center; margin: 0; }
+.bomb-entry-btns { display: flex; flex-direction: column; gap: 10px; }
+.bomb-choice-btn {
+  padding: 14px;
+  background: rgba(40,15,5,0.8);
+  border: 1px solid rgba(200,80,0,0.3);
+  border-radius: 10px;
+  color: #ffb347;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bomb-choice-primary {
+  background: linear-gradient(135deg, #7a2d00, #c24400);
+  border-color: rgba(255,120,20,0.5);
+  color: #fff;
+}
+.bomb-input {
+  width: 100%;
+  padding: 13px 16px;
+  background: rgba(20,8,2,0.8);
+  border: 1px solid rgba(200,80,0,0.3);
+  border-radius: 10px;
+  color: #ffb347;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+}
+.bomb-input::placeholder { color: rgba(200,120,60,0.4); }
+.bomb-input:focus { border-color: rgba(255,120,20,0.6); }
+.bomb-code-input { letter-spacing: 0.3em; text-align: center; font-size: 1.4rem; font-weight: 900; }
+.bomb-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #7a2d00, #c24400);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.bomb-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.bomb-error-banner { background: rgba(180,20,20,0.2); border: 1px solid rgba(200,50,50,0.3); border-radius: 8px; padding: 10px 14px; color: #f87171; font-size: 0.85rem; text-align: center; }
+
+/* Lobby */
+.bomb-lobby-screen {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 20%, #2a0d00 0%, #0d0500 70%);
+  padding: 24px 20px;
+}
+.bomb-lobby-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(30,10,5,0.96);
+  border: 1px solid rgba(200,80,0,0.28);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.bomb-lobby-brand { font-size: 1.4rem; font-weight: 900; color: #ffb347; text-align: center; }
+.bomb-room-code .rcd-label { color: rgba(200,120,60,0.55); }
+.bomb-room-code .rcd-code { color: #ff8c42; }
+.bomb-room-code .rcd-hint { color: rgba(200,120,60,0.4); }
+.bomb-me-tag { font-size: 0.65rem; background: rgba(200,80,0,0.2); border: 1px solid rgba(200,100,0,0.3); border-radius: 4px; padding: 1px 5px; color: #ffb347; }
+.bomb-loss-tag { font-size: 0.65rem; color: #f87171; }
+.bomb-waiting-hint { color: rgba(200,150,100,0.6); font-size: 0.88rem; text-align: center; }
+.bomb-lobby-admin { display: flex; flex-direction: column; gap: 10px; }
+
+/* Game screen */
+.bomb-game-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse at 50% 30%, #1a0800 0%, #080200 100%);
+  transition: background 0.5s;
+  overflow: hidden;
+}
+.bomb-holder-bg {
+  background: radial-gradient(ellipse at 50% 40%, #3d0e00 0%, #1a0400 60%, #080200 100%);
+}
+
+/* Top player strip */
+.bomb-top-bar {
+  padding: 12px 16px 8px;
+  background: rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+.bomb-player-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.bomb-player-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(30,10,5,0.7);
+  border: 1px solid rgba(150,60,0,0.25);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: rgba(220,150,100,0.7);
+  transition: all 0.3s;
+}
+.bomb-pill-active {
+  background: rgba(180,60,0,0.3);
+  border-color: rgba(255,120,20,0.6);
+  color: #ffb347;
+  box-shadow: 0 0 14px rgba(255,100,0,0.3);
+  animation: bomb-pill-pulse 0.8s ease-in-out infinite alternate;
+}
+.bomb-pill-me { border-color: rgba(255,180,80,0.4); }
+.bomb-pill-icon { font-size: 0.9rem; }
+.bomb-pill-losses { font-size: 0.65rem; color: #f87171; margin-left: 2px; }
+
+@keyframes bomb-pill-pulse {
+  0% { box-shadow: 0 0 8px rgba(255,100,0,0.25); }
+  100% { box-shadow: 0 0 20px rgba(255,100,0,0.55); }
+}
+
+/* Holder zone */
+.bomb-holder-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 20px 32px;
+  gap: 20px;
+  overflow-y: auto;
+}
+.bomb-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.bomb-body {
+  font-size: 4.5rem;
+  animation: bomb-shake 0.4s ease-in-out infinite alternate, bomb-grow 1.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 20px rgba(255,100,0,0.7));
+  line-height: 1;
+}
+@keyframes bomb-shake {
+  0% { transform: rotate(-5deg) scale(1); }
+  100% { transform: rotate(5deg) scale(1.06); }
+}
+@keyframes bomb-grow {
+  0% { filter: drop-shadow(0 0 10px rgba(255,80,0,0.4)); }
+  100% { filter: drop-shadow(0 0 30px rgba(255,120,0,0.9)); }
+}
+.bomb-fuse-text {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #ff6b35;
+  text-transform: uppercase;
+  animation: fuse-flicker 0.5s ease-in-out infinite alternate;
+}
+@keyframes fuse-flicker {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; color: #ffb347; }
+}
+
+/* Action zone */
+.bomb-action-zone {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.bomb-action-label {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #ffb347;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+/* TapAction */
+.bomb-action-tap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.bomb-tap-progress { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.bomb-tap-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(200,80,0,0.2);
+  border: 2px solid rgba(200,80,0,0.35);
+  transition: background 0.1s, border-color 0.1s;
+}
+.bomb-tap-dot.filled { background: #ff6b35; border-color: #ffb347; box-shadow: 0 0 6px rgba(255,100,0,0.5); }
+.bomb-tap-btn {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #c24400, #7a2d00);
+  border: 3px solid rgba(255,120,30,0.6);
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(255,80,0,0.4), inset 0 0 20px rgba(255,120,0,0.15);
+  transition: transform 0.05s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+.bomb-tap-btn:active, .bomb-tap-flash { transform: scale(0.92); box-shadow: 0 0 50px rgba(255,120,0,0.7); }
+
+/* SwipeAction */
+.bomb-action-swipe { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.bomb-swipe-sequence {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.bomb-swipe-arrow {
+  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.bomb-swipe-arrow.current { color: #ffb347; background: rgba(200,80,0,0.25); border: 2px solid rgba(255,120,20,0.6); animation: arrow-pulse 0.5s ease-in-out infinite alternate; }
+.bomb-swipe-arrow.done { color: rgba(100,200,100,0.8); background: rgba(0,100,0,0.2); border: 2px solid rgba(0,150,50,0.3); }
+.bomb-swipe-arrow.pending { color: rgba(200,100,50,0.3); border: 2px solid rgba(200,80,0,0.15); }
+@keyframes arrow-pulse { 0% { box-shadow: 0 0 6px rgba(255,100,0,0.3); } 100% { box-shadow: 0 0 16px rgba(255,100,0,0.7); } }
+
+.bomb-swipe-pad {
+  width: 100%;
+  max-width: 280px;
+  background: rgba(25,8,2,0.8);
+  border: 1px solid rgba(200,80,0,0.3);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  touch-action: none;
+}
+.bomb-swipe-fail { border-color: rgba(220,50,50,0.6); animation: bomb-shake-fail 0.4s; }
+@keyframes bomb-shake-fail { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.bomb-swipe-hint { font-size: 0.78rem; color: rgba(220,150,100,0.65); text-align: center; }
+.bomb-swipe-arrows-big { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bomb-dir-row { display: flex; align-items: center; gap: 4px; }
+.bomb-dir-center { width: 48px; height: 48px; }
+.bomb-dir-btn {
+  width: 58px; height: 58px;
+  background: rgba(200,80,0,0.15);
+  border: 1.5px solid rgba(200,80,0,0.35);
+  border-radius: 10px;
+  color: #ffb347;
+  font-size: 1.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+}
+.bomb-dir-btn:active { background: rgba(200,80,0,0.4); transform: scale(0.93); }
+
+/* CodeAction */
+.bomb-action-code { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.bomb-code-display-row { text-align: center; }
+.bomb-code-target {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #ff6b35;
+  font-family: 'Courier New', monospace;
+}
+.bomb-code-entered {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: #ffb347;
+  font-family: 'Courier New', monospace;
+  min-height: 2.5rem;
+  transition: color 0.2s;
+}
+.bomb-code-fail { color: #f87171; animation: bomb-shake-fail 0.4s; }
+.bomb-code-sep { margin: 0 4px; }
+.bomb-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 280px;
+}
+.bomb-numpad-btn {
+  padding: 18px 0;
+  background: rgba(40,15,5,0.8);
+  border: 1px solid rgba(200,80,0,0.3);
+  border-radius: 10px;
+  color: #ffb347;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+.bomb-numpad-btn:active { background: rgba(200,80,0,0.3); }
+.bomb-numpad-del { color: #f87171; font-size: 1.1rem; }
+.bomb-code-err { font-size: 0.78rem; color: #f87171; text-align: center; margin: 0; }
+
+/* Watching zone */
+.bomb-watching-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 20px;
+}
+.bomb-watch-visual {
+  font-size: 5rem;
+  animation: bomb-watch-pulse 1.2s ease-in-out infinite alternate;
+  filter: grayscale(0.5) opacity(0.7);
+}
+@keyframes bomb-watch-pulse { 0% { transform: scale(0.95); } 100% { transform: scale(1.05); } }
+.bomb-watch-name { font-size: 1.6rem; font-weight: 900; color: #ffb347; margin: 0; text-align: center; }
+.bomb-watch-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(220,150,100,0.5); margin: 0; }
+.bomb-watching-players { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.bomb-watch-pill {
+  padding: 5px 12px;
+  background: rgba(30,10,5,0.7);
+  border: 1px solid rgba(150,60,0,0.2);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: rgba(220,150,100,0.6);
+}
+.bomb-watch-me { border-color: rgba(255,150,50,0.35); color: rgba(255,180,100,0.9); }
+
+/* Explosion screen */
+.bomb-explode-screen {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, #3d0000 0%, #0d0000 70%);
+  padding: 24px 20px;
+  animation: explode-flash 0.3s ease-out;
+}
+@keyframes explode-flash { 0% { background: #ff4500; } 100% { background: radial-gradient(ellipse at 50% 40%, #3d0000 0%, #0d0000 70%); } }
+.bomb-explode-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(30,5,5,0.97);
+  border: 1px solid rgba(200,50,50,0.35);
+  border-radius: 20px;
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+.bomb-explode-icon { font-size: 4rem; animation: explode-icon 0.6s ease-out; }
+@keyframes explode-icon { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.bomb-explode-title { font-size: 1.6rem; font-weight: 900; color: #ff6b35; margin: 0; }
+.bomb-explode-sub { font-size: 0.9rem; color: rgba(220,150,130,0.7); margin: 0; }
+.bomb-explode-sub strong { color: #ffb347; }
+.bomb-score-list { display: flex; flex-direction: column; gap: 8px; }
+.bomb-score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(40,10,5,0.7);
+  border: 1px solid rgba(150,50,0,0.2);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: rgba(220,150,100,0.8);
+}
+.bomb-score-me { border-color: rgba(255,150,50,0.4); color: #ffb347; }
+.bomb-score-loser { border-color: rgba(200,50,50,0.45); background: rgba(60,10,10,0.8); }
+.bomb-score-name { flex: 1; text-align: left; }
+.bomb-score-losses { font-size: 0.82rem; color: #f87171; font-weight: 700; }

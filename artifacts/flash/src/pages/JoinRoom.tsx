@@ -14,16 +14,15 @@ export default function JoinRoom({ onBack, onJoined }: JoinRoomProps) {
 
   const handleJoin = () => {
     if (!name.trim()) { setError("Enter your name"); return; }
-    if (code.length !== 5) { setError("Enter the 5-digit room code"); return; }
+    if (code.trim().length !== 5) { setError("Enter the 5-digit room code"); return; }
     setLoading(true);
+    setError("");
     const socket = getSocket();
-    socket.emit("join-room", { code, playerName: name.trim() }, (res: { success: boolean; error?: string; playerId?: string }) => {
+    socket.timeout(8000).emit("join-room", { code: code.trim(), playerName: name.trim() }, (err: Error | null, res: { success: boolean; error?: string; playerId?: string }) => {
       setLoading(false);
-      if (!res.success) {
-        setError(res.error || "Room not found");
-      } else {
-        onJoined(code, res.playerId!, name.trim());
-      }
+      if (err) { setError("Connection timed out. Check your internet and try again."); return; }
+      if (!res.success) { setError(res.error || "Room not found. Double-check the code."); return; }
+      onJoined(code.trim(), res.playerId!, name.trim());
     });
   };
 

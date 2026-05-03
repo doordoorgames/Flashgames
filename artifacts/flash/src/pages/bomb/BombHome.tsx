@@ -18,20 +18,26 @@ export default function BombHome({ onBack, onJoined }: Props) {
   const handleCreate = () => {
     if (!name.trim()) { setError("Enter your name"); return; }
     setLoading(true);
-    getSocket().emit("bomb:create-room", { playerName: name.trim() }, (res: { code: string; playerId: string }) => {
+    setError("");
+    const socket = getSocket();
+    socket.timeout(8000).emit("bomb:create-room", { playerName: name.trim() }, (err: Error | null, res: { code: string; playerId: string }) => {
       setLoading(false);
+      if (err) { setError("Connection timed out. Check your internet and try again."); return; }
       onJoined(res.code, res.playerId, name.trim(), true);
     });
   };
 
   const handleJoin = () => {
     if (!name.trim()) { setError("Enter your name"); return; }
-    if (code.length !== 5) { setError("Enter 5-digit room code"); return; }
+    if (code.trim().length !== 5) { setError("Enter the 5-digit room code"); return; }
     setLoading(true);
-    getSocket().emit("bomb:join-room", { code, playerName: name.trim() }, (res: { success: boolean; playerId?: string; error?: string }) => {
+    setError("");
+    const socket = getSocket();
+    socket.timeout(8000).emit("bomb:join-room", { code: code.trim(), playerName: name.trim() }, (err: Error | null, res: { success: boolean; playerId?: string; error?: string }) => {
       setLoading(false);
-      if (!res.success) { setError(res.error || "Room not found"); return; }
-      onJoined(code, res.playerId!, name.trim(), false);
+      if (err) { setError("Connection timed out. Check your internet and try again."); return; }
+      if (!res.success) { setError(res.error || "Room not found. Double-check the code."); return; }
+      onJoined(code.trim(), res.playerId!, name.trim(), false);
     });
   };
 

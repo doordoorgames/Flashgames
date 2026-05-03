@@ -14,14 +14,13 @@ export default function CreateRoom({ onBack, onRoomCreated }: CreateRoomProps) {
   const handleCreate = () => {
     if (!name.trim()) { setError("Enter your name"); return; }
     setLoading(true);
+    setError("");
     const socket = getSocket();
-    socket.emit("create-room", { playerName: name.trim() }, (res: { code: string; playerId: string; error?: string }) => {
+    socket.timeout(8000).emit("create-room", { playerName: name.trim() }, (err: Error | null, res: { code: string; playerId: string; error?: string }) => {
       setLoading(false);
-      if (res.error) {
-        setError(res.error);
-      } else {
-        onRoomCreated(res.code, res.playerId, name.trim());
-      }
+      if (err) { setError("Connection timed out. Check your internet and try again."); return; }
+      if (res.error) { setError(res.error); return; }
+      onRoomCreated(res.code, res.playerId, name.trim());
     });
   };
 

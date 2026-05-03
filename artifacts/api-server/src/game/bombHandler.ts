@@ -9,7 +9,7 @@ interface BombPlayer {
 
 interface TapAction { type: "tap"; required: number; }
 interface SwipeAction { type: "swipe"; pattern: string[]; }
-interface CodeAction { type: "code"; digits: string; }
+interface CodeAction { type: "code"; digits: string; direction: "ltr" | "rtl"; }
 type BombAction = TapAction | SwipeAction | CodeAction;
 
 interface BombRoom {
@@ -35,14 +35,15 @@ function generateCode(): string {
 function generateAction(): BombAction {
   const roll = Math.random();
   if (roll < 0.33) {
-    return { type: "tap", required: 10 + Math.floor(Math.random() * 16) };
+    return { type: "tap", required: 12 + Math.floor(Math.random() * 15) };
   } else if (roll < 0.66) {
     const dirs = ["up", "down", "left", "right"];
-    const pattern = Array.from({ length: 4 }, () => dirs[Math.floor(Math.random() * dirs.length)]);
+    const pattern = Array.from({ length: 10 }, () => dirs[Math.floor(Math.random() * dirs.length)]);
     return { type: "swipe", pattern };
   } else {
     const digits = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join("");
-    return { type: "code", digits };
+    const direction: "ltr" | "rtl" = Math.random() < 0.5 ? "ltr" : "rtl";
+    return { type: "code", digits, direction };
   }
 }
 

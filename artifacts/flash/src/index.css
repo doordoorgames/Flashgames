@@ -2482,17 +2482,32 @@ html, body, #root {
   margin: 0;
 }
 
+/* Screen glitch on tap complete */
+@keyframes bomb-glitch-anim {
+  0%   { transform: skewX(0deg) translateX(0); filter: brightness(1); }
+  8%   { transform: skewX(-6deg) translateX(6px); filter: brightness(3) hue-rotate(90deg) saturate(4); }
+  16%  { transform: skewX(4deg) translateX(-5px); filter: brightness(0.3) hue-rotate(200deg); }
+  24%  { transform: skewX(-3deg) translateX(4px); filter: brightness(4) hue-rotate(270deg) saturate(6); }
+  32%  { transform: skewX(5deg) translateX(-3px); filter: brightness(0.5) hue-rotate(45deg); }
+  40%  { transform: skewX(-2deg) translateX(5px); filter: brightness(2) hue-rotate(150deg) saturate(3); }
+  55%  { transform: skewX(3deg) translateX(-2px); filter: brightness(0.2); }
+  70%  { transform: skewX(-1deg) translateX(2px); filter: brightness(2) hue-rotate(300deg); }
+  85%  { transform: skewX(1deg); filter: brightness(1.4); }
+  100% { transform: skewX(0deg) translateX(0); filter: brightness(1); }
+}
+.bomb-screen-glitch { animation: bomb-glitch-anim 0.65s ease-in-out; }
+
 /* TapAction */
 .bomb-action-tap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.bomb-tap-progress { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.bomb-tap-progress { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 320px; }
 .bomb-tap-dot {
-  width: 16px; height: 16px;
   border-radius: 50%;
   background: rgba(200,80,0,0.2);
   border: 2px solid rgba(200,80,0,0.35);
-  transition: background 0.1s, border-color 0.1s;
+  transition: background 0.08s, border-color 0.08s;
+  flex-shrink: 0;
 }
-.bomb-tap-dot.filled { background: #ff6b35; border-color: #ffb347; box-shadow: 0 0 6px rgba(255,100,0,0.5); }
+.bomb-tap-dot.filled { background: #ff6b35; border-color: #ffb347; box-shadow: 0 0 5px rgba(255,100,0,0.5); }
 .bomb-tap-btn {
   width: 160px; height: 160px;
   border-radius: 50%;
@@ -2513,9 +2528,10 @@ html, body, #root {
 
 /* SwipeAction */
 .bomb-action-swipe { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+.bomb-swipe-sequence-wrap { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .bomb-swipe-sequence {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   justify-content: center;
 }
 .bomb-swipe-arrow {
@@ -2570,6 +2586,17 @@ html, body, #root {
 
 /* CodeAction */
 .bomb-action-code { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+.bomb-code-direction-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #ff6b35;
+  text-transform: uppercase;
+  background: rgba(200,80,0,0.12);
+  border: 1px solid rgba(200,80,0,0.3);
+  border-radius: 6px;
+  padding: 5px 12px;
+}
 .bomb-code-display-row { text-align: center; }
 .bomb-code-target {
   font-size: 1.6rem;

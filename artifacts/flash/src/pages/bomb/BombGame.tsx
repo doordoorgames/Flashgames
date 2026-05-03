@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 
 export interface BombPlayer {
   id: string;
@@ -10,7 +10,7 @@ export interface BombPlayer {
 export type BombAction =
   | { type: "tap"; required: number }
   | { type: "swipe"; pattern: string[] }
-  | { type: "code"; digits: string };
+  | { type: "code"; digits: string; direction: "ltr" | "rtl" };
 
 interface Props {
   playerId: string;
@@ -28,10 +28,12 @@ interface Props {
 const ARROW_MAP: Record<string, string> = { up: "↑", down: "↓", left: "←", right: "→" };
 const ARROW_LABEL: Record<string, string> = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT" };
 
-function TapAction({ required, onComplete }: { required: number; onComplete: () => void }) {
+function TapAction({ required, onComplete, onGlitch }: { required: number; onComplete: () => void; onGlitch: () => void }) {
   const [taps, setTaps] = useState(0);
   const [flash, setFlash] = useState(false);
   const done = useRef(false);
+
+  const dotSize = required > 20 ? 10 : required > 16 ? 13 : 16;
 
   const handleTap = useCallback(() => {
     if (done.current) return;
@@ -41,18 +43,23 @@ function TapAction({ required, onComplete }: { required: number; onComplete: () 
       const next = prev + 1;
       if (next >= required && !done.current) {
         done.current = true;
-        setTimeout(onComplete, 200);
+        onGlitch();
+        setTimeout(onComplete, 500);
       }
       return next;
     });
-  }, [required, onComplete]);
+  }, [required, onComplete, onGlitch]);
 
   return (
     <div className="bomb-action-tap">
       <p className="bomb-action-label">Tap {required} times!</p>
-      <div className="bomb-tap-progress">
+      <div className="bomb-tap-progress" style={{ gap: dotSize > 13 ? 6 : 4 }}>
         {Array.from({ length: required }).map((_, i) => (
-          <div key={i} className={`bomb-tap-dot ${i < taps ? "filled" : ""}`} />
+          <div
+            key={i}
+            className={`bomb-tap-dot ${i < taps ? "filled" : ""}`}
+            style={{ width: dotSize, height: dotSize }}
+          />
         ))}
       </div>
       <button
@@ -103,15 +110,30 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
     }
   };
 
+  const row1 = pattern.slice(0, 5);
+  const row2 = pattern.slice(5);
+
   return (
     <div className="bomb-action-swipe">
       <p className="bomb-action-label">Swipe the sequence!</p>
-      <div className="bomb-swipe-sequence">
-        {pattern.map((dir, i) => (
-          <span key={i} className={`bomb-swipe-arrow ${i < step ? "done" : i === step ? "current" : "pending"}`}>
-            {ARROW_MAP[dir]}
-          </span>
-        ))}
+      <div className="bomb-swipe-sequence-wrap">
+        <div className="bomb-swipe-sequence">
+          {row1.map((dir, i) => (
+            <span key={i} className={`bomb-swipe-arrow ${i < step ? "done" : i === step ? "current" : "pending"}`}>
+              {ARROW_MAP[dir]}
+            </span>
+          ))}
+        </div>
+        <div className="bomb-swipe-sequence">
+          {row2.map((dir, i) => {
+            const globalI = i + 5;
+            return (
+              <span key={i} className={`bomb-swipe-arrow ${globalI < step ? "done" : globalI === step ? "current" : "pending"}`}>
+                {ARROW_MAP[dir]}
+              </span>
+            );
+          })}
+        </div>
       </div>
       <div
         className={`bomb-swipe-pad ${failed ? "bomb-swipe-fail" : ""}`}
@@ -135,10 +157,13 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
   );
 }
 
-function CodeAction({ digits, onComplete }: { digits: string; onComplete: () => void }) {
+function CodeAction({ digits, direction, onComplete }: { digits: string; direction: "ltr" | "rtl"; onComplete: () => void }) {
   const [entered, setEntered] = useState("");
   const [failed, setFailed] = useState(false);
   const done = useRef(false);
+
+  const isRtl = direction === "rtl";
+  const targetAnswer = isRtl ? digits.split("").reverse().join("") : digits;
 
   const handleKey = useCallback((k: string) => {
     if (done.current) return;
@@ -146,26 +171,38 @@ function CodeAction({ digits, onComplete }: { digits: string; onComplete: () => 
       setEntered(prev => prev.slice(0, -1));
       return;
     }
-    const next = entered + k;
-    setEntered(next);
-    if (next.length === digits.length) {
-      if (next === digits) {
-        done.current = true;
-        setTimeout(onComplete, 300);
-      } else {
-        setFailed(true);
-        setTimeout(() => { setFailed(false); setEntered(""); }, 700);
+    setEntered(prev => {
+      if (prev.length >= 8) return prev;
+      const next = prev + k;
+      if (next.length === 8) {
+        if (next === targetAnswer) {
+          done.current = true;
+          setTimeout(onComplete, 300);
+        } else {
+          setTimeout(() => { setFailed(false); setEntered(""); }, 700);
+          setFailed(true);
+        }
       }
-    }
-  }, [entered, digits, onComplete]);
+      return next;
+    });
+  }, [targetAnswer, onComplete]);
 
-  const display = entered.padEnd(8, "_");
-  const part1 = display.slice(0, 4);
-  const part2 = display.slice(4);
+  let displayStr: string;
+  if (isRtl) {
+    const reversed = entered.split("").reverse().join("");
+    displayStr = "_".repeat(8 - entered.length) + reversed;
+  } else {
+    displayStr = entered + "_".repeat(8 - entered.length);
+  }
+  const part1 = displayStr.slice(0, 4);
+  const part2 = displayStr.slice(4);
 
   return (
     <div className="bomb-action-code">
       <p className="bomb-action-label">Type the code!</p>
+      <div className="bomb-code-direction-label">
+        {isRtl ? "⬅ Enter right to left" : "Enter left to right ➡"}
+      </div>
       <div className="bomb-code-display-row">
         <span className="bomb-code-target">{digits.slice(0, 4)} {digits.slice(4)}</span>
       </div>
@@ -189,12 +226,16 @@ function CodeAction({ digits, onComplete }: { digits: string; onComplete: () => 
 
 export default function BombGame({ playerId, isAdmin, players, bombHolderId, action, gamePhase, loserId, loserName, onCompleteAction, onPlayAgain }: Props) {
   const [actionKey, setActionKey] = useState(0);
+  const [glitching, setGlitching] = useState(false);
   const isHolder = playerId === bombHolderId;
   const holder = players.find(p => p.id === bombHolderId);
 
-  useEffect(() => {
-    setActionKey(k => k + 1);
-  }, [bombHolderId]);
+  const handleGlitch = useCallback(() => {
+    setGlitching(true);
+    setTimeout(() => setGlitching(false), 700);
+  }, []);
+
+  if (actionKey !== actionKey) void actionKey;
 
   if (gamePhase === "exploded") {
     const isLoser = playerId === loserId;
@@ -225,7 +266,7 @@ export default function BombGame({ playerId, isAdmin, players, bombHolderId, act
   }
 
   return (
-    <div className={`bomb-game-screen ${isHolder ? "bomb-holder-bg" : ""}`}>
+    <div className={`bomb-game-screen ${isHolder ? "bomb-holder-bg" : ""} ${glitching ? "bomb-screen-glitch" : ""}`}>
       <div className="bomb-top-bar">
         <div className="bomb-player-strip">
           {players.map(p => (
@@ -244,10 +285,24 @@ export default function BombGame({ playerId, isAdmin, players, bombHolderId, act
             <div className="bomb-body">💣</div>
             <div className="bomb-fuse-text">YOU HAVE THE BOMB</div>
           </div>
-          <div className="bomb-action-zone" key={actionKey}>
-            {action.type === "tap" && <TapAction required={action.required} onComplete={onCompleteAction} />}
-            {action.type === "swipe" && <SwipeAction pattern={action.pattern} onComplete={onCompleteAction} />}
-            {action.type === "code" && <CodeAction digits={action.digits} onComplete={onCompleteAction} />}
+          <div className="bomb-action-zone" key={bombHolderId}>
+            {action.type === "tap" && (
+              <TapAction
+                required={action.required}
+                onComplete={onCompleteAction}
+                onGlitch={handleGlitch}
+              />
+            )}
+            {action.type === "swipe" && (
+              <SwipeAction pattern={action.pattern} onComplete={onCompleteAction} />
+            )}
+            {action.type === "code" && (
+              <CodeAction
+                digits={action.digits}
+                direction={action.direction}
+                onComplete={onCompleteAction}
+              />
+            )}
           </div>
         </div>
       ) : (

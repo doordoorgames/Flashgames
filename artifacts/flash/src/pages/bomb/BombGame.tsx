@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface BombPlayer {
   id: string;
@@ -21,6 +21,8 @@ interface Props {
   gamePhase: "playing" | "exploded";
   loserId: string | null;
   loserName: string | null;
+  timerMs: number;
+  gameStartTime: number;
   onCompleteAction: () => void;
   onPlayAgain: () => void;
 }
@@ -28,61 +30,155 @@ interface Props {
 const ARROW_MAP: Record<string, string> = { up: "↑", down: "↓", left: "←", right: "→" };
 const ARROW_LABEL: Record<string, string> = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT" };
 
-function TapAction({ required, onComplete, onGlitch }: { required: number; onComplete: () => void; onGlitch: () => void }) {
+/* ── Bomb Health Bar ── */
+function BombHealthBar({ timerMs, gameStartTime }: { timerMs: number; gameStartTime: number }) {
+  const [pct, setPct] = useState(1);
+  const [secsLeft, setSecsLeft] = useState(Math.ceil(timerMs / 1000));
+
+  useEffect(() => {
+    const update = () => {
+      const elapsed = Date.now() - gameStartTime;
+      const remaining = Math.max(0, timerMs - elapsed);
+      setPct(remaining / timerMs);
+      setSecsLeft(Math.ceil(remaining / 1000));
+    };
+    update();
+    const iv = setInterval(update, 250);
+    return () => clearInterval(iv);
+  }, [timerMs, gameStartTime]);
+
+  const danger = pct < 0.25;
+  const color = pct > 0.55 ? "#ff8c00" : pct > 0.28 ? "#ff4500" : "#cc0000";
+
+  return (
+    <div className="bomb-health-wrap">
+      <div className="bomb-health-label">
+        <span className="bomb-health-title">💣 DETONATION</span>
+        <span className={`bomb-health-secs ${danger ? "bomb-health-secs-danger" : ""}`}>{secsLeft}s</span>
+      </div>
+      <div className="bomb-health-track">
+        <div
+          className={`bomb-health-fill ${danger ? "bomb-health-fill-danger" : ""}`}
+          style={{ width: `${pct * 100}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── Challenge Timer (wartime design) ── */
+function ChallengeTimer({ timeLimit, onExpire }: { timeLimit: number; onExpire: () => void }) {
+  const [secs, setSecs] = useState(timeLimit);
+  const expiredRef = useRef(false);
+  const onExpireRef = useRef(onExpire);
+  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    expiredRef.current = false;
+    setSecs(timeLimit);
+    const start = Date.now();
+    const iv = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, timeLimit - Math.floor(elapsed / 1000));
+      setSecs(remaining);
+      if (remaining <= 0 && !expiredRef.current) {
+        expiredRef.current = true;
+        clearInterval(iv);
+        onExpireRef.current();
+      }
+    }, 200);
+    return () => clearInterval(iv);
+  }, [timeLimit]);
+
+  const danger = secs <= 3;
+  const pct = secs / timeLimit;
+
+  return (
+    <div className={`chal-timer-wrap ${danger ? "chal-timer-danger" : ""}`}>
+      <div className="chal-timer-label">⚠ CHALLENGE TIMER</div>
+      <div className="chal-timer-num">{secs}</div>
+      <div className="chal-timer-bar-track">
+        <div className="chal-timer-bar-fill" style={{ width: `${pct * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Tap Action ── */
+function TapAction({ required, onComplete, onPunishment, onGlitch }: {
+  required: number;
+  onComplete: () => void;
+  onPunishment: () => void;
+  onGlitch: () => void;
+}) {
   const [taps, setTaps] = useState(0);
   const [flash, setFlash] = useState(false);
+  const [pendingStop, setPendingStop] = useState(false);
   const done = useRef(false);
   const lastFiredAt = useRef(0);
   const tapsRef = useRef(0);
-
+  const completeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dotSize = required > 20 ? 10 : required > 16 ? 13 : 16;
 
   const handleTap = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
-    // Debounce: ignore any second event within 120ms of the last one
     const now = Date.now();
     if (now - lastFiredAt.current < 120) return;
     lastFiredAt.current = now;
-
     if (done.current) return;
 
     tapsRef.current += 1;
-    const next = tapsRef.current;
-
+    const count = tapsRef.current;
     setFlash(true);
     setTimeout(() => setFlash(false), 80);
-    setTaps(next);
 
-    if (next >= required) {
+    if (count < required) {
+      setTaps(count);
+    } else if (count === required) {
+      setTaps(count);
+      setPendingStop(true);
+      completeTimer.current = setTimeout(() => {
+        if (!done.current) {
+          done.current = true;
+          onGlitch();
+          setTimeout(onComplete, 400);
+        }
+      }, 1200);
+    } else {
+      if (completeTimer.current) clearTimeout(completeTimer.current);
       done.current = true;
-      onGlitch();
-      setTimeout(onComplete, 500);
+      onPunishment();
     }
-  }, [required, onComplete, onGlitch]);
+  }, [required, onComplete, onPunishment, onGlitch]);
 
   return (
     <div className="bomb-action-tap">
-      <p className="bomb-action-label">Tap {required} times!</p>
+      <p className="bomb-action-label">{pendingStop ? "🛑 STOP TAPPING!" : `Tap ${required} times!`}</p>
       <div className="bomb-tap-progress" style={{ gap: dotSize > 13 ? 6 : 4 }}>
         {Array.from({ length: required }).map((_, i) => (
           <div
             key={i}
-            className={`bomb-tap-dot ${i < taps ? "filled" : ""}`}
+            className={`bomb-tap-dot ${i < taps ? "filled" : ""} ${pendingStop ? "filled-stop" : ""}`}
             style={{ width: dotSize, height: dotSize }}
           />
         ))}
       </div>
       <button
-        className={`bomb-tap-btn ${flash ? "bomb-tap-flash" : ""}`}
+        className={`bomb-tap-btn ${flash ? "bomb-tap-flash" : ""} ${pendingStop ? "bomb-tap-stop" : ""}`}
         onPointerDown={handleTap}
       >
-        TAP!
+        {pendingStop ? "STOP!" : "TAP!"}
       </button>
     </div>
   );
 }
 
-function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: () => void }) {
+/* ── Swipe Action ── */
+function SwipeAction({ pattern, onComplete, onPunishment }: {
+  pattern: string[];
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
   const [step, setStep] = useState(0);
   const [failed, setFailed] = useState(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -113,12 +209,11 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
     const dy = e.changedTouches[0].clientY - touchStart.current.y;
     touchStart.current = null;
     if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      handleSwipe(dx > 0 ? "right" : "left");
-    } else {
-      handleSwipe(dy > 0 ? "down" : "up");
-    }
+    if (Math.abs(dx) > Math.abs(dy)) handleSwipe(dx > 0 ? "right" : "left");
+    else handleSwipe(dy > 0 ? "down" : "up");
   };
+
+  void onPunishment;
 
   const row1 = pattern.slice(0, 5);
   const row2 = pattern.slice(5);
@@ -136,9 +231,9 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
         </div>
         <div className="bomb-swipe-sequence">
           {row2.map((dir, i) => {
-            const globalI = i + 5;
+            const gi = i + 5;
             return (
-              <span key={i} className={`bomb-swipe-arrow ${globalI < step ? "done" : globalI === step ? "current" : "pending"}`}>
+              <span key={i} className={`bomb-swipe-arrow ${gi < step ? "done" : gi === step ? "current" : "pending"}`}>
                 {ARROW_MAP[dir]}
               </span>
             );
@@ -151,7 +246,7 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
         onTouchEnd={onTouchEnd}
       >
         <div className="bomb-swipe-hint">
-          {failed ? "Wrong! Try again" : `Swipe ${ARROW_LABEL[pattern[step]] ?? ""}`}
+          {failed ? "Wrong! Try again" : `Swipe ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
         </div>
         <div className="bomb-swipe-arrows-big">
           <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("up")}>↑</button>
@@ -167,20 +262,24 @@ function SwipeAction({ pattern, onComplete }: { pattern: string[]; onComplete: (
   );
 }
 
-function CodeAction({ digits, direction, onComplete }: { digits: string; direction: "ltr" | "rtl"; onComplete: () => void }) {
+/* ── Code Action ── */
+function CodeAction({ digits, direction, onComplete, onPunishment }: {
+  digits: string;
+  direction: "ltr" | "rtl";
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
   const [entered, setEntered] = useState("");
   const [failed, setFailed] = useState(false);
   const done = useRef(false);
-
   const isRtl = direction === "rtl";
   const targetAnswer = isRtl ? digits.split("").reverse().join("") : digits;
 
+  void onPunishment;
+
   const handleKey = useCallback((k: string) => {
     if (done.current) return;
-    if (k === "del") {
-      setEntered(prev => prev.slice(0, -1));
-      return;
-    }
+    if (k === "del") { setEntered(prev => prev.slice(0, -1)); return; }
     setEntered(prev => {
       if (prev.length >= 8) return prev;
       const next = prev + k;
@@ -189,8 +288,8 @@ function CodeAction({ digits, direction, onComplete }: { digits: string; directi
           done.current = true;
           setTimeout(onComplete, 300);
         } else {
-          setTimeout(() => { setFailed(false); setEntered(""); }, 700);
           setFailed(true);
+          setTimeout(() => { setFailed(false); setEntered(""); }, 700);
         }
       }
       return next;
@@ -234,18 +333,77 @@ function CodeAction({ digits, direction, onComplete }: { digits: string; directi
   );
 }
 
-export default function BombGame({ playerId, isAdmin, players, bombHolderId, action, gamePhase, loserId, loserName, onCompleteAction, onPlayAgain }: Props) {
-  const [actionKey, setActionKey] = useState(0);
-  const [glitching, setGlitching] = useState(false);
+/* ── Punishment Overlay ── */
+function PunishmentOverlay({ countdown }: { countdown: number }) {
+  return (
+    <div className="bomb-punishment-overlay">
+      <div className="bomb-punishment-content">
+        <div className="bomb-punishment-icon">⚡</div>
+        <div className="bomb-punishment-title">PENALTY</div>
+        <div className="bomb-punishment-countdown">{countdown}</div>
+        <div className="bomb-punishment-sub">You still have the bomb!</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main BombGame ── */
+export default function BombGame({
+  playerId, isAdmin, players, bombHolderId, action, gamePhase,
+  loserId, loserName, timerMs, gameStartTime, onCompleteAction, onPlayAgain,
+}: Props) {
+  const [isGlitching, setIsGlitching] = useState(false);
+  const [glitchCountdown, setGlitchCountdown] = useState(3);
+  const [challengeAttempt, setChallengeAttempt] = useState(0);
+  const [completionGlitch, setCompletionGlitch] = useState(false);
+  const [challengeTimeLimit, setChallengeTimeLimit] = useState(10);
+
+  const isGlitchingRef = useRef(false);
+  const glitchTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const isHolder = playerId === bombHolderId;
   const holder = players.find(p => p.id === bombHolderId);
 
-  const handleGlitch = useCallback(() => {
-    setGlitching(true);
-    setTimeout(() => setGlitching(false), 700);
+  // Recalculate challenge time limit each time a new challenge starts
+  useEffect(() => {
+    const elapsed = gameStartTime ? Date.now() - gameStartTime : 0;
+    setChallengeTimeLimit(elapsed > 40000 ? 7 : 10);
+  }, [bombHolderId, challengeAttempt, gameStartTime]);
+
+  // Reset punishment state when bomb changes holder
+  useEffect(() => {
+    if (glitchTimerRef.current) clearInterval(glitchTimerRef.current);
+    isGlitchingRef.current = false;
+    setIsGlitching(false);
+    setGlitchCountdown(3);
+    setChallengeAttempt(0);
+  }, [bombHolderId]);
+
+  const triggerPunishment = useCallback(() => {
+    if (isGlitchingRef.current) return;
+    isGlitchingRef.current = true;
+    setIsGlitching(true);
+    setGlitchCountdown(3);
+
+    let count = 2;
+    glitchTimerRef.current = setInterval(() => {
+      setGlitchCountdown(count);
+      count--;
+      if (count < 0) {
+        clearInterval(glitchTimerRef.current!);
+        glitchTimerRef.current = null;
+        isGlitchingRef.current = false;
+        setIsGlitching(false);
+        setGlitchCountdown(3);
+        setChallengeAttempt(a => a + 1);
+      }
+    }, 1000);
   }, []);
 
-  if (actionKey !== actionKey) void actionKey;
+  const handleCompletionGlitch = useCallback(() => {
+    setCompletionGlitch(true);
+    setTimeout(() => setCompletionGlitch(false), 700);
+  }, []);
 
   if (gamePhase === "exploded") {
     const isLoser = playerId === loserId;
@@ -266,9 +424,7 @@ export default function BombGame({ playerId, isAdmin, players, bombHolderId, act
               </div>
             ))}
           </div>
-          {isAdmin && (
-            <button className="bomb-submit-btn" onClick={onPlayAgain}>Play Again 💣</button>
-          )}
+          {isAdmin && <button className="bomb-submit-btn" onClick={onPlayAgain}>Play Again 💣</button>}
           {!isAdmin && <p className="wait-host">Waiting for host to start again...</p>}
         </div>
       </div>
@@ -276,7 +432,9 @@ export default function BombGame({ playerId, isAdmin, players, bombHolderId, act
   }
 
   return (
-    <div className={`bomb-game-screen ${isHolder ? "bomb-holder-bg" : ""} ${glitching ? "bomb-screen-glitch" : ""}`}>
+    <div className={`bomb-game-screen ${isHolder ? "bomb-holder-bg" : ""} ${completionGlitch ? "bomb-screen-glitch" : ""} ${isGlitching ? "bomb-punishment-active" : ""}`}>
+      {isGlitching && isHolder && <PunishmentOverlay countdown={glitchCountdown} />}
+
       <div className="bomb-top-bar">
         <div className="bomb-player-strip">
           {players.map(p => (
@@ -295,29 +453,42 @@ export default function BombGame({ playerId, isAdmin, players, bombHolderId, act
             <div className="bomb-body">💣</div>
             <div className="bomb-fuse-text">YOU HAVE THE BOMB</div>
           </div>
-          <div className="bomb-action-zone" key={bombHolderId}>
-            {action.type === "tap" && (
-              <TapAction
-                required={action.required}
-                onComplete={onCompleteAction}
-                onGlitch={handleGlitch}
-              />
-            )}
-            {action.type === "swipe" && (
-              <SwipeAction pattern={action.pattern} onComplete={onCompleteAction} />
-            )}
-            {action.type === "code" && (
-              <CodeAction
-                digits={action.digits}
-                direction={action.direction}
-                onComplete={onCompleteAction}
-              />
-            )}
-          </div>
+
+          <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
+
+          {!isGlitching && (
+            <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
+              <ChallengeTimer timeLimit={challengeTimeLimit} onExpire={triggerPunishment} />
+              {action.type === "tap" && (
+                <TapAction
+                  required={action.required}
+                  onComplete={onCompleteAction}
+                  onPunishment={triggerPunishment}
+                  onGlitch={handleCompletionGlitch}
+                />
+              )}
+              {action.type === "swipe" && (
+                <SwipeAction
+                  pattern={action.pattern}
+                  onComplete={onCompleteAction}
+                  onPunishment={triggerPunishment}
+                />
+              )}
+              {action.type === "code" && (
+                <CodeAction
+                  digits={action.digits}
+                  direction={action.direction}
+                  onComplete={onCompleteAction}
+                  onPunishment={triggerPunishment}
+                />
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="bomb-watching-zone">
           <div className="bomb-watch-visual">💣</div>
+          <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
           <p className="bomb-watch-name">{holder?.name ?? "..."}</p>
           <p className="bomb-watch-label">has the bomb</p>
           <div className="bomb-watching-players">

@@ -84,6 +84,7 @@ function launchRound(io: Server, code: string): void {
     bombHolderId: firstHolder,
     action,
     players: Array.from(room.players.values()),
+    timerMs,
   });
 
   if (room.explodeTimeout) clearTimeout(room.explodeTimeout);

@@ -2482,6 +2482,225 @@ html, body, #root {
   margin: 0;
 }
 
+/* ── Bomb Health Bar ── */
+.bomb-health-wrap {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px;
+}
+.bomb-health-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bomb-health-title {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(220,150,80,0.7);
+}
+.bomb-health-secs {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #ff8c00;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+.bomb-health-secs-danger { color: #cc0000; animation: health-secs-blink 0.4s ease-in-out infinite alternate; }
+@keyframes health-secs-blink { 0% { opacity: 1; } 100% { opacity: 0.4; } }
+.bomb-health-track {
+  height: 10px;
+  background: rgba(30,10,5,0.9);
+  border: 1px solid rgba(150,60,0,0.4);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.bomb-health-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0px, transparent 12px, rgba(0,0,0,0.25) 12px, rgba(0,0,0,0.25) 14px);
+  pointer-events: none;
+}
+.bomb-health-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.25s linear, background 0.5s;
+}
+.bomb-health-fill-danger { animation: health-flash 0.35s ease-in-out infinite alternate; }
+@keyframes health-flash { 0% { opacity: 1; } 100% { opacity: 0.5; } }
+
+/* ── Wartime Challenge Timer ── */
+.chal-timer-wrap {
+  width: 100%;
+  background: #0a1a0a;
+  border: 2px solid #2a4a2a;
+  border-radius: 8px;
+  padding: 10px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 12px rgba(0,80,0,0.3), inset 0 0 20px rgba(0,30,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+.chal-timer-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,40,0,0.12) 3px, rgba(0,40,0,0.12) 4px);
+  pointer-events: none;
+}
+.chal-timer-label {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: #4a7a4a;
+  text-transform: uppercase;
+}
+.chal-timer-num {
+  font-size: 3.2rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  color: #7fff00;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 20px rgba(100,255,0,0.6), 0 0 40px rgba(100,255,0,0.3);
+}
+.chal-timer-bar-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(0,40,0,0.6);
+  border: 1px solid #2a4a2a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.chal-timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7fff00, #adff2f);
+  border-radius: 2px;
+  transition: width 0.2s linear;
+  box-shadow: 0 0 6px rgba(100,255,0,0.5);
+}
+.chal-timer-danger { border-color: #6a0000; box-shadow: 0 0 16px rgba(180,0,0,0.5), inset 0 0 20px rgba(60,0,0,0.5); }
+.chal-timer-danger .chal-timer-label { color: #8a2a2a; }
+.chal-timer-danger .chal-timer-num {
+  color: #ff2222;
+  text-shadow: 0 0 20px rgba(255,0,0,0.8), 0 0 40px rgba(255,0,0,0.4);
+  animation: chal-num-shake 0.12s ease-in-out infinite alternate;
+}
+.chal-timer-danger .chal-timer-bar-fill { background: linear-gradient(90deg, #cc0000, #ff4444); box-shadow: 0 0 6px rgba(200,0,0,0.7); }
+@keyframes chal-num-shake { 0% { transform: translateX(-2px) rotate(-0.5deg); } 100% { transform: translateX(2px) rotate(0.5deg); } }
+
+/* ── Tap: pending stop state ── */
+.bomb-tap-stop {
+  background: radial-gradient(circle at 40% 35%, #005500, #002200) !important;
+  border-color: rgba(0,200,50,0.6) !important;
+  color: #7fff00 !important;
+  box-shadow: 0 0 30px rgba(0,200,50,0.5) !important;
+}
+.bomb-tap-dot.filled-stop { background: #7fff00 !important; border-color: #adff2f !important; }
+
+/* ── Punishment overlay (old TV effect) ── */
+.bomb-punishment-active {
+  animation: bomb-tv-glitch 0.18s steps(1) infinite;
+}
+@keyframes bomb-tv-glitch {
+  0%   { filter: brightness(1) contrast(1) hue-rotate(0deg); transform: translateX(0) skewX(0deg); }
+  10%  { filter: brightness(2.5) contrast(3) hue-rotate(110deg) saturate(5); transform: translateX(-6px) skewX(2deg); }
+  20%  { filter: brightness(0.3) contrast(2) hue-rotate(220deg); transform: translateX(8px) skewX(-3deg); }
+  30%  { filter: brightness(1.8) contrast(4) hue-rotate(50deg) saturate(3); transform: translateX(-4px); }
+  40%  { filter: brightness(0.5) contrast(1) hue-rotate(0deg); transform: translateX(5px) skewX(1deg); }
+  50%  { filter: brightness(3) contrast(5) hue-rotate(180deg) saturate(6); transform: translateX(-8px) skewX(-2deg); }
+  60%  { filter: brightness(0.2) contrast(2) hue-rotate(300deg); transform: translateX(6px); }
+  70%  { filter: brightness(1.5) contrast(3) hue-rotate(90deg); transform: translateX(-3px) skewX(2deg); }
+  80%  { filter: brightness(0.4) contrast(1) hue-rotate(0deg); transform: translateX(4px) skewX(-1deg); }
+  90%  { filter: brightness(2) contrast(4) hue-rotate(270deg) saturate(4); transform: translateX(-5px); }
+  100% { filter: brightness(1) contrast(1) hue-rotate(0deg); transform: translateX(0) skewX(0deg); }
+}
+.bomb-punishment-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(1px);
+}
+.bomb-punishment-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,30,0,0.35) 0px,
+    rgba(0,30,0,0.35) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  animation: scan-scroll 0.4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan-scroll { 0% { transform: translateY(0); } 100% { transform: translateY(4px); } }
+.bomb-punishment-content {
+  position: relative;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,0,0,0.9);
+  border: 3px solid #cc0000;
+  border-radius: 12px;
+  padding: 28px 40px;
+  box-shadow: 0 0 40px rgba(200,0,0,0.6), inset 0 0 20px rgba(60,0,0,0.5);
+  animation: penalty-card-glitch 0.25s steps(1) infinite;
+}
+@keyframes penalty-card-glitch {
+  0%   { border-color: #cc0000; }
+  33%  { border-color: #ff4444; box-shadow: 0 0 60px rgba(255,0,0,0.8); }
+  66%  { border-color: #880000; }
+  100% { border-color: #cc0000; }
+}
+.bomb-punishment-icon { font-size: 2.5rem; animation: icon-jitter 0.15s steps(1) infinite; }
+@keyframes icon-jitter {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px, -2px); }
+  75% { transform: translate(-2px, -3px); }
+  100% { transform: translate(2px, 3px); }
+}
+.bomb-punishment-title {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', monospace;
+  letter-spacing: 0.25em;
+  color: #ff2222;
+  text-shadow: 0 0 20px rgba(255,0,0,0.9), 2px 2px 0 #660000;
+}
+.bomb-punishment-countdown {
+  font-size: 4rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(255,50,50,0.9);
+}
+.bomb-punishment-sub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,150,150,0.8);
+}
+
 /* Screen glitch on tap complete */
 @keyframes bomb-glitch-anim {
   0%   { transform: skewX(0deg) translateX(0); filter: brightness(1); }

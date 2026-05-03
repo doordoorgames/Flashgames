@@ -32,22 +32,32 @@ function TapAction({ required, onComplete, onGlitch }: { required: number; onCom
   const [taps, setTaps] = useState(0);
   const [flash, setFlash] = useState(false);
   const done = useRef(false);
+  const lastFiredAt = useRef(0);
+  const tapsRef = useRef(0);
 
   const dotSize = required > 20 ? 10 : required > 16 ? 13 : 16;
 
-  const handleTap = useCallback(() => {
+  const handleTap = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    // Debounce: ignore any second event within 120ms of the last one
+    const now = Date.now();
+    if (now - lastFiredAt.current < 120) return;
+    lastFiredAt.current = now;
+
     if (done.current) return;
+
+    tapsRef.current += 1;
+    const next = tapsRef.current;
+
     setFlash(true);
     setTimeout(() => setFlash(false), 80);
-    setTaps(prev => {
-      const next = prev + 1;
-      if (next >= required && !done.current) {
-        done.current = true;
-        onGlitch();
-        setTimeout(onComplete, 500);
-      }
-      return next;
-    });
+    setTaps(next);
+
+    if (next >= required) {
+      done.current = true;
+      onGlitch();
+      setTimeout(onComplete, 500);
+    }
   }, [required, onComplete, onGlitch]);
 
   return (

@@ -326,6 +326,39 @@ function CodeAction({ digits, direction, onComplete, onPunishment }: {
   );
 }
 
+/* ── Watch Challenge Display ── */
+function WatchChallenge({ action }: { action: BombAction }) {
+  if (action.type === "tap") {
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">TAP</span>
+        <span className="watch-challenge-value">× {action.required}</span>
+      </div>
+    );
+  }
+  if (action.type === "swipe") {
+    const half = Math.ceil(action.pattern.length / 2);
+    const row1 = action.pattern.slice(0, half).map(d => ARROW_MAP[d]).join("  ");
+    const row2 = action.pattern.slice(half).map(d => ARROW_MAP[d]).join("  ");
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">SWIPE</span>
+        <span className="watch-challenge-arrows">{row1}</span>
+        {row2 && <span className="watch-challenge-arrows">{row2}</span>}
+      </div>
+    );
+  }
+  if (action.type === "code") {
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">CODE  {action.direction === "rtl" ? "←" : "→"}</span>
+        <span className="watch-challenge-value">{action.digits.slice(0, 4)}  {action.digits.slice(4)}</span>
+      </div>
+    );
+  }
+  return null;
+}
+
 /* ── Punishment Overlay ── */
 function PunishmentOverlay({ countdown }: { countdown: number }) {
   return (
@@ -396,7 +429,7 @@ export default function BombGame({
   }, []);
 
   return (
-    <div className={`bomb-crt-device ${completionGlitch ? "bomb-screen-glitch" : ""} ${isGlitching ? "bomb-punishment-active" : ""}`}>
+    <div className={`bomb-crt-device ${completionGlitch ? "bomb-screen-glitch" : ""} ${isGlitching ? "bomb-punishment-active" : ""} ${!isHolder && gamePhase !== "exploded" ? "bomb-crt-watching" : ""}`}>
       <div className="screen-safe-area">
         <div className={`bomb-screen-content ${isHolder ? "bomb-screen-is-holder" : ""}`}>
 
@@ -484,10 +517,11 @@ export default function BombGame({
               ) : (
                 /* ── Watching Zone ── */
                 <div className="bomb-watching-zone">
-                  <div className="bomb-watch-visual">💣</div>
-                  <p className="bomb-watch-name">{(holder?.name ?? "???").toUpperCase()}</p>
-                  <p className="bomb-watch-label">IS HOLDING THE BOMB</p>
-                  <div className="bomb-watch-divider" />
+                  <p className="bomb-watch-log">[ MONITORING CHANNEL ACTIVE ]</p>
+                  <div className="bomb-watch-challenge-wrap">
+                    <p className="bomb-watch-holder-label">{(holder?.name ?? "???").toUpperCase()}</p>
+                    <WatchChallenge action={action} />
+                  </div>
                   <div className="bomb-watching-players">
                     {players.filter(p => p.id !== bombHolderId).map(p => (
                       <span key={p.id} className={`bomb-watch-pill ${p.id === playerId ? "bomb-watch-me" : ""}`}>

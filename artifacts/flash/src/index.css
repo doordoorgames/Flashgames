@@ -2959,6 +2959,11 @@ html, body, #root {
   text-shadow: 0 0 8px rgba(255,255,255,0.35);
 }
 
+/* ── Watching background (different image when spectating) ── */
+.bomb-crt-watching {
+  background: url('/bomb-watch-bg.png') center center / cover no-repeat, #05030a !important;
+}
+
 /* ── Watching zone (mainframe terminal style) ── */
 .bomb-watching-zone {
   flex: 1;
@@ -2966,35 +2971,60 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 20px 16px;
   font-family: 'Courier New', monospace;
 }
-.bomb-watch-visual {
-  font-size: 3.8rem;
-  animation: bomb-watch-pulse 1.4s ease-in-out infinite alternate;
-  filter: grayscale(1) brightness(0.5);
+
+/* Central challenge display */
+.bomb-watch-challenge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.35);
 }
-@keyframes bomb-watch-pulse { 0% { transform: scale(0.95); opacity: 0.45; } 100% { transform: scale(1.05); opacity: 0.65; } }
-.bomb-watch-name {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: #ffffff;
-  margin: 0;
-  text-align: center;
-  font-family: 'Bebas Neue', 'Courier New', monospace;
-  letter-spacing: 0.18em;
-  text-shadow: 0 0 10px rgba(255,255,255,0.35);
-}
-.bomb-watch-label {
-  font-size: 0.58rem;
-  text-transform: uppercase;
+.bomb-watch-holder-label {
+  font-size: 0.65rem;
+  font-weight: 700;
   letter-spacing: 0.22em;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
   margin: 0;
+}
+.watch-challenge-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.watch-challenge-type {
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
   font-family: 'Courier New', monospace;
 }
-.bomb-watch-divider { width: 55%; height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
+.watch-challenge-value {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #ffffff;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 14px rgba(255,255,255,0.45);
+}
+.watch-challenge-arrows {
+  font-size: 1.2rem;
+  color: #ffffff;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4);
+  font-family: 'Courier New', monospace;
+}
+
 .bomb-watching-players { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
 .bomb-watch-pill {
   padding: 3px 9px;
@@ -3009,15 +3039,15 @@ html, body, #root {
 }
 .bomb-watch-me { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); text-shadow: 0 0 6px rgba(255,255,255,0.25); }
 .bomb-watch-log {
-  font-size: 0.58rem;
-  color: rgba(255,255,255,0.18);
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.2);
   font-family: 'Courier New', monospace;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-align: center;
-  margin: 4px 0 0;
+  margin: 0;
   animation: log-blink 2.5s ease-in-out infinite;
 }
-@keyframes log-blink { 0%,80% { opacity: 0.4; } 90% { opacity: 1; } 100% { opacity: 0.4; } }
+@keyframes log-blink { 0%,80% { opacity: 0.35; } 90% { opacity: 1; } 100% { opacity: 0.35; } }
 
 /* ── Explosion screen ── */
 .bomb-explode-screen {

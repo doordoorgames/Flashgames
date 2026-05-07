@@ -358,8 +358,8 @@ export default function BombGame({
   const holder = players.find(p => p.id === bombHolderId);
 
   useEffect(() => {
-    const elapsed = gameStartTime ? Date.now() - gameStartTime : 0;
-    setChallengeTimeLimit(elapsed > 40000 ? 7 : 10);
+    void gameStartTime;
+    setChallengeTimeLimit(15);
   }, [bombHolderId, challengeAttempt, gameStartTime]);
 
   useEffect(() => {

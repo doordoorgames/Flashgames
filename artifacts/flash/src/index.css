@@ -2281,8 +2281,8 @@ html, body, #root {
 .bomb-entry-card {
   width: 100%;
   max-width: 340px;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  border: none;
   border-radius: 0;
   padding: 28px 22px;
   display: flex;
@@ -2355,8 +2355,8 @@ html, body, #root {
 .bomb-lobby-card {
   width: 100%;
   max-width: 340px;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  border: none;
   border-radius: 0;
   padding: 24px 20px;
   display: flex;
@@ -2416,15 +2416,9 @@ html, body, #root {
   right: var(--safe-margin-x);
   top: var(--safe-margin-y);
   bottom: var(--safe-margin-y);
-  background: #06030e;
+  background: transparent;
   overflow: hidden;
   z-index: 1;
-  border-radius: 3px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.07),
-    0 0 0 4px #141018,
-    0 0 80px rgba(80,40,140,0.2) inset,
-    0 0 30px rgba(100,60,180,0.12);
 }
 /* Scanline overlay */
 .screen-safe-area::before {

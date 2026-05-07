@@ -2367,18 +2367,704 @@ html, body, #root {
 .bomb-waiting-hint { color: rgba(200,150,100,0.6); font-size: 0.88rem; text-align: center; }
 .bomb-lobby-admin { display: flex; flex-direction: column; gap: 10px; }
 
-/* Game screen */
-.bomb-game-screen {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: radial-gradient(ellipse at 50% 30%, #1a0800 0%, #080200 100%);
-  transition: background 0.5s;
+/* ═══════════════════════════════════════════════════════
+   BOMB GAME — CRT DEVICE + WHITE MONOCHROME SCREEN UI
+   ═══════════════════════════════════════════════════════ */
+
+/* Safe-margin CSS variables — adjust here to change the device bezel size */
+:root {
+  --safe-margin-x: 200px;
+  --safe-margin-y: 200px;
+}
+@media (max-width: 580px) {
+  :root { --safe-margin-x: 16px; --safe-margin-y: 54px; }
+}
+@media (min-width: 581px) and (max-width: 900px) {
+  :root { --safe-margin-x: 80px; --safe-margin-y: 100px; }
+}
+@media (min-width: 901px) and (max-width: 1200px) {
+  :root { --safe-margin-x: 140px; --safe-margin-y: 150px; }
+}
+
+/* ── Outer device frame (decorative only — nothing interactive here) ── */
+.bomb-crt-device {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, #1a1520 0%, #0a0810 100%);
   overflow: hidden;
 }
-.bomb-holder-bg {
-  background: radial-gradient(ellipse at 50% 40%, #3d0e00 0%, #1a0400 60%, #080200 100%);
+/* Subtle bezel outline just outside the screen edge */
+.bomb-crt-device::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--safe-margin-y) - 10px) calc(var(--safe-margin-x) - 10px);
+  border: 1px solid rgba(255,255,255,0.05);
+  pointer-events: none;
+  z-index: 0;
 }
+
+/* ── CRT screen (the actual content area — ALL gameplay lives here) ── */
+.screen-safe-area {
+  position: absolute;
+  left: var(--safe-margin-x);
+  right: var(--safe-margin-x);
+  top: var(--safe-margin-y);
+  bottom: var(--safe-margin-y);
+  background: #06030e;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07),
+    0 0 0 4px #141018,
+    0 0 80px rgba(80,40,140,0.2) inset,
+    0 0 30px rgba(100,60,180,0.12);
+}
+/* Scanline overlay */
+.screen-safe-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.13) 3px, rgba(0,0,0,0.13) 4px
+  );
+  pointer-events: none;
+  z-index: 50;
+}
+/* Vignette — darker corners */
+.screen-safe-area::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+  z-index: 49;
+}
+
+/* Content wrapper inside the screen */
+.bomb-screen-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #ffffff;
+}
+/* Very subtle holder indicator — slight border pulse */
+.bomb-screen-is-holder {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  animation: holder-border-pulse 2s ease-in-out infinite alternate;
+}
+@keyframes holder-border-pulse {
+  0%  { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+  100%{ box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14); }
+}
+
+/* ── Player strip ── */
+.bomb-top-bar {
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.bomb-player-strip {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.bomb-player-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 1px;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.3s;
+}
+.bomb-pill-active {
+  border-color: rgba(255,255,255,0.75);
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+  box-shadow: 0 0 10px rgba(255,255,255,0.08);
+  animation: pill-flicker 1.2s ease-in-out infinite alternate;
+}
+@keyframes pill-flicker {
+  0%  { opacity: 0.9; text-shadow: 0 0 6px rgba(255,255,255,0.4); }
+  100%{ opacity: 1;   text-shadow: 0 0 14px rgba(255,255,255,0.85); }
+}
+.bomb-pill-me  { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.65); }
+.bomb-pill-icon{ font-size: 0.8rem; }
+.bomb-pill-losses { font-size: 0.58rem; color: rgba(255,255,255,0.45); margin-left: 2px; }
+
+/* ── Bomb health bar (always visible, top of screen) ── */
+.bomb-health-wrap {
+  padding: 6px 12px 7px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.bomb-health-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.bomb-health-title {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  font-family: 'Courier New', monospace;
+}
+.bomb-health-secs {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.65);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+}
+.bomb-health-secs-danger {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.8);
+  animation: health-secs-blink 0.4s ease-in-out infinite alternate;
+}
+@keyframes health-secs-blink { 0% { opacity: 1; } 100% { opacity: 0.3; } }
+.bomb-health-track {
+  height: 5px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+.bomb-health-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(0,0,0,0.28) 14px, rgba(0,0,0,0.28) 16px);
+  pointer-events: none;
+}
+.bomb-health-fill {
+  height: 100%;
+  background: #ffffff !important;
+  opacity: 0.7;
+  border-radius: 0;
+  transition: width 0.25s linear;
+}
+.bomb-health-fill-danger {
+  opacity: 1;
+  animation: health-flash 0.35s ease-in-out infinite alternate;
+}
+@keyframes health-flash { 0% { opacity: 1; } 100% { opacity: 0.3; } }
+
+/* ── Challenge timer (wartime white CRT) ── */
+.chal-timer-wrap {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 1px;
+  padding: 8px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  overflow: hidden;
+}
+.chal-timer-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px);
+  pointer-events: none;
+}
+.chal-timer-label {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+.chal-timer-num {
+  font-size: 2.8rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 18px rgba(255,255,255,0.45), 0 0 36px rgba(255,255,255,0.18);
+}
+.chal-timer-bar-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.chal-timer-bar-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.85);
+  transition: width 0.2s linear;
+  box-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+.chal-timer-danger { border-color: rgba(255,255,255,0.55); }
+.chal-timer-danger .chal-timer-label { color: rgba(255,255,255,0.55); }
+.chal-timer-danger .chal-timer-num {
+  text-shadow: 0 0 24px rgba(255,255,255,0.9), 0 0 48px rgba(255,255,255,0.35);
+  animation: chal-num-shake 0.1s ease-in-out infinite alternate;
+}
+.chal-timer-danger .chal-timer-bar-fill { animation: bar-flash 0.3s ease-in-out infinite alternate; }
+@keyframes bar-flash  { 0% { opacity: 1; } 100% { opacity: 0.3; } }
+@keyframes chal-num-shake { 0% { transform: translateX(-2px) rotate(-0.4deg); } 100% { transform: translateX(2px) rotate(0.4deg); } }
+
+/* ── Tap stop-zone state ── */
+.bomb-tap-stop {
+  border-color: rgba(255,255,255,0.9) !important;
+  box-shadow: 0 0 28px rgba(255,255,255,0.25) !important;
+  animation: stop-pulse 0.4s ease-in-out infinite alternate;
+}
+@keyframes stop-pulse {
+  0%  { box-shadow: 0 0 16px rgba(255,255,255,0.15); }
+  100%{ box-shadow: 0 0 36px rgba(255,255,255,0.45); }
+}
+.bomb-tap-dot.filled-stop { background: #ffffff !important; border-color: rgba(255,255,255,0.9) !important; }
+
+/* ── Punishment: old-TV glitch on the device frame ── */
+.bomb-punishment-active { animation: bomb-tv-glitch 0.18s steps(1) infinite; }
+@keyframes bomb-tv-glitch {
+  0%  { filter: brightness(1)   contrast(1) hue-rotate(0deg);   transform: translateX(0)   skewX(0deg);  }
+  10% { filter: brightness(2.5) contrast(3) hue-rotate(110deg) saturate(5); transform: translateX(-6px) skewX(2deg);  }
+  20% { filter: brightness(0.3) contrast(2) hue-rotate(220deg);  transform: translateX(8px)  skewX(-3deg); }
+  30% { filter: brightness(1.8) contrast(4) hue-rotate(50deg)  saturate(3); transform: translateX(-4px);             }
+  40% { filter: brightness(0.5) contrast(1) hue-rotate(0deg);   transform: translateX(5px)  skewX(1deg);  }
+  50% { filter: brightness(3)   contrast(5) hue-rotate(180deg) saturate(6); transform: translateX(-8px) skewX(-2deg); }
+  60% { filter: brightness(0.2) contrast(2) hue-rotate(300deg);  transform: translateX(6px);               }
+  70% { filter: brightness(1.5) contrast(3) hue-rotate(90deg);   transform: translateX(-3px) skewX(2deg);  }
+  80% { filter: brightness(0.4) contrast(1) hue-rotate(0deg);    transform: translateX(4px)  skewX(-1deg); }
+  90% { filter: brightness(2)   contrast(4) hue-rotate(270deg) saturate(4); transform: translateX(-5px);   }
+  100%{ filter: brightness(1)   contrast(1) hue-rotate(0deg);   transform: translateX(0)   skewX(0deg);  }
+}
+.bomb-punishment-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+}
+.bomb-punishment-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px, transparent 2px, transparent 4px);
+  animation: scan-scroll 0.4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan-scroll { 0% { transform: translateY(0); } 100% { transform: translateY(4px); } }
+.bomb-punishment-content {
+  position: relative;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.9);
+  border: 2px solid rgba(255,255,255,0.75);
+  border-radius: 0;
+  padding: 26px 38px;
+  box-shadow: 0 0 40px rgba(255,255,255,0.12), inset 0 0 20px rgba(255,255,255,0.02);
+  animation: penalty-card-glitch 0.25s steps(1) infinite;
+}
+@keyframes penalty-card-glitch {
+  0%  { border-color: rgba(255,255,255,0.75); }
+  33% { border-color: rgba(255,255,255,0.15); box-shadow: 0 0 60px rgba(255,255,255,0.25); }
+  66% { border-color: rgba(255,255,255,1);    }
+  100%{ border-color: rgba(255,255,255,0.75); }
+}
+.bomb-punishment-icon { font-size: 2.2rem; animation: icon-jitter 0.15s steps(1) infinite; }
+@keyframes icon-jitter {
+  0%  { transform: translate(0,0); }   25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(3px,-2px);}   75% { transform: translate(-2px,-3px);}
+  100%{ transform: translate(2px, 3px);}
+}
+.bomb-punishment-title {
+  font-size: 1.9rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', monospace;
+  letter-spacing: 0.3em;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255,255,255,0.8);
+}
+.bomb-punishment-countdown {
+  font-size: 3.8rem;
+  font-weight: 900;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 0 28px rgba(255,255,255,0.9);
+}
+.bomb-punishment-sub {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Screen glitch on successful pass ── */
+@keyframes bomb-glitch-anim {
+  0%  { transform: skewX(0deg)  translateX(0);   filter: brightness(1); }
+  8%  { transform: skewX(-6deg) translateX(6px);  filter: brightness(3) hue-rotate(90deg)  saturate(4); }
+  16% { transform: skewX(4deg)  translateX(-5px); filter: brightness(0.3) hue-rotate(200deg); }
+  24% { transform: skewX(-3deg) translateX(4px);  filter: brightness(4) hue-rotate(270deg)  saturate(6); }
+  32% { transform: skewX(5deg)  translateX(-3px); filter: brightness(0.5) hue-rotate(45deg); }
+  40% { transform: skewX(-2deg) translateX(5px);  filter: brightness(2) hue-rotate(150deg)  saturate(3); }
+  55% { transform: skewX(3deg)  translateX(-2px); filter: brightness(0.2); }
+  70% { transform: skewX(-1deg) translateX(2px);  filter: brightness(2) hue-rotate(300deg); }
+  85% { transform: skewX(1deg);                   filter: brightness(1.4); }
+  100%{ transform: skewX(0deg)  translateX(0);   filter: brightness(1); }
+}
+.bomb-screen-glitch { animation: bomb-glitch-anim 0.65s ease-in-out; }
+
+/* ── Holder zone ── */
+.bomb-holder-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 14px 14px;
+  gap: 10px;
+  overflow-y: auto;
+}
+.bomb-visual { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bomb-body {
+  font-size: 3.2rem;
+  animation: bomb-shake 0.4s ease-in-out infinite alternate, bomb-glow 1.5s ease-in-out infinite alternate;
+  filter: grayscale(1) brightness(0.9);
+  line-height: 1;
+}
+@keyframes bomb-shake { 0% { transform: rotate(-5deg) scale(1); } 100% { transform: rotate(5deg) scale(1.05); } }
+@keyframes bomb-glow  { 0% { filter: grayscale(1) brightness(0.7) drop-shadow(0 0 6px rgba(255,255,255,0.15)); } 100% { filter: grayscale(1) brightness(1) drop-shadow(0 0 18px rgba(255,255,255,0.35)); } }
+.bomb-fuse-text {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  animation: fuse-flicker 0.5s ease-in-out infinite alternate;
+}
+@keyframes fuse-flicker { 0% { opacity: 0.45; } 100% { opacity: 0.85; } }
+
+/* Action zone */
+.bomb-action-zone {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bomb-action-label {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  text-shadow: 0 0 10px rgba(255,255,255,0.35);
+}
+
+/* TapAction */
+.bomb-action-tap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.bomb-tap-progress { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 300px; }
+.bomb-tap-dot {
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  transition: background 0.08s, border-color 0.08s, box-shadow 0.08s;
+  flex-shrink: 0;
+}
+.bomb-tap-dot.filled {
+  background: #ffffff;
+  border-color: rgba(255,255,255,0.9);
+  box-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+.bomb-tap-btn {
+  width: 130px; height: 130px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.45);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(255,255,255,0.08), inset 0 0 18px rgba(255,255,255,0.02);
+  transition: transform 0.05s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  text-shadow: 0 0 10px rgba(255,255,255,0.45);
+}
+.bomb-tap-btn:active, .bomb-tap-flash { transform: scale(0.91); box-shadow: 0 0 36px rgba(255,255,255,0.25); }
+
+/* SwipeAction */
+.bomb-action-swipe { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.bomb-swipe-sequence-wrap { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.bomb-swipe-sequence { display: flex; gap: 4px; justify-content: center; }
+.bomb-swipe-arrow {
+  font-size: 1.5rem;
+  width: 34px; height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1px;
+  transition: all 0.15s;
+}
+.bomb-swipe-arrow.current {
+  color: #ffffff;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.65);
+  text-shadow: 0 0 10px rgba(255,255,255,0.8);
+  animation: arrow-pulse 0.5s ease-in-out infinite alternate;
+}
+.bomb-swipe-arrow.done    { color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); }
+.bomb-swipe-arrow.pending { color: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.07); }
+@keyframes arrow-pulse { 0% { box-shadow: 0 0 5px rgba(255,255,255,0.2); } 100% { box-shadow: 0 0 14px rgba(255,255,255,0.55); } }
+
+.bomb-swipe-pad {
+  width: 100%;
+  max-width: 250px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 1px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  touch-action: none;
+}
+.bomb-swipe-fail { border-color: rgba(255,255,255,0.65); box-shadow: 0 0 18px rgba(255,255,255,0.12); animation: bomb-shake-fail 0.4s; }
+@keyframes bomb-shake-fail { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.bomb-swipe-hint { font-size: 0.68rem; color: rgba(255,255,255,0.4); text-align: center; font-family: 'Courier New', monospace; letter-spacing: 0.1em; text-transform: uppercase; }
+.bomb-swipe-arrows-big { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bomb-dir-row { display: flex; align-items: center; gap: 3px; }
+.bomb-dir-center { width: 42px; height: 42px; }
+.bomb-dir-btn {
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 1px;
+  color: #ffffff;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  text-shadow: 0 0 8px rgba(255,255,255,0.35);
+  transition: background 0.1s;
+}
+.bomb-dir-btn:active { background: rgba(255,255,255,0.14); transform: scale(0.92); }
+
+/* CodeAction */
+.bomb-action-code { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 100%; }
+.bomb-code-direction-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(255,255,255,0.13);
+  padding: 3px 10px;
+}
+.bomb-code-display-row { text-align: center; }
+.bomb-code-target {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: rgba(255,255,255,0.82);
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 8px rgba(255,255,255,0.25);
+}
+.bomb-code-entered {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  min-height: 2.4rem;
+  text-shadow: 0 0 12px rgba(255,255,255,0.45);
+  transition: color 0.15s;
+}
+.bomb-code-fail { animation: bomb-shake-fail 0.4s; text-shadow: 0 0 20px rgba(255,255,255,0.9); }
+.bomb-code-sep { margin: 0 4px; }
+.bomb-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  width: 100%;
+  max-width: 250px;
+}
+.bomb-numpad-btn {
+  padding: 14px 0;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 0;
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 6px rgba(255,255,255,0.25);
+  transition: background 0.1s;
+}
+.bomb-numpad-btn:active { background: rgba(255,255,255,0.16); text-shadow: 0 0 14px rgba(255,255,255,0.65); }
+.bomb-numpad-del { color: rgba(255,255,255,0.55); font-size: 0.95rem; }
+.bomb-code-err {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255,255,255,0.35);
+}
+
+/* ── Watching zone (mainframe terminal style) ── */
+.bomb-watching-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px;
+  font-family: 'Courier New', monospace;
+}
+.bomb-watch-visual {
+  font-size: 3.8rem;
+  animation: bomb-watch-pulse 1.4s ease-in-out infinite alternate;
+  filter: grayscale(1) brightness(0.5);
+}
+@keyframes bomb-watch-pulse { 0% { transform: scale(0.95); opacity: 0.45; } 100% { transform: scale(1.05); opacity: 0.65; } }
+.bomb-watch-name {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 10px rgba(255,255,255,0.35);
+}
+.bomb-watch-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.25);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+.bomb-watch-divider { width: 55%; height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
+.bomb-watching-players { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+.bomb-watch-pill {
+  padding: 3px 9px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.3);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bomb-watch-me { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.7); text-shadow: 0 0 6px rgba(255,255,255,0.25); }
+.bomb-watch-log {
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.18);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin: 4px 0 0;
+  animation: log-blink 2.5s ease-in-out infinite;
+}
+@keyframes log-blink { 0%,80% { opacity: 0.4; } 90% { opacity: 1; } 100% { opacity: 0.4; } }
+
+/* ── Explosion screen ── */
+.bomb-explode-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  overflow-y: auto;
+  animation: explode-flash 0.35s ease-out;
+}
+@keyframes explode-flash { 0% { background: rgba(255,255,255,0.35); } 100% { background: transparent; } }
+.bomb-explode-card {
+  width: 100%;
+  max-width: 320px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+.bomb-explode-icon { font-size: 3rem; animation: explode-icon 0.6s ease-out; filter: grayscale(1); }
+@keyframes explode-icon { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.bomb-explode-title {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  font-family: 'Bebas Neue', 'Courier New', monospace;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 14px rgba(255,255,255,0.45);
+}
+.bomb-explode-sub { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin: 0; letter-spacing: 0.08em; text-transform: uppercase; }
+.bomb-explode-sub strong { color: rgba(255,255,255,0.8); }
+.bomb-score-list { display: flex; flex-direction: column; gap: 5px; }
+.bomb-score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.06em;
+}
+.bomb-score-me     { border-color: rgba(255,255,255,0.32); color: rgba(255,255,255,0.82); }
+.bomb-score-loser  { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.05); }
+.bomb-score-name   { flex: 1; text-align: left; text-transform: uppercase; letter-spacing: 0.08em; }
+.bomb-score-losses { font-size: 0.72rem; color: rgba(255,255,255,0.4); font-weight: 700; }
 
 /* Top player strip */
 .bomb-top-bar {

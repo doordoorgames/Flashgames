@@ -1,0 +1,63 @@
+I want the game UI to be designed as if everything is displayed inside the central CRT/device screen area only.
+
+IMPORTANT LAYOUT RULE:
+Create an invisible safe frame/margin around the entire viewport:
+- 200px from the left
+- 200px from the right
+- 200px from the top
+- 200px from the bottom
+
+Nothing interactive or informational is allowed outside this safe screen area.
+No buttons, no timer, no player names, no status text, no arrows, no data, no overlays outside the safe area.
+
+The outer device frame/background is only decorative.
+All actual gameplay must happen inside the central screen.
+
+VISUAL STYLE:
+- 90s anime retro-futuristic CRT screen
+- dark purple static background
+- gritty scanlines
+- subtle TV noise
+- old futuristic mainframe feeling
+- no clean modern UI
+- no Game Boy style
+- no colorful rainbow neon
+
+COLOR RULE:
+Use ONLY white for gameplay UI elements:
+- white text
+- white icons
+- white arrows
+- white borders
+- white status lines
+- white buttons
+- white timer
+
+Do not use blue, cyan, green, pink, red, or yellow for the main gameplay UI unless I specifically ask later.
+
+UI REQUIREMENTS:
+Inside the central screen area, add:
+- current player name
+- timer
+- input sequence
+- arrows/directions
+- progress/status area
+- error/success messages
+- spectator/mainframe logs when it is another player’s turn
+
+The UI should feel like a white CRT terminal interface over purple static.
+
+Make the layout responsive:
+- On all screen sizes, keep all game elements inside the safe central screen area
+- Nothing should touch the device edges
+- Nothing should overflow outside the screen
+- Use CSS variables for the safe margins so I can easily adjust later:
+  --safe-margin-x: 200px;
+  --safe-margin-y: 200px;
+
+Implementation guidance:
+- Create a main wrapper for the device/background.
+- Create a separate `.screen-safe-area` container positioned inside it.
+- Put every single gameplay element inside `.screen-safe-area`.
+- Add overflow: hidden to prevent any accidental spill outside the central screen.
+- Keep the outer frame purely visual.

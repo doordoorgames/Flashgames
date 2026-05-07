@@ -48,25 +48,21 @@ function BombHealthBar({ timerMs, gameStartTime }: { timerMs: number; gameStartT
   }, [timerMs, gameStartTime]);
 
   const danger = pct < 0.25;
-  const color = pct > 0.55 ? "#ff8c00" : pct > 0.28 ? "#ff4500" : "#cc0000";
 
   return (
     <div className="bomb-health-wrap">
       <div className="bomb-health-label">
-        <span className="bomb-health-title">💣 DETONATION</span>
+        <span className="bomb-health-title">DETONATION TIMER</span>
         <span className={`bomb-health-secs ${danger ? "bomb-health-secs-danger" : ""}`}>{secsLeft}s</span>
       </div>
       <div className="bomb-health-track">
-        <div
-          className={`bomb-health-fill ${danger ? "bomb-health-fill-danger" : ""}`}
-          style={{ width: `${pct * 100}%`, background: color }}
-        />
+        <div className={`bomb-health-fill ${danger ? "bomb-health-fill-danger" : ""}`} style={{ width: `${pct * 100}%` }} />
       </div>
     </div>
   );
 }
 
-/* ── Challenge Timer (wartime design) ── */
+/* ── Challenge Timer ── */
 function ChallengeTimer({ timeLimit, onExpire }: { timeLimit: number; onExpire: () => void }) {
   const [secs, setSecs] = useState(timeLimit);
   const expiredRef = useRef(false);
@@ -118,7 +114,7 @@ function TapAction({ required, onComplete, onPunishment, onGlitch }: {
   const lastFiredAt = useRef(0);
   const tapsRef = useRef(0);
   const completeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dotSize = required > 20 ? 10 : required > 16 ? 13 : 16;
+  const dotSize = required > 20 ? 10 : required > 16 ? 12 : 14;
 
   const handleTap = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -153,8 +149,8 @@ function TapAction({ required, onComplete, onPunishment, onGlitch }: {
 
   return (
     <div className="bomb-action-tap">
-      <p className="bomb-action-label">{pendingStop ? "🛑 STOP TAPPING!" : `Tap ${required} times!`}</p>
-      <div className="bomb-tap-progress" style={{ gap: dotSize > 13 ? 6 : 4 }}>
+      <p className="bomb-action-label">{pendingStop ? "🛑 STOP TAPPING!" : `TAP  ${required}  TIMES`}</p>
+      <div className="bomb-tap-progress" style={{ gap: dotSize > 12 ? 6 : 4 }}>
         {Array.from({ length: required }).map((_, i) => (
           <div
             key={i}
@@ -167,7 +163,7 @@ function TapAction({ required, onComplete, onPunishment, onGlitch }: {
         className={`bomb-tap-btn ${flash ? "bomb-tap-flash" : ""} ${pendingStop ? "bomb-tap-stop" : ""}`}
         onPointerDown={handleTap}
       >
-        {pendingStop ? "STOP!" : "TAP!"}
+        {pendingStop ? "STOP" : "TAP"}
       </button>
     </div>
   );
@@ -183,6 +179,7 @@ function SwipeAction({ pattern, onComplete, onPunishment }: {
   const [failed, setFailed] = useState(false);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const done = useRef(false);
+  void onPunishment;
 
   const handleSwipe = useCallback((dir: string) => {
     if (done.current) return;
@@ -202,7 +199,6 @@ function SwipeAction({ pattern, onComplete, onPunishment }: {
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
-
   const onTouchEnd = (e: React.TouchEvent) => {
     if (!touchStart.current) return;
     const dx = e.changedTouches[0].clientX - touchStart.current.x;
@@ -213,14 +209,12 @@ function SwipeAction({ pattern, onComplete, onPunishment }: {
     else handleSwipe(dy > 0 ? "down" : "up");
   };
 
-  void onPunishment;
-
   const row1 = pattern.slice(0, 5);
   const row2 = pattern.slice(5);
 
   return (
     <div className="bomb-action-swipe">
-      <p className="bomb-action-label">Swipe the sequence!</p>
+      <p className="bomb-action-label">SWIPE THE SEQUENCE</p>
       <div className="bomb-swipe-sequence-wrap">
         <div className="bomb-swipe-sequence">
           {row1.map((dir, i) => (
@@ -246,7 +240,7 @@ function SwipeAction({ pattern, onComplete, onPunishment }: {
         onTouchEnd={onTouchEnd}
       >
         <div className="bomb-swipe-hint">
-          {failed ? "Wrong! Try again" : `Swipe ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
+          {failed ? "WRONG — TRY AGAIN" : `SWIPE  ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
         </div>
         <div className="bomb-swipe-arrows-big">
           <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("up")}>↑</button>
@@ -274,7 +268,6 @@ function CodeAction({ digits, direction, onComplete, onPunishment }: {
   const done = useRef(false);
   const isRtl = direction === "rtl";
   const targetAnswer = isRtl ? digits.split("").reverse().join("") : digits;
-
   void onPunishment;
 
   const handleKey = useCallback((k: string) => {
@@ -308,9 +301,9 @@ function CodeAction({ digits, direction, onComplete, onPunishment }: {
 
   return (
     <div className="bomb-action-code">
-      <p className="bomb-action-label">Type the code!</p>
+      <p className="bomb-action-label">TYPE THE CODE</p>
       <div className="bomb-code-direction-label">
-        {isRtl ? "⬅ Enter right to left" : "Enter left to right ➡"}
+        {isRtl ? "⬅ ENTER RIGHT TO LEFT" : "ENTER LEFT TO RIGHT ➡"}
       </div>
       <div className="bomb-code-display-row">
         <span className="bomb-code-target">{digits.slice(0, 4)} {digits.slice(4)}</span>
@@ -328,7 +321,7 @@ function CodeAction({ digits, direction, onComplete, onPunishment }: {
           </button>
         ))}
       </div>
-      {failed && <p className="bomb-code-err">Wrong code! Try again</p>}
+      {failed && <p className="bomb-code-err">WRONG CODE — TRY AGAIN</p>}
     </div>
   );
 }
@@ -341,7 +334,7 @@ function PunishmentOverlay({ countdown }: { countdown: number }) {
         <div className="bomb-punishment-icon">⚡</div>
         <div className="bomb-punishment-title">PENALTY</div>
         <div className="bomb-punishment-countdown">{countdown}</div>
-        <div className="bomb-punishment-sub">You still have the bomb!</div>
+        <div className="bomb-punishment-sub">YOU STILL HAVE THE BOMB</div>
       </div>
     </div>
   );
@@ -364,13 +357,11 @@ export default function BombGame({
   const isHolder = playerId === bombHolderId;
   const holder = players.find(p => p.id === bombHolderId);
 
-  // Recalculate challenge time limit each time a new challenge starts
   useEffect(() => {
     const elapsed = gameStartTime ? Date.now() - gameStartTime : 0;
     setChallengeTimeLimit(elapsed > 40000 ? 7 : 10);
   }, [bombHolderId, challengeAttempt, gameStartTime]);
 
-  // Reset punishment state when bomb changes holder
   useEffect(() => {
     if (glitchTimerRef.current) clearInterval(glitchTimerRef.current);
     isGlitchingRef.current = false;
@@ -384,7 +375,6 @@ export default function BombGame({
     isGlitchingRef.current = true;
     setIsGlitching(true);
     setGlitchCountdown(3);
-
     let count = 2;
     glitchTimerRef.current = setInterval(() => {
       setGlitchCountdown(count);
@@ -405,99 +395,113 @@ export default function BombGame({
     setTimeout(() => setCompletionGlitch(false), 700);
   }, []);
 
-  if (gamePhase === "exploded") {
-    const isLoser = playerId === loserId;
-    return (
-      <div className="bomb-explode-screen">
-        <div className="bomb-explode-card">
-          <div className="bomb-explode-icon">💥</div>
-          <h2 className="bomb-explode-title">{isLoser ? "You were holding the bomb!" : "BOOM!"}</h2>
-          <p className="bomb-explode-sub">
-            <strong>{loserName}</strong> was holding the bomb when it exploded!
-          </p>
-          <div className="bomb-score-list">
-            {[...players].sort((a, b) => a.losses - b.losses).map((p, i) => (
-              <div key={p.id} className={`bomb-score-row ${p.id === playerId ? "bomb-score-me" : ""} ${p.id === loserId ? "bomb-score-loser" : ""}`}>
-                <span>{i === 0 ? "🏆" : `#${i + 1}`}</span>
-                <span className="bomb-score-name">{p.name}</span>
-                <span className="bomb-score-losses">💥 {p.losses}</span>
-              </div>
-            ))}
-          </div>
-          {isAdmin && <button className="bomb-submit-btn" onClick={onPlayAgain}>Play Again 💣</button>}
-          {!isAdmin && <p className="wait-host">Waiting for host to start again...</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className={`bomb-game-screen ${isHolder ? "bomb-holder-bg" : ""} ${completionGlitch ? "bomb-screen-glitch" : ""} ${isGlitching ? "bomb-punishment-active" : ""}`}>
-      {isGlitching && isHolder && <PunishmentOverlay countdown={glitchCountdown} />}
+    <div className={`bomb-crt-device ${completionGlitch ? "bomb-screen-glitch" : ""} ${isGlitching ? "bomb-punishment-active" : ""}`}>
+      <div className="screen-safe-area">
+        <div className={`bomb-screen-content ${isHolder ? "bomb-screen-is-holder" : ""}`}>
 
-      <div className="bomb-top-bar">
-        <div className="bomb-player-strip">
-          {players.map(p => (
-            <div key={p.id} className={`bomb-player-pill ${p.id === bombHolderId ? "bomb-pill-active" : ""} ${p.id === playerId ? "bomb-pill-me" : ""}`}>
-              {p.id === bombHolderId && <span className="bomb-pill-icon">💣</span>}
-              <span>{p.name}</span>
-              {p.losses > 0 && <span className="bomb-pill-losses">×{p.losses}</span>}
+          {isGlitching && isHolder && <PunishmentOverlay countdown={glitchCountdown} />}
+
+          {gamePhase === "exploded" ? (
+            /* ── Explosion Screen ── */
+            <div className="bomb-explode-screen">
+              <div className="bomb-explode-card">
+                <div className="bomb-explode-icon">💥</div>
+                <h2 className="bomb-explode-title">
+                  {playerId === loserId ? "YOU HELD THE BOMB" : "DETONATED"}
+                </h2>
+                <p className="bomb-explode-sub">
+                  <strong>{loserName}</strong> was holding the bomb when it exploded
+                </p>
+                <div className="bomb-score-list">
+                  {[...players].sort((a, b) => a.losses - b.losses).map((p, i) => (
+                    <div key={p.id} className={`bomb-score-row ${p.id === playerId ? "bomb-score-me" : ""} ${p.id === loserId ? "bomb-score-loser" : ""}`}>
+                      <span>{i === 0 ? "01" : `0${i + 1}`}</span>
+                      <span className="bomb-score-name">{p.name.toUpperCase()}</span>
+                      <span className="bomb-score-losses">×{p.losses}</span>
+                    </div>
+                  ))}
+                </div>
+                {isAdmin && <button className="bomb-submit-btn" onClick={onPlayAgain}>PLAY AGAIN</button>}
+                {!isAdmin && <p className="bomb-watch-log">WAITING FOR HOST TO RESTART...</p>}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          ) : (
+            <>
+              {/* ── Player Strip ── */}
+              <div className="bomb-top-bar">
+                <div className="bomb-player-strip">
+                  {players.map(p => (
+                    <div key={p.id} className={`bomb-player-pill ${p.id === bombHolderId ? "bomb-pill-active" : ""} ${p.id === playerId ? "bomb-pill-me" : ""}`}>
+                      {p.id === bombHolderId && <span className="bomb-pill-icon">💣</span>}
+                      <span>{p.name.toUpperCase()}</span>
+                      {p.losses > 0 && <span className="bomb-pill-losses">×{p.losses}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-      {isHolder ? (
-        <div className="bomb-holder-zone">
-          <div className="bomb-visual">
-            <div className="bomb-body">💣</div>
-            <div className="bomb-fuse-text">YOU HAVE THE BOMB</div>
-          </div>
+              {/* ── Bomb Health Bar (always visible) ── */}
+              <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
 
-          <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
+              {/* ── Holder Zone ── */}
+              {isHolder ? (
+                <div className="bomb-holder-zone">
+                  <div className="bomb-visual">
+                    <div className="bomb-body">💣</div>
+                    <div className="bomb-fuse-text">YOU HAVE THE BOMB</div>
+                  </div>
 
-          {!isGlitching && (
-            <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
-              <ChallengeTimer timeLimit={challengeTimeLimit} onExpire={triggerPunishment} />
-              {action.type === "tap" && (
-                <TapAction
-                  required={action.required}
-                  onComplete={onCompleteAction}
-                  onPunishment={triggerPunishment}
-                  onGlitch={handleCompletionGlitch}
-                />
+                  {!isGlitching && (
+                    <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
+                      <ChallengeTimer timeLimit={challengeTimeLimit} onExpire={triggerPunishment} />
+                      {action.type === "tap" && (
+                        <TapAction
+                          required={action.required}
+                          onComplete={onCompleteAction}
+                          onPunishment={triggerPunishment}
+                          onGlitch={handleCompletionGlitch}
+                        />
+                      )}
+                      {action.type === "swipe" && (
+                        <SwipeAction
+                          pattern={action.pattern}
+                          onComplete={onCompleteAction}
+                          onPunishment={triggerPunishment}
+                        />
+                      )}
+                      {action.type === "code" && (
+                        <CodeAction
+                          digits={action.digits}
+                          direction={action.direction}
+                          onComplete={onCompleteAction}
+                          onPunishment={triggerPunishment}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* ── Watching Zone ── */
+                <div className="bomb-watching-zone">
+                  <div className="bomb-watch-visual">💣</div>
+                  <p className="bomb-watch-name">{(holder?.name ?? "???").toUpperCase()}</p>
+                  <p className="bomb-watch-label">IS HOLDING THE BOMB</p>
+                  <div className="bomb-watch-divider" />
+                  <div className="bomb-watching-players">
+                    {players.filter(p => p.id !== bombHolderId).map(p => (
+                      <span key={p.id} className={`bomb-watch-pill ${p.id === playerId ? "bomb-watch-me" : ""}`}>
+                        {p.name.toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="bomb-watch-log">[ STANDBY — AWAITING TRANSFER ]</p>
+                </div>
               )}
-              {action.type === "swipe" && (
-                <SwipeAction
-                  pattern={action.pattern}
-                  onComplete={onCompleteAction}
-                  onPunishment={triggerPunishment}
-                />
-              )}
-              {action.type === "code" && (
-                <CodeAction
-                  digits={action.digits}
-                  direction={action.direction}
-                  onComplete={onCompleteAction}
-                  onPunishment={triggerPunishment}
-                />
-              )}
-            </div>
+            </>
           )}
         </div>
-      ) : (
-        <div className="bomb-watching-zone">
-          <div className="bomb-watch-visual">💣</div>
-          <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
-          <p className="bomb-watch-name">{holder?.name ?? "..."}</p>
-          <p className="bomb-watch-label">has the bomb</p>
-          <div className="bomb-watching-players">
-            {players.filter(p => p.id !== bombHolderId).map(p => (
-              <span key={p.id} className={`bomb-watch-pill ${p.id === playerId ? "bomb-watch-me" : ""}`}>{p.name}</span>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

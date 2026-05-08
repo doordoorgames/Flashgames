@@ -1,0 +1,144 @@
+I want to redesign the bomb game experience. Keep the existing general dark purple sci-fi control-room background, but rebuild the actual playable center screen and gameplay feedback.
+
+GOAL:
+Make the game feel like an awesome 90s anime/futura cyber-bomb terminal, not a flat website UI. It should feel alive, dangerous, reactive, pixelated, noisy, and cinematic.
+
+IMPORTANT STYLE CHANGES:
+1. Remove the smooth brown rounded pill/squircle UI style.
+2. Replace it with sharper pixelated cyber-terminal panels:
+   - square or slightly chamfered corners
+   - pixel-border frames
+   - CRT scanlines
+   - subtle glitch/noise
+   - neon green, violet, orange, red warning colors
+   - chunky pixel/futura-style typography
+3. The center playable screen should look more pixelated and terminal-like, not smooth modern web design.
+4. Use a 90s anime sci-fi HUD feeling: Akira / Evangelion / old arcade terminal / cyberpunk bomb-defusal monitor.
+
+LAYOUT:
+- All important game data must be inside the center mainframe screen.
+- Keep the main gameplay area centered vertically and horizontally inside the big purple monitor.
+- Do not let buttons or challenge data sit too low where Safari bottom bar hides them.
+- Use safe-area spacing for mobile.
+- The peep/spectator screen must also show all live data centered inside the mainframe, not scattered around the page.
+
+GAME EXPLANATION:
+Add a clear “what is happening” layer for players:
+- At round start show:
+  “LOODY HAS THE BOMB”
+  “Complete the sequence before the challenge timer ends.”
+  “Fail and the bomb becomes unstable.”
+- For swipe challenge show:
+  “SWIPE THE SEQUENCE”
+  “Tap the arrows in order.”
+- For number/code challenge show:
+  “ENTER THE CODE”
+- For tap challenge show:
+  “TAP EXACTLY X TIMES”
+- These explanations should appear briefly with animated typewriter text, then shrink into a small mission label.
+
+ANIMATIONS:
+Add strong visual feedback:
+1. Bomb idle animation:
+   - bomb gently floats/pulses
+   - fuse flickers
+   - smoke particles sometimes appear
+2. Timer danger stages:
+   - above 50% time: calm green/orange glow
+   - below 30%: screen shakes slightly
+   - below 15%: red warning flash, glitch lines, faster beeps
+3. Correct input:
+   - arrow/key flashes neon green
+   - small electric spark
+   - satisfying beep
+4. Wrong input:
+   - screen glitch
+   - red flash
+   - harsh error buzz
+   - bomb shakes
+5. Challenge complete:
+   - green “TRANSFER SUCCESS”
+   - electric line travels from player name to next player
+   - bomb flies or slides to next player
+6. Timeout/fail:
+   - screen cuts to red
+   - warning siren
+   - bomb explosion/glitch effect
+   - smoke/noise overlay
+7. Player receiving bomb:
+   - name flashes in center
+   - “YOU HAVE THE BOMB” appears with dramatic impact animation.
+
+SOUNDS:
+Add sound effects using Web Audio API or simple audio files:
+- ticking/beeping timer
+- warning beep that speeds up near timeout
+- correct input beep
+- wrong input buzz
+- transfer success sound
+- explosion/glitch sound
+- start round sound
+Important: add a mute/unmute button because mobile browsers may require user interaction before audio starts.
+
+REAL-TIME RESPONSIVE PEEP / MAINFRAME SCREEN:
+The spectator/peep screen must update in real time when a player presses a key or completes input.
+When someone presses an arrow/key:
+- everyone watching should immediately see that arrow light up
+- progress should update live
+- current player name should be centered
+- challenge type should be centered
+- remaining challenge time should be visible
+- bomb owner should be obvious
+Use the existing real-time method in the project. If there is no reliable realtime system, implement Socket.IO or WebSocket syncing so inputs broadcast instantly to all clients.
+
+PEEP SCREEN REQUIREMENTS:
+- This is not just a static preview.
+- It should be a live “mainframe monitor.”
+- In the center mainframe show:
+  current bomb holder name
+  current challenge type
+  full sequence/code/tap target
+  live progress
+  timer
+  success/failure state
+- When the player presses keys, the peep screen should animate each key in real time.
+- Keep all this data inside the center monitor frame.
+
+PIXELATED CENTER SCREEN:
+Add a reusable CSS class for the center terminal:
+- pixelated border
+- CRT scanlines overlay
+- animated noise overlay
+- subtle horizontal flicker
+- inner glow
+- sharper corners
+- no soft brown modern buttons
+
+Replace current button style:
+- use pixel/chamfered cyber buttons
+- active button glows orange or green
+- disabled buttons are dark violet/gray
+- avoid smooth rounded rectangles.
+
+MOBILE:
+Test on iPhone Safari portrait.
+The game must fit inside the visible screen.
+No important controls should be hidden behind the browser bottom bar.
+Use `height: 100svh` or `100dvh`, safe-area padding, and responsive scaling.
+
+DO NOT:
+- Do not replace the whole background with a plain design.
+- Do not keep the brown rounded smooth UI.
+- Do not put important gameplay info outside the center mainframe.
+- Do not make the spectator screen delayed or static.
+- Do not add heavy animations that cause lag on mobile.
+
+FINAL FEEL:
+The player should instantly understand:
+1. who has the bomb
+2. what challenge they must do
+3. how much time is left
+4. what input was pressed
+5. whether they are succeeding or failing
+
+Make it feel like a dangerous anime bomb terminal, not a flat form page.

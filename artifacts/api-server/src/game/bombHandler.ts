@@ -162,6 +162,13 @@ export function setupBombHandlers(io: Server): void {
       });
     });
 
+    socket.on("bomb:input-progress", (data: { code: string; progress: unknown }) => {
+      const room = bombRooms.get("BOMB" + data.code);
+      if (!room || room.phase !== "playing") return;
+      if (socket.id !== room.bombHolderId) return;
+      socket.to("BOMB" + data.code).emit("bomb:progress-update", data.progress);
+    });
+
     socket.on("bomb:play-again", (data: { code: string }) => {
       const room = bombRooms.get("BOMB" + data.code);
       if (!room || socket.id !== room.adminId) return;

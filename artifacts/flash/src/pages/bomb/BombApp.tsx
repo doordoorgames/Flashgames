@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getSocket } from "@/lib/socket";
 import BombHome from "./BombHome";
 import BombLobby from "./BombLobby";
-import BombGame, { type BombAction, type BombPlayer } from "./BombGame";
+import BombGame, { type BombAction, type BombPlayer, type InputProgress } from "./BombGame";
 
 type BombPhase = "home" | "lobby" | "game";
 
@@ -28,6 +28,7 @@ export default function BombApp({ onBack }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const [timerMs, setTimerMs] = useState(90000);
   const [gameStartTime, setGameStartTime] = useState(0);
+  const [watchProgress, setWatchProgress] = useState<InputProgress | null>(null);
 
   useEffect(() => {
     const socket = getSocket();
@@ -45,12 +46,14 @@ export default function BombApp({ onBack }: Props) {
       setGamePhase("playing");
       setLoserId(null);
       setLoserName(null);
+      setWatchProgress(null);
       setPhase("game");
     });
 
     socket.on("bomb:passed", (data: { newHolderId: string; newHolderName: string; newAction: BombAction }) => {
       setBombHolderId(data.newHolderId);
       setAction(data.newAction);
+      setWatchProgress(null);
     });
 
     socket.on("bomb:explode", (data: { loserId: string; loserName: string; players: BombPlayer[] }) => {
@@ -70,8 +73,13 @@ export default function BombApp({ onBack }: Props) {
       setSession(null);
     });
 
+    socket.on("bomb:progress-update", (progress: InputProgress) => {
+      setWatchProgress(progress);
+    });
+
     return () => {
-      ["bomb:lobby-update","bomb:game-started","bomb:passed","bomb:explode","bomb:error","bomb:room-closed"]
+      ["bomb:lobby-update","bomb:game-started","bomb:passed","bomb:explode",
+       "bomb:error","bomb:room-closed","bomb:progress-update"]
         .forEach(e => socket.off(e));
     };
   }, []);
@@ -97,6 +105,11 @@ export default function BombApp({ onBack }: Props) {
     setGamePhase("playing");
   };
 
+  const handleProgress = useCallback((progress: InputProgress) => {
+    if (!session) return;
+    getSocket().emit("bomb:input-progress", { code: session.code, progress });
+  }, [session]);
+
   if (phase === "game" && session) {
     return (
       <BombGame
@@ -112,6 +125,8 @@ export default function BombApp({ onBack }: Props) {
         gameStartTime={gameStartTime}
         onCompleteAction={completeAction}
         onPlayAgain={playAgain}
+        onProgress={handleProgress}
+        watchProgress={watchProgress}
       />
     );
   }

@@ -125,13 +125,19 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
           <div className="final-lb">
             {finalLeaderboard.map((p, i) => (
               <div key={p.id} className={`final-lb-row ${i === 0 ? "winner" : ""} ${p.id === playerId ? "lb-me" : ""}`}>
-                <span className="final-rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</span>
+                <span className="final-rank">{i === 0 ? "#1" : i === 1 ? "#2" : i === 2 ? "#3" : `#${i + 1}`}</span>
                 <span className="final-name">{p.name}</span>
                 <span className="final-score">{p.score} pts</span>
               </div>
             ))}
           </div>
-          <button className="entry-btn" onClick={() => window.location.reload()}>Play Again</button>
+          {isAdmin ? (
+            <button className="entry-btn gameover-play-again-btn" onClick={() => getSocket().emit("restart-game", { code })}>
+              Play Another Game
+            </button>
+          ) : (
+            <p className="gameover-waiting">Waiting for host to start another round...</p>
+          )}
         </div>
       </div>
     );

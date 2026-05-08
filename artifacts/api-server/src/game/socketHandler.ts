@@ -137,6 +137,26 @@ export function setupSocketHandlers(io: Server): void {
       }
     );
 
+    socket.on("restart-game", (data: { code: string }) => {
+      const room = getRoom(data.code);
+      if (!room || socket.id !== room.adminId) return;
+      if (room.phase !== "leaderboard") return;
+      const items = getAdminItems();
+      if (items.length < TOTAL_ROUNDS) {
+        io.to(data.code).emit("error-msg", {
+          message: `Need at least ${TOTAL_ROUNDS} items. You have ${items.length}.`,
+        });
+        return;
+      }
+      room.players.forEach(player => { player.score = 0; });
+      room.items = [...items].sort(() => Math.random() - 0.5);
+      room.currentRound = 0;
+      room.roundResults = [];
+      room.phase = "lobby";
+      setRoom(data.code, room);
+      startNextRound(io, data.code);
+    });
+
     socket.on("disconnect", () => {
       const allRooms = getAllRooms();
       for (const [code, room] of allRooms) {

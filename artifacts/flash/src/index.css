@@ -3785,3 +3785,133 @@ html, body, #root {
   text-align: center;
   margin-bottom: 4px;
 }
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN LOGIN SCREEN + PLAY AGAIN BUTTON
+   ══════════════════════════════════════════════════════════ */
+
+.admin-login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0e14;
+  padding: 20px;
+}
+
+.admin-login-card {
+  background: #111620;
+  border: 1px solid #1e2a3a;
+  border-radius: 12px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+.admin-login-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.admin-login-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+.admin-login-sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  margin: 0;
+  text-align: center;
+}
+
+.admin-login-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 8px;
+  border: 1px solid #2a3a50;
+  background: #0d1520;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.admin-login-input:focus { border-color: #4e7fff; }
+
+.admin-login-err {
+  font-size: 0.78rem;
+  color: #ff5555;
+  margin: 0;
+  text-align: center;
+}
+
+.admin-login-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: none;
+  background: #4e7fff;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.admin-login-btn:hover { background: #3a6aee; }
+
+.admin-login-back {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.35);
+  text-decoration: none;
+  margin-top: 4px;
+}
+.admin-login-back:hover { color: rgba(255,255,255,0.7); }
+
+/* Admin header logout button */
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-logout-btn {
+  font-size: 0.78rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-logout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+
+/* Play Another Game button */
+.gameover-play-again-btn {
+  margin-top: 8px;
+  background: linear-gradient(135deg, #4e7fff 0%, #7c3aed 100%);
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
+.gameover-play-again-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.gameover-waiting {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+}

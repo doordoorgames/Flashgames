@@ -6,8 +6,11 @@ interface ServerItem extends GameItem {
 }
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<"flash" | "yesno">("flash");
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("admin_auth") === "1");
+  const [pw, setPw] = useState("");
+  const [pwErr, setPwErr] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<"flash" | "yesno">("flash");
   const [items, setItems] = useState<ServerItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -16,7 +19,6 @@ export default function AdminPage() {
   const [editAnswers, setEditAnswers] = useState("");
   const excelRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
-
   const [ynQuestions, setYnQuestions] = useState<string[]>([]);
   const ynCsvRef = useRef<HTMLInputElement>(null);
 
@@ -33,9 +35,46 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchItems();
-    fetchYnQuestions();
-  }, []);
+    if (authed) {
+      fetchItems();
+      fetchYnQuestions();
+    }
+  }, [authed]);
+
+  const checkPassword = () => {
+    if (pw === "admin123") {
+      sessionStorage.setItem("admin_auth", "1");
+      setAuthed(true);
+      setPwErr(false);
+    } else {
+      setPwErr(true);
+      setPw("");
+    }
+  };
+
+  if (!authed) {
+    return (
+      <div className="admin-login-screen">
+        <div className="admin-login-card">
+          <div className="admin-login-logo">Flash <span className="admin-title-ar">/ لمحة</span></div>
+          <h2 className="admin-login-title">Admin Panel</h2>
+          <p className="admin-login-sub">Enter the admin password to continue</p>
+          <input
+            className="admin-login-input"
+            type="password"
+            value={pw}
+            placeholder="Password"
+            onChange={e => { setPw(e.target.value); setPwErr(false); }}
+            onKeyDown={e => { if (e.key === "Enter") checkPassword(); }}
+            autoFocus
+          />
+          {pwErr && <p className="admin-login-err">Incorrect password. Try again.</p>}
+          <button className="admin-login-btn" onClick={checkPassword}>Enter</button>
+          <a href="/" className="admin-login-back">← Back to Game</a>
+        </div>
+      </div>
+    );
+  }
 
   const toast = (msg: string) => {
     setStatus(msg);
@@ -173,7 +212,10 @@ export default function AdminPage() {
             <h1 className="admin-title">Flash <span className="admin-title-ar">/ لمحة</span></h1>
             <p className="admin-subtitle">Admin Panel</p>
           </div>
-          <a href="/" className="admin-back-link">← Game</a>
+          <div className="admin-header-actions">
+            <button className="admin-logout-btn" onClick={() => { sessionStorage.removeItem("admin_auth"); setAuthed(false); }}>Log out</button>
+            <a href="/" className="admin-back-link">← Game</a>
+          </div>
         </div>
       </header>
 

@@ -38,21 +38,6 @@ export function isCorrectAnswer(
     if (normalized === normalize(accepted)) return true;
   }
 
-  const len = normalized.length;
-  const isNumber = /^\d+$/.test(correct);
-  if (isNumber) return false;
-
-  let allowedTypos = 0;
-  if (len >= 3 && len <= 5) allowedTypos = 1;
-  else if (len >= 6) allowedTypos = 2;
-
-  if (allowedTypos > 0) {
-    if (levenshtein(normalized, correct) <= allowedTypos) return true;
-    for (const accepted of acceptedAnswers) {
-      if (levenshtein(normalized, normalize(accepted)) <= allowedTypos) return true;
-    }
-  }
-
   return false;
 }
 

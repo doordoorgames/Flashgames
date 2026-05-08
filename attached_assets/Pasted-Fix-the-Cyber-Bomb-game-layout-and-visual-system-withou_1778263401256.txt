@@ -1,0 +1,98 @@
+Fix the Cyber Bomb game layout and visual system without changing the core gameplay or fun sound effects.
+
+MAIN PRIORITY:
+Nothing is allowed to visually seep outside the central invisible game barrier. Treat the center game area like a strict clipped mainframe screen.
+
+1. Create strict invisible clipping barriers
+
+For the MAINFRAME / PEEP SCREEN:
+- Create a centered invisible rectangle container around 800px wide.
+- Everything shown in the peep screen must live inside this container.
+- Apply overflow: hidden / clipping to this container.
+- Player data, key presses, answer status, animations, effects, scanlines, sparks, glow, warnings, and UI labels must all be clipped inside this rectangle.
+- Nothing can escape outside this mainframe screen.
+- The background can remain full-screen, but all active gameplay/data/effects must be inside the 800px center rectangle.
+
+For NORMAL PLAY GAME:
+- Create a centered invisible gameplay barrier around 500px wide.
+- All active gameplay elements must stay inside this 500px container:
+  - arrows
+  - arrow input buttons
+  - timer
+  - sequence
+  - player feedback
+  - animations
+  - bomb/digital effects
+  - success/fail messages
+- Apply overflow: hidden so nothing leaks outside.
+- Keep the full-screen background decorative only.
+
+2. Phone layout must not require scrolling
+
+On mobile / phone portrait:
+- The full play interface must fit inside the visible screen height.
+- The player must NOT need to scroll down to find the arrow buttons.
+- Move/nudge the arrow input controls upward.
+- Reduce vertical gaps if needed.
+- Keep timer, sequence, arrows, and input buttons visible together.
+- Use height: 100dvh or equivalent mobile-safe viewport handling.
+- Disable unnecessary page scrolling during gameplay.
+- Make sure the arrow buttons remain comfortably tappable.
+
+3. Remove non-digital visual language
+
+Remove or replace anything that feels non-digital:
+- No emojis.
+- No random red emoji-style icons.
+- No cartoon symbols.
+- No soft colorful decorations that feel unrelated to cyber/futura/anime tech.
+
+Replace them with:
+- pixel icons
+- glitch blocks
+- digital warning glyphs
+- ASCII-style symbols
+- cyber UI markers
+- pixel sparks
+- scanline bursts
+- neon grid fragments
+
+Use a stricter palette:
+- cyan
+- teal
+- electric blue
+- violet
+- magenta
+- white glow
+- dark navy / black
+Avoid random red except for very controlled danger states, and even then make it look digital/glitchy, not emoji/cartoon.
+
+4. Make the background feel integrated, not just pasted behind
+
+The background should still exist, but the center gameplay should feel like it is inside an active cyber mainframe device:
+- Add a subtle pixelated center-screen overlay.
+- Add scanlines only inside the main gameplay/mainframe container.
+- Add small animated UI ticks, corner brackets, and glitch strips around the center rectangle.
+- Add a faint digital glass layer inside the barrier.
+- The active gameplay area should feel like a screen/system, not text floating on a background.
+
+5. Peep screen real-time responsiveness
+
+In the mainframe peep screen:
+- When a player presses an arrow/key, the update must appear immediately in the centered 800px area.
+- Show all player data in the center, not spread around the screen.
+- Keep player rows/cards compact and readable.
+- Every keypress should trigger a small digital pulse/glitch effect inside that player’s row.
+- Do not let those effects escape the clipped container.
+
+6. QA checks before finishing
+
+Test these exact cases:
+- iPhone portrait size.
+- No scrolling needed to reach arrow inputs.
+- Main gameplay fits on screen.
+- Mainframe peep screen keeps all data inside the 800px center area.
+- Normal play keeps all active elements inside the 500px center area.
+- No effects, animations, glow, emoji, labels, or arrows leak outside the invisible barriers.
+- No emojis or non-digital red/cartoon elements remain.
+- Gameplay and sounds still work exactly as before.

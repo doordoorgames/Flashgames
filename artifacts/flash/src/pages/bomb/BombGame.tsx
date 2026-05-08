@@ -48,7 +48,7 @@ function MuteButton() {
   };
   return (
     <button className="bomb-mute-btn" onClick={toggle} title={muted ? "Unmute" : "Mute"}>
-      {muted ? "🔇" : "🔊"}
+      {muted ? "MUTE" : "SND"}
     </button>
   );
 }
@@ -121,7 +121,7 @@ function BombHealthBar({ timerMs, gameStartTime }: { timerMs: number; gameStartT
   return (
     <div className={`bomb-health-wrap bomb-health-${stage}`}>
       <div className="bomb-health-label">
-        <span className="bomb-health-title">⚡ DETONATION TIMER</span>
+        <span className="bomb-health-title">// DETONATION TIMER</span>
         <span className="bomb-health-secs">{secsLeft}s</span>
       </div>
       <div className="bomb-health-track">
@@ -160,7 +160,7 @@ function ChallengeTimer({ timeLimit, onExpire }: { timeLimit: number; onExpire: 
 
   return (
     <div className={`chal-timer-wrap chal-timer-${stage}`}>
-      <div className="chal-timer-label">◈ CHALLENGE TIMER</div>
+      <div className="chal-timer-label">[T] CHALLENGE TIMER</div>
       <div className="chal-timer-num">{secs}</div>
       <div className="chal-timer-bar-track">
         <div className="chal-timer-bar-fill" style={{ width: `${pct * 100}%` }} />
@@ -237,7 +237,7 @@ function TapAction({ required, onComplete, onPunishment, onGlitch, onProgress }:
   return (
     <div className="bomb-action-tap">
       <p className="bomb-action-label">
-        {pendingStop ? "🛑  STOP  TAPPING!" : `TAP  ${required}  TIMES`}
+        {pendingStop ? "[STOP]  TAPPING!" : `TAP  ${required}  TIMES`}
       </p>
       <div className="bomb-tap-progress" style={{ gap: dotSize > 11 ? 5 : 3 }}>
         {Array.from({ length: required }).map((_, i) => (
@@ -339,7 +339,7 @@ function SwipeAction({ pattern, onComplete, onPunishment, onProgress }: {
         onTouchEnd={onTouchEnd}
       >
         <div className="bomb-swipe-hint">
-          {failed ? "✗ WRONG — RETRY" : `SWIPE  ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
+          {failed ? "ERR — RETRY" : `SWIPE  ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
         </div>
         <div className="bomb-swipe-arrows-big">
           <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("up")}>↑</button>
@@ -428,7 +428,7 @@ function CodeAction({ digits, direction, onComplete, onPunishment, onProgress }:
             className={`bomb-numpad-btn ${k === "del" ? "bomb-numpad-del" : ""} ${lastKeyFlash === k ? "btn-correct-flash" : ""}`}
             onPointerDown={() => handleKey(k)}
           >
-            {k === "del" ? "⌫" : k}
+            {k === "del" ? "DEL" : k}
           </button>
         ))}
       </div>
@@ -506,10 +506,10 @@ function PunishmentOverlay({ countdown }: { countdown: number }) {
   return (
     <div className="bomb-punishment-overlay">
       <div className="bomb-punishment-content">
-        <div className="bomb-punishment-icon">⚡</div>
+        <div className="bomb-punishment-icon">!!</div>
         <div className="bomb-punishment-title">PENALTY</div>
         <div className="bomb-punishment-countdown">{countdown}</div>
-        <div className="bomb-punishment-sub">YOU STILL HAVE THE BOMB</div>
+        <div className="bomb-punishment-sub">// BOMB STILL ARMED //</div>
       </div>
     </div>
   );
@@ -614,18 +614,17 @@ export default function BombGame({
       <div className="screen-safe-area">
         <div className={`bomb-screen-content ${isHolder ? "bomb-screen-is-holder" : ""}`}>
 
-          {isGlitching && isHolder && <PunishmentOverlay countdown={glitchCountdown} />}
           <MuteButton />
 
           {gamePhase === "exploded" ? (
             <div className="bomb-explode-screen">
               <div className="bomb-explode-card">
-                <div className="bomb-explode-icon">💥</div>
+                <div className="bomb-explode-icon">[!]</div>
                 <h2 className="bomb-explode-title">
                   {playerId === loserId ? "YOU HELD THE BOMB" : "DETONATED"}
                 </h2>
                 <p className="bomb-explode-sub">
-                  <strong>{loserName}</strong> was holding the bomb when it exploded
+                  <strong>{loserName}</strong> was holding the bomb when it detonated
                 </p>
                 <div className="bomb-score-list">
                   {[...players].sort((a, b) => a.losses - b.losses).map((p, i) => (
@@ -646,7 +645,7 @@ export default function BombGame({
                 <div className="bomb-player-strip">
                   {players.map(p => (
                     <div key={p.id} className={`bomb-player-pill ${p.id === bombHolderId ? "bomb-pill-active" : ""} ${p.id === playerId ? "bomb-pill-me" : ""}`}>
-                      {p.id === bombHolderId && <span className="bomb-pill-icon">💣</span>}
+                      {p.id === bombHolderId && <span className="bomb-pill-icon">◉</span>}
                       <span>{p.name.toUpperCase()}</span>
                       {p.losses > 0 && <span className="bomb-pill-losses">×{p.losses}</span>}
                     </div>
@@ -665,59 +664,64 @@ export default function BombGame({
                       onDismiss={() => setIsBriefing(false)}
                     />
                   )}
-
-                  <div className="bomb-visual">
-                    <div className={`bomb-body ${timerClass}`}>💣</div>
-                    <div className="bomb-fuse-text">YOU HAVE THE BOMB</div>
-                  </div>
-
-                  {!isBriefing && !isGlitching && (
-                    <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
-                      <ChallengeTimer timeLimit={15} onExpire={triggerPunishment} />
-                      {action.type === "tap" && (
-                        <TapAction
-                          required={action.required}
-                          onComplete={onCompleteAction}
-                          onPunishment={triggerPunishment}
-                          onGlitch={handleCompletionGlitch}
-                          onProgress={onProgress}
-                        />
-                      )}
-                      {action.type === "swipe" && (
-                        <SwipeAction
-                          pattern={action.pattern}
-                          onComplete={onCompleteAction}
-                          onPunishment={triggerPunishment}
-                          onProgress={onProgress}
-                        />
-                      )}
-                      {action.type === "code" && (
-                        <CodeAction
-                          digits={action.digits}
-                          direction={action.direction}
-                          onComplete={onCompleteAction}
-                          onPunishment={triggerPunishment}
-                          onProgress={onProgress}
-                        />
-                      )}
+                  <div className="bomb-play-container">
+                    <div className="bomb-corners" aria-hidden="true" />
+                    {isGlitching && <PunishmentOverlay countdown={glitchCountdown} />}
+                    <div className="bomb-visual">
+                      <div className={`bomb-body ${timerClass}`}>◉</div>
+                      <div className="bomb-fuse-text">// ARMED //</div>
                     </div>
-                  )}
+                    {!isBriefing && !isGlitching && (
+                      <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
+                        <ChallengeTimer timeLimit={15} onExpire={triggerPunishment} />
+                        {action.type === "tap" && (
+                          <TapAction
+                            required={action.required}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
+                            onGlitch={handleCompletionGlitch}
+                            onProgress={onProgress}
+                          />
+                        )}
+                        {action.type === "swipe" && (
+                          <SwipeAction
+                            pattern={action.pattern}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
+                            onProgress={onProgress}
+                          />
+                        )}
+                        {action.type === "code" && (
+                          <CodeAction
+                            digits={action.digits}
+                            direction={action.direction}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
+                            onProgress={onProgress}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="bomb-watching-zone">
-                  <p className="bomb-watch-log">[ MONITORING CHANNEL ACTIVE ]</p>
-                  <div className="bomb-watch-challenge-wrap">
-                    <p className="bomb-watch-holder-label">{(holder?.name ?? "???").toUpperCase()}</p>
-                    <WatchChallenge action={action} progress={watchProgress} />
+                  <div className="bomb-watch-container">
+                    <div className="bomb-corners" aria-hidden="true" />
+                    <p className="bomb-watch-log">[ MONITORING CHANNEL ACTIVE ]</p>
+                    <div className="bomb-watch-challenge-wrap">
+                      <p className="bomb-watch-holder-label">{(holder?.name ?? "???").toUpperCase()}</p>
+                      <WatchChallenge action={action} progress={watchProgress} />
+                    </div>
+                    <div className="bomb-watching-players">
+                      {players.filter(p => p.id !== bombHolderId).map(p => (
+                        <span key={p.id} className={`bomb-watch-pill ${p.id === playerId ? "bomb-watch-me" : ""}`}>
+                          {p.name.toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="bomb-watch-log">[ STANDBY — AWAITING TRANSFER ]</p>
                   </div>
-                  <div className="bomb-watching-players">
-                    {players.filter(p => p.id !== bombHolderId).map(p => (
-                      <span key={p.id} className={`bomb-watch-pill ${p.id === playerId ? "bomb-watch-me" : ""}`}>
-                        {p.name.toUpperCase()}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="bomb-watch-log">[ STANDBY — AWAITING TRANSFER ]</p>
                 </div>
               )}
             </>

@@ -21,7 +21,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
       <div className="screen-safe-area">
         <div className="bomb-screen-content bomb-screen-centered">
           <div className="bomb-lobby-card">
-            <div className="bomb-lobby-brand">💣 The Bomb</div>
+            <div className="bomb-lobby-brand">[ THE BOMB ]</div>
 
             <div className="room-code-display bomb-room-code">
               <p className="rcd-label">Room Code</p>
@@ -38,7 +38,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
                     <span className="lobby-pname">{p.name}</span>
                     {p.isAdmin && <span className="lobby-host-tag">HOST</span>}
                     {p.id === playerId && <span className="bomb-me-tag">you</span>}
-                    {p.losses > 0 && <span className="bomb-loss-tag">💥 {p.losses}</span>}
+                    {p.losses > 0 && <span className="bomb-loss-tag">x{p.losses}</span>}
                   </div>
                 ))}
               </div>
@@ -50,7 +50,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
               <div className="bomb-lobby-admin">
                 {players.length >= 2 ? (
                   <button className="bomb-submit-btn" onClick={onStartGame}>
-                    Start Game 💣
+                    START GAME
                   </button>
                 ) : (
                   <p className="bomb-waiting-hint">Waiting for at least 2 players...</p>

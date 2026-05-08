@@ -51,13 +51,13 @@ export default function BombHome({ onBack, onJoined }: Props) {
             {sub === "choose" && (
               <>
                 <div className="bomb-entry-header">
-                  <span className="bomb-entry-icon">💣</span>
+                  <span className="bomb-entry-icon">◉</span>
                   <span className="bomb-entry-title">The Bomb</span>
                   <p className="bomb-entry-desc">Pass the bomb before it explodes! Complete the challenge fast or you're holding it when time runs out.</p>
                 </div>
                 <div className="bomb-entry-btns">
-                  <button className="bomb-choice-btn" onClick={() => setSub("join")}>🎮 Join Room</button>
-                  <button className="bomb-choice-btn bomb-choice-primary" onClick={() => setSub("create")}>🎯 Create Room</button>
+                  <button className="bomb-choice-btn" onClick={() => setSub("join")}>&gt; Join Room</button>
+                  <button className="bomb-choice-btn bomb-choice-primary" onClick={() => setSub("create")}>&gt; Create Room</button>
                 </div>
               </>
             )}

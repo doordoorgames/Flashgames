@@ -3636,3 +3636,152 @@ html, body, #root {
   .bomb-numpad-btn    { padding: 11px 0; }
   :root { --safe-margin-x: 10px; --safe-margin-y: 40px; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   WHITE TEXT PALETTE + PENALTY SYSTEM + COMPACT SWIPE LAYOUT
+   ══════════════════════════════════════════════════════════ */
+
+/* ── All green/cyan TEXT colors → white ── */
+
+/* Action labels */
+.bomb-action-label { color: #ffffff !important; text-shadow: 0 0 8px rgba(255,255,255,0.2) !important; }
+
+/* Challenge timer numbers and label */
+.chal-timer-label  { color: rgba(255,255,255,0.55) !important; }
+.chal-timer-num    { color: #ffffff !important; text-shadow: 0 0 18px rgba(255,255,255,0.35) !important; }
+
+/* Timer label row (label + penalty badge on same line) */
+.chal-timer-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Penalty badge */
+.chal-penalty-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ff2200;
+  background: rgba(255,34,0,0.12);
+  border: 1px solid rgba(255,34,0,0.4);
+  padding: 1px 5px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 8px rgba(255,34,0,0.6);
+  animation: penalty-blink 0.7s steps(1) infinite;
+}
+@keyframes penalty-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* Tap button → white text */
+.bomb-tap-btn    { color: #ffffff !important; text-shadow: 0 0 10px rgba(255,255,255,0.3) !important; }
+/* Dir buttons → white arrows */
+.bomb-dir-btn    { color: #ffffff !important; text-shadow: 0 0 6px rgba(255,255,255,0.25) !important; }
+
+/* Swipe sequence arrows */
+.bomb-swipe-arrow.current { color: #ffffff !important; text-shadow: 0 0 12px rgba(255,255,255,0.8) !important; }
+.bomb-swipe-arrow.done    { color: rgba(255,255,255,0.25) !important; }
+.bomb-swipe-arrow.pending { color: rgba(255,255,255,0.08) !important; }
+.bomb-swipe-arrow.correct-flash { color: #ffffff !important; }
+
+/* Swipe hint text */
+.bomb-swipe-hint { color: rgba(255,255,255,0.35) !important; }
+
+/* Code action */
+.bomb-code-direction-label { color: rgba(255,255,255,0.45) !important; }
+.bomb-code-target  { color: rgba(255,255,255,0.3) !important; text-shadow: none !important; }
+.bomb-code-entered { color: #ffffff !important; text-shadow: 0 0 10px rgba(255,255,255,0.35) !important; }
+.bomb-numpad-btn   { color: rgba(255,255,255,0.65) !important; text-shadow: none !important; }
+.bomb-numpad-btn:active { color: #ffffff !important; }
+.bomb-numpad-del   { color: rgba(255,100,100,0.65) !important; }
+
+/* Watch challenge */
+.watch-challenge-type  { color: rgba(255,255,255,0.45) !important; }
+.watch-challenge-value { color: #ffffff !important; text-shadow: none !important; }
+.watch-swipe-arrow.current { color: #ffffff !important; text-shadow: 0 0 10px rgba(255,255,255,0.7) !important; }
+.watch-swipe-arrow.done    { color: rgba(255,255,255,0.2) !important; }
+.watch-swipe-arrow.pending { color: rgba(255,255,255,0.06) !important; }
+
+/* Fuse text */
+.bomb-fuse-text { color: rgba(255,255,255,0.3) !important; animation: fuse-flicker-white 0.6s ease-in-out infinite alternate !important; }
+@keyframes fuse-flicker-white { 0% { opacity: 0.2; } 100% { opacity: 0.55; } }
+
+/* Bomb body safe */
+.bomb-body:not(.bomb-timer-warn):not(.bomb-timer-crit) { color: #ffffff !important; }
+
+/* Player pill text */
+.bomb-player-pill          { color: rgba(255,255,255,0.5) !important; }
+.bomb-pill-active          { color: #ffffff !important; border-color: rgba(255,255,255,0.6) !important; }
+.bomb-pill-icon            { color: #ffffff !important; }
+.bomb-pill-losses          { color: rgba(255,100,100,0.9) !important; }
+
+/* Lobby brand (no emoji version) */
+.bomb-lobby-brand          { color: #ffffff !important; letter-spacing: 0.18em !important; }
+
+/* Health safe state → white (not cyan/green) */
+.bomb-health-safe .bomb-health-secs { color: #ffffff !important; }
+.bomb-health-safe .bomb-health-fill { background: #ffffff !important; }
+
+/* Watch log */
+.bomb-watch-log { color: rgba(255,255,255,0.3) !important; }
+.bomb-watch-holder-label { color: #ffffff !important; }
+.bomb-watch-pill { color: rgba(255,255,255,0.45) !important; }
+.bomb-watch-me   { color: #ffffff !important; border-color: rgba(255,255,255,0.5) !important; }
+
+/* Explosion screen */
+.bomb-explode-title { color: #ffffff !important; }
+.bomb-score-rank    { color: rgba(255,255,255,0.3) !important; }
+.bomb-score-name    { color: #ffffff !important; }
+.bomb-score-me .bomb-score-name { color: #ffffff !important; }
+.bomb-score-loser .bomb-score-name { color: #ff2200 !important; }
+.bomb-explode-sub   { color: rgba(255,255,255,0.5) !important; }
+
+/* ── Compact swipe layout — ensure arrows always on screen without scroll ── */
+
+/* Make swipe pad smaller so everything fits */
+.bomb-action-swipe { gap: 5px !important; }
+.bomb-swipe-sequence-wrap { gap: 3px !important; }
+.bomb-swipe-sequence { gap: 3px !important; }
+.bomb-swipe-arrow {
+  font-size: 1.25rem !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+.bomb-swipe-pad { padding: 8px !important; gap: 4px !important; }
+.bomb-swipe-arrows-big { gap: 2px !important; }
+.bomb-dir-row { gap: 2px !important; }
+.bomb-dir-btn  { width: 52px !important; height: 52px !important; font-size: 1.4rem !important; }
+.bomb-dir-center { width: 40px !important; height: 40px !important; }
+
+/* Compact challenge timer to save vertical space */
+.chal-timer-wrap  { padding: 5px 10px 6px !important; gap: 2px !important; }
+.chal-timer-num   { font-size: 2rem !important; line-height: 1 !important; }
+.chal-timer-bar-track { height: 3px !important; }
+
+/* Compact bomb visual (◉ + ARMED) */
+.bomb-visual { gap: 0 !important; margin-bottom: 0 !important; }
+.bomb-body   { font-size: 2rem !important; }
+.bomb-fuse-text { font-size: 0.4rem !important; margin-top: 0 !important; }
+
+/* Tap action compact */
+.bomb-action-tap { gap: 7px !important; }
+.bomb-tap-btn    { width: 110px !important; height: 110px !important; }
+
+/* Code action compact */
+.bomb-action-code { gap: 5px !important; }
+.bomb-numpad-btn  { padding: 11px 0 !important; }
+
+/* Global play container: reduce top gap */
+.bomb-play-container { gap: 4px !important; padding: 4px 8px 6px !important; }
+
+/* Entry icon (◉ replacing bomb emoji) */
+.bomb-entry-icon {
+  font-family: 'Courier New', monospace;
+  font-size: 1.6rem;
+  color: #ffffff;
+  letter-spacing: 0;
+  display: block;
+  text-align: center;
+  margin-bottom: 4px;
+}

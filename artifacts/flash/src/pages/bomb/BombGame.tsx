@@ -132,7 +132,11 @@ function BombHealthBar({ timerMs, gameStartTime }: { timerMs: number; gameStartT
 }
 
 /* ── Challenge Timer ── */
-function ChallengeTimer({ timeLimit, onExpire }: { timeLimit: number; onExpire: () => void }) {
+function ChallengeTimer({ timeLimit, onExpire, penaltyCount = 0 }: {
+  timeLimit: number;
+  onExpire: () => void;
+  penaltyCount?: number;
+}) {
   const [secs, setSecs] = useState(timeLimit);
   const expiredRef = useRef(false);
   const onExpireRef = useRef(onExpire);
@@ -160,7 +164,12 @@ function ChallengeTimer({ timeLimit, onExpire }: { timeLimit: number; onExpire: 
 
   return (
     <div className={`chal-timer-wrap chal-timer-${stage}`}>
-      <div className="chal-timer-label">[T] CHALLENGE TIMER</div>
+      <div className="chal-timer-label-row">
+        <span className="chal-timer-label">[T] CHALLENGE</span>
+        {penaltyCount > 0 && (
+          <span className="chal-penalty-badge">-{penaltyCount}s</span>
+        )}
+      </div>
       <div className="chal-timer-num">{secs}</div>
       <div className="chal-timer-bar-track">
         <div className="chal-timer-bar-fill" style={{ width: `${pct * 100}%` }} />
@@ -527,6 +536,7 @@ export default function BombGame({
   const [completionGlitch, setCompletionGlitch] = useState(false);
   const [isBriefing, setIsBriefing] = useState(true);
   const [globalPct, setGlobalPct] = useState(1);
+  const [penaltyCount, setPenaltyCount] = useState(0);
 
   const isGlitchingRef = useRef(false);
   const glitchTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -544,6 +554,11 @@ export default function BombGame({
     setChallengeAttempt(0);
     tickStageRef.current = -1;
   }, [bombHolderId]);
+
+  // Reset personal penalty count on new game
+  useEffect(() => {
+    setPenaltyCount(0);
+  }, [gameStartTime]);
 
   useEffect(() => {
     if (gamePhase !== "playing") {
@@ -580,6 +595,7 @@ export default function BombGame({
     isGlitchingRef.current = true;
     setIsGlitching(true);
     setGlitchCountdown(3);
+    setPenaltyCount(p => p + 1);
     let count = 2;
     glitchTimerRef.current = setInterval(() => {
       setGlitchCountdown(count);
@@ -653,8 +669,6 @@ export default function BombGame({
                 </div>
               </div>
 
-              <BombHealthBar timerMs={timerMs} gameStartTime={gameStartTime} />
-
               {isHolder ? (
                 <div className="bomb-holder-zone">
                   {isBriefing && (
@@ -673,7 +687,11 @@ export default function BombGame({
                     </div>
                     {!isBriefing && !isGlitching && (
                       <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
-                        <ChallengeTimer timeLimit={15} onExpire={triggerPunishment} />
+                        <ChallengeTimer
+                          timeLimit={Math.max(1, (action.type === "code" ? 7 : 9) - penaltyCount)}
+                          onExpire={triggerPunishment}
+                          penaltyCount={penaltyCount}
+                        />
                         {action.type === "tap" && (
                           <TapAction
                             required={action.required}

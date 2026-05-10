@@ -3659,20 +3659,36 @@ html, body, #root {
   width: 100%;
 }
 
+/* Penalty stack */
+.chal-penalty-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+}
+
 /* Penalty badge */
 .chal-penalty-badge {
   font-family: 'Courier New', monospace;
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: #ff2200;
   background: rgba(255,34,0,0.12);
   border: 1px solid rgba(255,34,0,0.4);
-  padding: 1px 5px;
-  letter-spacing: 0.08em;
+  padding: 1px 8px;
+  letter-spacing: 0.1em;
   text-shadow: 0 0 8px rgba(255,34,0,0.6);
-  animation: penalty-blink 0.7s steps(1) infinite;
+  text-transform: uppercase;
 }
-@keyframes penalty-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+.chal-penalty-stack .chal-penalty-badge:last-child {
+  animation: penalty-flash-in 0.35s ease-out;
+}
+@keyframes penalty-flash-in {
+  0%   { opacity: 0; transform: scale(1.25); }
+  60%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
 
 /* Tap button → white text */
 .bomb-tap-btn    { color: #ffffff !important; text-shadow: 0 0 10px rgba(255,255,255,0.3) !important; }

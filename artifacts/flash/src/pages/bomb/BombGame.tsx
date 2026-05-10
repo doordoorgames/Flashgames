@@ -166,10 +166,14 @@ function ChallengeTimer({ timeLimit, onExpire, penaltyCount = 0 }: {
     <div className={`chal-timer-wrap chal-timer-${stage}`}>
       <div className="chal-timer-label-row">
         <span className="chal-timer-label">[T] CHALLENGE</span>
-        {penaltyCount > 0 && (
-          <span className="chal-penalty-badge">-{penaltyCount}s</span>
-        )}
       </div>
+      {penaltyCount > 0 && (
+        <div className="chal-penalty-stack">
+          {Array.from({ length: penaltyCount }).map((_, i) => (
+            <span key={i} className="chal-penalty-badge">-1 Second</span>
+          ))}
+        </div>
+      )}
       <div className="chal-timer-num">{secs}</div>
       <div className="chal-timer-bar-track">
         <div className="chal-timer-bar-fill" style={{ width: `${pct * 100}%` }} />
@@ -688,7 +692,7 @@ export default function BombGame({
                     {!isBriefing && !isGlitching && (
                       <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
                         <ChallengeTimer
-                          timeLimit={Math.max(1, (action.type === "code" ? 7 : 9) - penaltyCount)}
+                          timeLimit={Math.max(1, 16 - penaltyCount)}
                           onExpire={triggerPunishment}
                           penaltyCount={penaltyCount}
                         />

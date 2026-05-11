@@ -80,6 +80,7 @@ export default function BombHome({ onBack, onJoined }: Props) {
                       placeholder="5-digit room code"
                       value={code}
                       maxLength={5}
+                      inputMode="numeric"
                       onChange={e => { setCode(e.target.value.replace(/\D/g, "").slice(0, 5)); setError(""); }}
                       onKeyDown={e => { if (e.key === "Enter") handleJoin(); }}
                     />

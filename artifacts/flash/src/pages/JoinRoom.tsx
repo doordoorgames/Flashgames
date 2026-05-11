@@ -46,6 +46,7 @@ export default function JoinRoom({ onBack, onJoined }: JoinRoomProps) {
             placeholder="Room code"
             value={code}
             maxLength={5}
+            inputMode="numeric"
             onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 5)); setError(""); }}
           />
           {error && <p className="entry-error">{error}</p>}

@@ -77,6 +77,7 @@ export default function YesNoHome({ onBack, onJoined }: Props) {
                   placeholder="Room code"
                   value={code}
                   maxLength={5}
+                  inputMode="numeric"
                   onChange={e => { setCode(e.target.value.replace(/\D/g, "").slice(0, 5)); setError(""); }}
                 />
               )}

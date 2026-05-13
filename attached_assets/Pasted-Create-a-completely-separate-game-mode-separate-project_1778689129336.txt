@@ -1,0 +1,390 @@
+Create a completely separate game mode / separate project called:
+
+BOMB 2.0
+
+DO NOT replace or overwrite the existing Bomb game.
+Keep Bomb 1.0 untouched.
+This is a new experimental version with a different gameplay philosophy.
+
+━━━━━━━━━━━━━━━━━━
+CORE DESIGN GOAL
+━━━━━━━━━━━━━━━━━━
+
+Bomb 2.0 should NOT feel like:
+- random mobile minigames
+- tapping tasks
+- utility puzzles
+- CAPTCHA-like gameplay
+
+It should feel like:
+- a reactor meltdown
+- a chaotic anime emergency
+- a multiplayer panic simulator
+- loud visual chaos
+- social manipulation
+- screaming and sabotage between friends
+
+The gameplay should create:
+- panic
+- betrayal
+- yelling
+- revenge
+- funny sabotage
+- last-second saves
+- cinematic tension
+
+This is NOT a calm puzzle game.
+
+━━━━━━━━━━━━━━━━━━
+CORE GAME LOOP
+━━━━━━━━━━━━━━━━━━
+
+One player currently holds the bomb.
+
+That player:
+- solves urgent reactor tasks
+- panics under pressure
+- experiences visual interference
+- can throw/pass the bomb to another player after completing a task
+
+All OTHER players become:
+THE CONTROL ROOM
+
+Control room players are NEVER idle.
+
+While waiting:
+- they can sabotage
+- spam interference
+- help or hurt reactor stability
+- trigger chaos effects
+- distract the active player
+
+The game should ALWAYS feel alive even when it is not your turn.
+
+━━━━━━━━━━━━━━━━━━
+MAIN VISUAL DIRECTION
+━━━━━━━━━━━━━━━━━━
+
+The aesthetic should feel:
+- pixelated
+- unstable
+- cyber-reactor themed
+- anime emergency
+- CRT / VHS distortion
+- reactor core meltdown
+- digital panic
+
+NOT:
+- soft mobile UI
+- rounded modern corporate design
+- clean Apple-style interface
+
+The visuals should feel:
+- shaky
+- glitchy
+- dramatic
+- saturated
+- dangerous
+
+Use:
+- scanlines
+- chromatic aberration
+- static
+- digital glitches
+- sparks
+- smoke
+- red emergency lights
+- warning overlays
+- screen flickers
+- reactor heat distortion
+
+The center gameplay area should remain readable.
+Chaos should surround gameplay, not destroy usability.
+
+━━━━━━━━━━━━━━━━━━
+IMPORTANT SCREEN RULE
+━━━━━━━━━━━━━━━━━━
+
+Maintain an invisible centered gameplay frame.
+
+All core gameplay must remain inside a centered safe zone.
+
+Nothing important should touch screen edges.
+
+The game must look excellent:
+- on TikTok Live
+- on phone portrait mode
+- on iPad
+- in PIP mode
+- in browser streams
+
+The gameplay area should feel like:
+a reactor terminal embedded in a larger control room.
+
+━━━━━━━━━━━━━━━━━━
+BOMB TIMER CHANGES
+━━━━━━━━━━━━━━━━━━
+
+DO NOT show exact remaining time.
+
+Remove visible countdown timers.
+
+Instead use:
+REACTOR STABILITY STATES
+
+Examples:
+- STABLE
+- HEATING UP
+- CRITICAL
+- MELTDOWN
+- ????
+
+Or:
+- 5 reactor bars
+- overheating visuals
+- sparks increasing
+- screen instability increasing
+
+Players should FEEL panic without mathematically tracking time.
+
+━━━━━━━━━━━━━━━━━━
+MATCH FLOW
+━━━━━━━━━━━━━━━━━━
+
+PHASE 1 — CALM
+- easier tasks
+- slower effects
+- learning period
+
+PHASE 2 — INSTABILITY
+- control room sabotage unlocked
+- more visual glitches
+- reactor overheating
+
+PHASE 3 — CHAOS
+- fake instructions
+- stronger sabotage
+- faster tasks
+- overlapping alerts
+
+PHASE 4 — MELTDOWN
+- intense screen shake
+- reactor nearly exploding
+- unstable UI
+- rapid bomb passing
+- everyone screaming
+
+━━━━━━━━━━━━━━━━━━
+ACTIVE PLAYER TASKS
+━━━━━━━━━━━━━━━━━━
+
+Existing mechanics can remain:
+- swipe patterns
+- tapping
+- directional input
+- codes
+
+BUT they must feel integrated into the reactor emergency theme.
+
+Add more reactor-style tasks:
+
+1. FREEZE
+Player must stop touching and moving device briefly.
+
+2. COOLANT LEAK
+Player rapidly patches leaking reactor holes.
+
+3. CUT WIRES
+Wrong wire increases instability.
+
+4. MEMORY FLASH
+Sequence shown once very quickly.
+
+5. REACTOR ALIGNMENT
+Rotate unstable energy rings into position.
+
+6. OVERHEAT BUTTON
+Mash button before reactor bursts.
+
+7. SIGNAL SCRAMBLE
+Controls invert temporarily.
+
+8. FIRE SPREAD
+Flames appear and must be extinguished.
+
+━━━━━━━━━━━━━━━━━━
+CONTROL ROOM GAMEPLAY
+━━━━━━━━━━━━━━━━━━
+
+THIS IS CRITICAL.
+
+Waiting players should NEVER feel bored.
+
+Control room players can perform quick sabotage/help actions.
+
+These actions must be:
+- instant
+- visual
+- spammy
+- funny
+- chaotic
+
+NOT menu-heavy or strategic.
+
+Examples:
+
+1. OVERHEAT
+Spam tap to raise instability.
+
+2. POWER SURGE
+Briefly shakes active player screen.
+
+3. FIRE ATTACK
+Adds fire effects onto active player screen.
+
+4. SIGNAL JAM
+Creates fake warning instructions.
+
+5. CAMERA GLITCH
+Temporary visual interference.
+
+6. STATIC BURST
+Adds distortion and static.
+
+7. COOLANT SUPPORT
+Helpful action that lowers instability.
+
+8. CROWD VOTE
+Control room votes:
+- harder
+- easier
+- chaos mode
+
+━━━━━━━━━━━━━━━━━━
+BOMB PASSING SYSTEM
+━━━━━━━━━━━━━━━━━━
+
+After completing a task,
+the active player chooses who receives the bomb next.
+
+This should feel DRAMATIC.
+
+DO NOT use:
+plain dropdown menus.
+
+Instead:
+- giant player portraits
+- targeting effects
+- red lasers
+- emergency sounds
+- drag-and-throw motion
+- cinematic transition
+
+The moment should create:
+“OH NO HE PICKED ME”
+
+━━━━━━━━━━━━━━━━━━
+BOMB CATCH / OVERTHROW MECHANIC
+━━━━━━━━━━━━━━━━━━
+
+When bomb is thrown:
+
+The target player can rapidly tap to:
+CATCH / REJECT / OVERTHROW the bomb.
+
+If successful:
+- bomb bounces elsewhere
+- may ricochet randomly
+- may return to sender
+- may target random player
+
+This creates:
+- panic
+- revenge
+- chaos
+- screaming moments
+
+━━━━━━━━━━━━━━━━━━
+IMPORTANT GAME FEEL
+━━━━━━━━━━━━━━━━━━
+
+The game should constantly create:
+- confusion
+- laughter
+- betrayal
+- panic
+- near misses
+
+It should feel like:
+friends accidentally causing a reactor disaster together.
+
+━━━━━━━━━━━━━━━━━━
+AUDIO DIRECTION
+━━━━━━━━━━━━━━━━━━
+
+NO MUSIC required for now.
+
+But add strong sound effects:
+- reactor hum
+- warning alarms
+- digital glitches
+- sparks
+- static bursts
+- fake shutdown sounds
+- explosions
+- energy surges
+- distorted AI warning voice
+- emergency sirens
+- instability pulses
+
+Sound effects should intensify during later phases.
+
+━━━━━━━━━━━━━━━━━━
+TEXT / READABILITY
+━━━━━━━━━━━━━━━━━━
+
+All instructions should be:
+- huge
+- readable instantly
+- center-screen
+- animated
+
+Examples:
+- FREEZE
+- CUT BLUE
+- PASS NOW
+- WARNING
+- OVERHEAT
+- ONLY PLAYER 2
+- SIGNAL LOST
+
+Spectators should understand what is happening immediately.
+
+━━━━━━━━━━━━━━━━━━
+IMPORTANT DESIGN RULE
+━━━━━━━━━━━━━━━━━━
+
+DO NOT make the experience feel:
+- fair
+- sterile
+- skill-perfect
+- competitive-esports-like
+
+Prioritize:
+FUN CHAOS over fairness.
+
+Party energy is more important than balance.
+
+━━━━━━━━━━━━━━━━━━
+OVERALL FEELING
+━━━━━━━━━━━━━━━━━━
+
+The final experience should feel like:
+- WarioWare panic
+- anime reactor meltdown
+- Jackbox chaos
+- cyber disaster simulator
+- party screaming energy
+
+NOT:
+a normal mobile minigame collection.

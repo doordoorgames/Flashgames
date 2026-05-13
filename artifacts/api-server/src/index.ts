@@ -5,6 +5,7 @@ import { logger } from "./lib/logger.js";
 import { setupSocketHandlers } from "./game/socketHandler.js";
 import { setupYesNoHandlers } from "./game/yesnoHandler.js";
 import { setupBombHandlers } from "./game/bombHandler.js";
+import { setupBomb2Handlers } from "./game/bomb2Handler.js";
 
 const rawPort = process.env["PORT"];
 
@@ -33,6 +34,7 @@ const io = new SocketIOServer(server, {
 setupSocketHandlers(io);
 setupYesNoHandlers(io);
 setupBombHandlers(io);
+setupBomb2Handlers(io);
 
 server.listen(port, (err?: Error) => {
   if (err) {

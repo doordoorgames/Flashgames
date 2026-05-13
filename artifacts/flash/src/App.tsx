@@ -10,12 +10,13 @@ import GameView from "@/pages/GameView";
 import AdminPage from "@/pages/AdminPage";
 import YesNoApp from "@/pages/yesno/YesNoApp";
 import BombApp from "@/pages/bomb/BombApp";
+import Bomb2App from "@/pages/bomb2/Bomb2App";
 import { getSocket } from "@/lib/socket";
 import type { Player } from "@/lib/types";
 
 const queryClient = new QueryClient();
 
-type AppMode = "select" | "flash" | "yesno" | "bomb";
+type AppMode = "select" | "flash" | "yesno" | "bomb" | "bomb2";
 type FlashPhase = "home" | "create" | "join" | "lobby" | "game";
 
 interface GameSession {
@@ -73,10 +74,11 @@ function MainApp() {
 
   return (
     <div className="app-root">
-      {mode === "select" && <ModeSelect onSelectFlash={() => setMode("flash")} onSelectYesNo={() => setMode("yesno")} onSelectBomb={() => setMode("bomb")} />}
+      {mode === "select" && <ModeSelect onSelectFlash={() => setMode("flash")} onSelectYesNo={() => setMode("yesno")} onSelectBomb={() => setMode("bomb")} onSelectBomb2={() => setMode("bomb2")} />}
       {mode === "flash" && <FlashApp onBack={() => setMode("select")} />}
       {mode === "yesno" && <YesNoApp onBack={() => setMode("select")} />}
       {mode === "bomb" && <BombApp onBack={() => setMode("select")} />}
+      {mode === "bomb2" && <Bomb2App onBack={() => setMode("select")} />}
     </div>
   );
 }

@@ -273,6 +273,12 @@ export function setupBomb2Handlers(io: Server): void {
       }
     });
 
+    socket.on("b2:holder-input", (data: { code: string; event: unknown }) => {
+      const room = rooms.get(PREFIX + data.code);
+      if (!room || socket.id !== room.bombHolderId) return;
+      socket.to(PREFIX + data.code).emit("b2:holder-input", data.event);
+    });
+
     socket.on("b2:play-again", (data: { code: string }) => {
       const room = rooms.get(PREFIX + data.code);
       if (!room || socket.id !== room.adminId || room.roomPhase !== "exploded") return;

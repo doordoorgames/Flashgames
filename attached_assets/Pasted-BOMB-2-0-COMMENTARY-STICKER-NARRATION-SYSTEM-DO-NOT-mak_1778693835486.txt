@@ -1,0 +1,277 @@
+BOMB 2.0 — COMMENTARY / STICKER / NARRATION SYSTEM
+
+DO NOT make the game feel like silent UI elements floating on a background.
+
+The game should feel ALIVE.
+The system itself should feel like a chaotic arcade control room narrating the disaster in real time.
+
+The entire game must constantly communicate:
+- what phase players are in
+- what actions are possible
+- what just happened
+- who is panicking
+- who sabotaged
+- who stole the bomb
+- what spectators should watch
+
+The goal:
+Even if a player joins mid-round or looks away for 10 seconds,
+they should instantly understand the situation.
+
+━━━━━━━━━━━━━━━━━━━
+1. GLOBAL PHASE ANNOUNCER
+━━━━━━━━━━━━━━━━━━━
+
+Create a large cinematic phase banner system.
+
+This appears:
+- center top
+- inside the invisible gameplay frame only
+- never touching screen edges
+- animated with glitch/pixel effects
+- disappears after 1.5–3 seconds
+
+The banner explains the CURRENT PHASE of the game.
+
+Examples:
+- PASS THE BOMB
+- SABOTAGE PHASE
+- DEFUSE NOW
+- EVERYONE CAN INTERFERE
+- SELECT YOUR TARGET
+- FINAL 10 SECONDS
+- BOMB TRANSFERRED
+- LIVE INPUT PHASE
+- STEAL WINDOW ACTIVE
+- PANIC MODE
+- SUDDEN DEATH
+
+Visual style:
+- retro anime arcade
+- pixel glitch transitions
+- slight shake on arrival
+- white text with purple glow
+- subtle CRT distortion
+- slight chromatic aberration
+- NOT clean corporate UI
+
+━━━━━━━━━━━━━━━━━━━
+2. DYNAMIC STICKER COMMENTARY SYSTEM
+━━━━━━━━━━━━━━━━━━━
+
+This is the MOST IMPORTANT new feature.
+
+Create animated speech-bubble stickers that constantly explain the gameplay dynamically.
+
+The stickers should:
+- slide in from left/right
+- slightly rotate randomly
+- occasionally bounce
+- feel reactive and alive
+- disappear automatically after 2–4 seconds
+- never stack more than 2 at once
+
+Style:
+- white sticker bubbles
+- thick black outline
+- dark purple text
+- slight paper texture
+- anime/comic feel
+- subtle shadow
+- tiny wobble animation
+
+The stickers are NOT tutorials.
+They are LIVE COMMENTARY.
+
+The game itself should feel like it is yelling instructions and reacting emotionally.
+
+━━━━━━━━━━━━━━━━━━━
+3. STICKER TYPES
+━━━━━━━━━━━━━━━━━━━
+
+A) ACTION STICKERS
+Explain what players can do RIGHT NOW.
+
+Examples:
+- TAP FAST TO DEFUSE
+- THROW THE BOMB TO ANY PLAYER
+- EVERYONE CAN SABOTAGE
+- WATCH HIS INPUTS LIVE
+- BLOCK HIM BEFORE HE FINISHES
+- YOU CAN STEAL THE BOMB
+- SELECT WHO GETS IT NEXT
+- HIT THE CORRECT ARROWS
+- SOME TASKS ARE TRAPS
+- DON'T PANIC
+- FAILING SPEEDS UP THE TIMER
+- QUICK — THROW IT
+- PRESS BEFORE TIME RUNS OUT
+- SABOTAGE IS ACTIVE
+- STEAL WINDOW OPEN
+- HE CAN STILL FIGHT BACK
+- YOU'RE RUNNING OUT OF TIME
+
+━━━━━━━━━━━━━━━━━━━
+
+B) REACTIVE EVENT STICKERS
+Triggered ONLY when events happen.
+
+These should slam onto screen dramatically.
+
+Effects:
+- screen shake
+- glitch flash
+- impact animation
+- pixel distortion
+
+Examples:
+- KHALED STOLE THE BOMB
+- TASK FAILED
+- PERFECT INPUT
+- WRONG CODE
+- BOMB TRANSFERRED
+- LAST SECOND SAVE
+- SABOTAGE SUCCESSFUL
+- TIMER ACCELERATED
+- CRITICAL ERROR
+- COMBO HIT
+- DEFUSE INTERRUPTED
+- TARGET SWITCHED
+- INPUT MISSED
+- PLAYER PANICKING
+- BOMB OVERTHROWN
+- DIRECT HIT
+- CLOSE CALL
+- MASSIVE MISTAKE
+
+━━━━━━━━━━━━━━━━━━━
+
+C) DRAMA / SPECTATOR COMMENTARY
+These exist ONLY to make waiting entertaining.
+
+Examples:
+- HE'S PANICKING
+- EVERYONE IS TARGETING HER
+- THAT WAS TOO CLOSE
+- THEY DON'T TRUST HIM
+- SHE'S TOO FAST
+- HE'S COOKED
+- THIS IS BAD
+- SOMEONE STOP HIM
+- CHAOS DETECTED
+- THE ROOM IS TURNING
+- NOBODY IS SAFE
+- THEY'RE GANGING UP
+- THIS ROUND IS CURSED
+- TOTAL DISASTER
+- PURE PANIC
+- HE'S LOCKED IN
+- SHE'S CHOKING
+- THIS COULD END EVERYTHING
+
+━━━━━━━━━━━━━━━━━━━
+4. COMMENTARY INTELLIGENCE SYSTEM
+━━━━━━━━━━━━━━━━━━━
+
+VERY IMPORTANT:
+
+The commentary should adapt based on match progression.
+
+EARLY ROUNDS:
+More instructional.
+Examples:
+- TAP THE ARROWS
+- PASS THE BOMB AFTER SUCCESS
+- EVERYONE CAN SABOTAGE
+
+LATER ROUNDS:
+Less instructional, more emotional/dramatic.
+Examples:
+- HE'S COOKED
+- TOTAL PANIC
+- THEY'RE TURNING ON EACH OTHER
+
+This prevents repetition and makes the game feel smarter.
+
+━━━━━━━━━━━━━━━━━━━
+5. LIVE INPUT OBSERVATION SYSTEM
+━━━━━━━━━━━━━━━━━━━
+
+When someone is holding the bomb:
+
+ALL spectators should:
+- see their live arrow inputs
+- see mistakes instantly
+- see correct inputs glow
+- see failures flash red
+- see sticker commentary reacting in real time
+
+Examples:
+- WRONG INPUT
+- TOO SLOW
+- PERFECT HIT
+- HE MISSED
+- CLEAN RECOVERY
+
+This is CRITICAL because spectators must stay entertained while waiting.
+
+━━━━━━━━━━━━━━━━━━━
+6. IMPORTANT UI RULES
+━━━━━━━━━━━━━━━━━━━
+
+NEVER overwhelm the screen.
+
+At one time:
+- maximum 1 phase banner
+- maximum 2 sticker bubbles
+- maximum 1 dramatic event callout
+
+ALL UI must stay inside the invisible gameplay frame.
+
+Nothing should touch screen edges.
+
+DO NOT let commentary cover:
+- arrow inputs
+- timers
+- critical gameplay buttons
+
+━━━━━━━━━━━━━━━━━━━
+7. SOUND DESIGN
+━━━━━━━━━━━━━━━━━━━
+
+Every sticker/event should have lightweight reactive sound effects.
+
+Examples:
+- paper slap
+- glitch pop
+- arcade beep
+- distorted radio chatter
+- pixel impact
+- VHS click
+- warning buzz
+
+Different sticker types should sound different.
+
+Reactive event stickers should feel stronger and louder than normal commentary.
+
+━━━━━━━━━━━━━━━━━━━
+8. OVERALL FEEL
+━━━━━━━━━━━━━━━━━━━
+
+The final feeling should be:
+
+- anime emergency control room
+- retro arcade chaos
+- Japanese game show panic
+- pixel cyber disaster
+- people screaming instructions during a bomb crisis
+
+The game should NEVER feel silent or confusing again.
+
+Even spectators should instantly understand:
+- what phase is happening
+- who is winning
+- who failed
+- who stole the bomb
+- why tension exists
+- what they should focus on

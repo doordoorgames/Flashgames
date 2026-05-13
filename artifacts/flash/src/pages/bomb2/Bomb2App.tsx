@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getSocket } from "@/lib/socket";
 import Bomb2Home from "./Bomb2Home";
 import Bomb2Lobby from "./Bomb2Lobby";
@@ -13,13 +13,22 @@ export interface B2WiresTask  { type: "wires";  wires: string[]; correctWire: st
 export interface B2CodeTask   { type: "code";   code: string; showMs: number; }
 export type B2Task = B2MashTask | B2SwipeTask | B2FreezeTask | B2WiresTask | B2CodeTask;
 
+// HolderInputEvent is the universal event bus for:
+// - real holder task inputs (mash, swipe, freeze, wires, code)
+// - game events injected as synthetic entries (sabotage, bomb_thrown, etc.)
+export interface HolderInputEvent {
+  taskType: string; // "mash"|"swipe"|"freeze"|"wires"|"code"|"sabotage_surge"|"sabotage_static"|"sabotage_overheat"|"sabotage_coolant"|"bomb_thrown"|"bomb_deflected"|"task_fail"|"task_success"
+  correct: boolean;
+  label: string;   // display label for the live feed pill
+}
+
 type AppPhase = "home" | "lobby" | "game";
 type RoomPhase = "task" | "passing" | "catching" | "exploded";
-
 interface Session { code: string; playerId: string; isAdmin: boolean; }
 interface CatchData { fromName: string; windowMs: number; threshold: number; }
-
 interface Props { onBack: () => void; }
+
+const MAX_INPUT_LOG = 40;
 
 export default function Bomb2App({ onBack }: Props) {
   const [phase, setPhase] = useState<AppPhase>("home");
@@ -37,8 +46,20 @@ export default function Bomb2App({ onBack }: Props) {
   const [passWindowMs, setPassWindowMs] = useState(8000);
   const [catchData, setCatchData] = useState<CatchData | null>(null);
   const [catchTaps, setCatchTaps] = useState(0);
-  const [sabotageAlert, setSabotageAlert] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [holderInputLog, setHolderInputLog] = useState<HolderInputEvent[]>([]);
+  const [roundCount, setRoundCount] = useState(0);
+  const roundRef = useRef(-1);
+  const sessionRef = useRef<Session | null>(null);
+
+  // push a synthetic game-event into the log so Bomb2Game commentary fires
+  const pushEvent = useCallback((ev: HolderInputEvent) => {
+    setHolderInputLog(prev => [...prev.slice(-(MAX_INPUT_LOG - 1)), ev]);
+  }, []);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -51,6 +72,8 @@ export default function Bomb2App({ onBack }: Props) {
       bombHolderId: string; task: B2Task; players: B2Player[];
       stability: number; reactorPhase: ReactorPhase;
     }) => {
+      roundRef.current += 1;
+      setRoundCount(roundRef.current);
       setPlayers(data.players);
       setBombHolderId(data.bombHolderId);
       setTask(data.task);
@@ -60,7 +83,7 @@ export default function Bomb2App({ onBack }: Props) {
       setRoomPhase("task");
       setLoserId(null); setLoserName(null);
       setPassCandidates([]); setCatchData(null); setCatchTaps(0);
-      setSabotageAlert("");
+      setHolderInputLog([]);
       setPhase("game");
     });
 
@@ -80,20 +103,20 @@ export default function Bomb2App({ onBack }: Props) {
       setPassCandidates(data.players);
       setPassWindowMs(data.windowMs);
       setRoomPhase("passing");
+      pushEvent({ taskType: "task_success", correct: true, label: "✓" });
     });
 
     socket.on("b2:bomb-thrown", (data: {
       fromId: string; fromName: string; targetId: string; targetName: string;
       autoThrown: boolean; windowMs: number; catchThreshold: number;
     }) => {
-      const socket = getSocket();
-      if (socket.id === data.targetId) {
+      const s = sessionRef.current;
+      if (s && socket.id === data.targetId) {
         setCatchData({ fromName: data.fromName, windowMs: data.windowMs, threshold: data.catchThreshold });
         setCatchTaps(0);
       }
       setRoomPhase("catching");
-      setSabotageAlert(`BOMB THROWN → ${data.targetName.toUpperCase()}`);
-      setTimeout(() => setSabotageAlert(""), 1800);
+      pushEvent({ taskType: "bomb_thrown", correct: true, label: data.fromName });
     });
 
     socket.on("b2:catch-progress", (data: { taps: number; needed: number }) => {
@@ -103,32 +126,31 @@ export default function Bomb2App({ onBack }: Props) {
     socket.on("b2:bomb-caught", (data: { newHolderId: string; newHolderName: string }) => {
       setBombHolderId(data.newHolderId);
       setCatchData(null); setPassCandidates([]);
-      setSabotageAlert(`${data.newHolderName.toUpperCase()} NOW HOLDS BOMB`);
-      setTimeout(() => setSabotageAlert(""), 1800);
     });
 
     socket.on("b2:bomb-deflected", (data: { deflectorId: string; newHolderId: string; newHolderName: string }) => {
       setBombHolderId(data.newHolderId);
       setCatchData(null); setPassCandidates([]);
-      setSabotageAlert(`DEFLECTED → ${data.newHolderName.toUpperCase()}`);
-      setTimeout(() => setSabotageAlert(""), 1800);
+      pushEvent({ taskType: "bomb_deflected", correct: true, label: data.newHolderName });
     });
 
-    socket.on("b2:task-failed", (data: { holderId: string }) => {
-      const holder = players.find(p => p.id === data.holderId);
-      setSabotageAlert(`TASK FAILED — ${holder?.name.toUpperCase() ?? "???"}`);
-      setTimeout(() => setSabotageAlert(""), 1500);
+    socket.on("b2:task-failed", (_data: { holderId: string }) => {
+      pushEvent({ taskType: "task_fail", correct: false, label: "✗" });
     });
 
     socket.on("b2:sabotage-effect", (data: { type: string; saboteurName: string }) => {
-      const msgs: Record<string, string> = {
-        overheat: `OVERHEAT BY ${data.saboteurName.toUpperCase()}`,
-        power_surge: `POWER SURGE — ${data.saboteurName.toUpperCase()}`,
-        static_burst: `STATIC BURST — ${data.saboteurName.toUpperCase()}`,
-        coolant: `COOLANT BY ${data.saboteurName.toUpperCase()}`,
+      const typeMap: Record<string, string> = {
+        overheat:    "sabotage_overheat",
+        power_surge: "sabotage_surge",
+        static_burst:"sabotage_static",
+        coolant:     "sabotage_coolant",
       };
-      setSabotageAlert(msgs[data.type] ?? `${data.type.toUpperCase()}`);
-      setTimeout(() => setSabotageAlert(""), 2000);
+      pushEvent({ taskType: typeMap[data.type] ?? "sabotage_overheat", correct: false, label: data.saboteurName });
+    });
+
+    // Holder's real task inputs relayed from server to spectators
+    socket.on("b2:holder-input", (ev: HolderInputEvent) => {
+      setHolderInputLog(prev => [...prev.slice(-(MAX_INPUT_LOG - 1)), ev]);
     });
 
     socket.on("b2:explode", (data: { loserId: string; loserName: string; players: B2Player[] }) => {
@@ -147,10 +169,10 @@ export default function Bomb2App({ onBack }: Props) {
     return () => {
       ["b2:lobby-update","b2:game-started","b2:new-task","b2:stability-update",
        "b2:choose-target","b2:bomb-thrown","b2:catch-progress","b2:bomb-caught",
-       "b2:bomb-deflected","b2:task-failed","b2:sabotage-effect","b2:explode",
-       "b2:error","b2:room-closed"].forEach(e => socket.off(e));
+       "b2:bomb-deflected","b2:task-failed","b2:sabotage-effect","b2:holder-input",
+       "b2:explode","b2:error","b2:room-closed"].forEach(e => socket.off(e));
     };
-  }, [players]);
+  }, [pushEvent]);
 
   const handleJoined = (code: string, playerId: string, _name: string, isAdmin: boolean) => {
     setSession({ code, playerId, isAdmin });
@@ -158,36 +180,45 @@ export default function Bomb2App({ onBack }: Props) {
   };
 
   const onTaskComplete = useCallback(() => {
-    if (!session) return;
-    getSocket().emit("b2:task-complete", { code: session.code });
-  }, [session]);
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:task-complete", { code: s.code });
+  }, []);
 
   const onTaskFail = useCallback(() => {
-    if (!session) return;
-    getSocket().emit("b2:task-fail", { code: session.code });
-  }, [session]);
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:task-fail", { code: s.code });
+  }, []);
 
   const onThrowBomb = useCallback((targetId: string) => {
-    if (!session) return;
-    getSocket().emit("b2:throw-bomb", { code: session.code, targetId });
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:throw-bomb", { code: s.code, targetId });
     setPassCandidates([]);
-  }, [session]);
+  }, []);
 
   const onCatchTap = useCallback(() => {
-    if (!session) return;
-    getSocket().emit("b2:catch-tap", { code: session.code });
-  }, [session]);
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:catch-tap", { code: s.code });
+  }, []);
 
   const onSabotage = useCallback((sabotageType: string) => {
-    if (!session) return;
-    getSocket().emit("b2:sabotage", { code: session.code, sabotageType });
-  }, [session]);
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:sabotage", { code: s.code, sabotageType });
+  }, []);
 
   const onPlayAgain = useCallback(() => {
-    if (!session) return;
-    getSocket().emit("b2:play-again", { code: session.code });
+    const s = sessionRef.current; if (!s) return;
+    getSocket().emit("b2:play-again", { code: s.code });
     setGamePhase("playing");
-  }, [session]);
+  }, []);
+
+  // Called by task components when the holder does something (emits to server + local log)
+  const onHolderInput = useCallback((ev: HolderInputEvent) => {
+    const s = sessionRef.current; if (!s) return;
+    // Update local log for the holder themselves
+    setHolderInputLog(prev => [...prev.slice(-(MAX_INPUT_LOG - 1)), ev]);
+    // Relay to spectators via server
+    getSocket().emit("b2:holder-input", { code: s.code, event: ev });
+  }, []);
 
   if (phase === "game" && session) {
     return (
@@ -207,13 +238,15 @@ export default function Bomb2App({ onBack }: Props) {
         passWindowMs={passWindowMs}
         catchData={catchData}
         catchTaps={catchTaps}
-        sabotageAlert={sabotageAlert}
+        holderInputLog={holderInputLog}
+        roundCount={roundCount}
         onTaskComplete={onTaskComplete}
         onTaskFail={onTaskFail}
         onThrowBomb={onThrowBomb}
         onCatchTap={onCatchTap}
         onSabotage={onSabotage}
         onPlayAgain={onPlayAgain}
+        onHolderInput={onHolderInput}
         code={session.code}
       />
     );
@@ -227,7 +260,7 @@ export default function Bomb2App({ onBack }: Props) {
         isAdmin={session.isAdmin}
         players={players}
         errorMsg={errorMsg}
-        onStartGame={() => getSocket().emit("b2:start-game", { code: session.code })}
+        onStartGame={() => { const s = sessionRef.current; if (s) getSocket().emit("b2:start-game", { code: s.code }); }}
         onBack={() => { setPhase("home"); setSession(null); }}
       />
     );

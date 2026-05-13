@@ -4523,3 +4523,137 @@ html, body, #root {
 .mode-card-bomb2 .mode-card-name { color: #ff5520; }
 .mode-card-bomb2 .mode-card-ar { color: rgba(255,60,0,0.6); }
 .b2-tag { background: rgba(180,30,0,0.2) !important; border-color: rgba(200,50,0,0.4) !important; color: #ff6640 !important; }
+
+/* ══════════════════════════════════════════════════════════
+   BOMB 2.0 — COMMENTARY / STICKER / PHASE BANNER SYSTEM
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Sticker overlay layer ── */
+.b2-sticker-layer {
+  position: absolute; inset: 0; pointer-events: none; z-index: 30; overflow: hidden;
+}
+.b2-sticker {
+  position: absolute;
+  max-width: 155px; min-width: 90px;
+  padding: 8px 12px; box-sizing: border-box;
+  background: #ffffff;
+  border: 3px solid #1a1a1a;
+  border-radius: 3px;
+  color: #200040;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 0.68rem; font-weight: 900; letter-spacing: 0.06em; line-height: 1.4;
+  text-align: center;
+  box-shadow: 4px 4px 0 #1a1a1a, 0 0 24px rgba(0,0,0,0.7);
+}
+.b2-sticker-left  { left: 6px;  transform-origin: left center; top: calc(32% + var(--sticker-offset, 0px)); }
+.b2-sticker-right { right: 6px; transform-origin: right center; top: calc(48% + var(--sticker-offset, 0px)); }
+
+/* Enter animations */
+.b2-sticker-action.b2-sticker-enter.b2-sticker-left,
+.b2-sticker-drama.b2-sticker-enter.b2-sticker-left {
+  animation: b2-sticker-in-left 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.b2-sticker-action.b2-sticker-enter.b2-sticker-right,
+.b2-sticker-drama.b2-sticker-enter.b2-sticker-right {
+  animation: b2-sticker-in-right 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.b2-sticker-reactive.b2-sticker-enter.b2-sticker-left {
+  animation: b2-sticker-slam-left 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.8) forwards;
+}
+.b2-sticker-reactive.b2-sticker-enter.b2-sticker-right {
+  animation: b2-sticker-slam-right 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.8) forwards;
+}
+.b2-sticker-exit {
+  animation: b2-sticker-out 0.38s ease-in forwards !important;
+}
+
+@keyframes b2-sticker-in-left {
+  0%   { transform: translateX(-130%) rotate(var(--rot, 0deg)); opacity: 0; }
+  60%  { transform: translateX(7%) rotate(var(--rot, 0deg)); opacity: 1; }
+  80%  { transform: translateX(-3%) rotate(var(--rot, 0deg)); }
+  100% { transform: translateX(0%) rotate(var(--rot, 0deg)); opacity: 1; }
+}
+@keyframes b2-sticker-in-right {
+  0%   { transform: translateX(130%) rotate(var(--rot, 0deg)); opacity: 0; }
+  60%  { transform: translateX(-7%) rotate(var(--rot, 0deg)); opacity: 1; }
+  80%  { transform: translateX(3%) rotate(var(--rot, 0deg)); }
+  100% { transform: translateX(0%) rotate(var(--rot, 0deg)); opacity: 1; }
+}
+@keyframes b2-sticker-slam-left {
+  0%   { transform: translateX(-120%) scale(1.35) rotate(var(--rot, 0deg)); opacity: 0; }
+  65%  { transform: translateX(5%) scale(0.94) rotate(var(--rot, 0deg)); opacity: 1; }
+  100% { transform: translateX(0%) scale(1) rotate(var(--rot, 0deg)); opacity: 1; }
+}
+@keyframes b2-sticker-slam-right {
+  0%   { transform: translateX(120%) scale(1.35) rotate(var(--rot, 0deg)); opacity: 0; }
+  65%  { transform: translateX(-5%) scale(0.94) rotate(var(--rot, 0deg)); opacity: 1; }
+  100% { transform: translateX(0%) scale(1) rotate(var(--rot, 0deg)); opacity: 1; }
+}
+@keyframes b2-sticker-out {
+  0%   { opacity: 1; transform: scale(1) rotate(var(--rot, 0deg)); }
+  100% { opacity: 0; transform: scale(0.55) rotate(var(--rot, 0deg)); }
+}
+
+/* Type variants */
+.b2-sticker-reactive {
+  border-color: #cc0000; color: #bb0000; font-size: 0.74rem;
+  background: #fff5f5;
+}
+.b2-sticker-drama {
+  background: #12001e; border-color: #7700cc; color: #cc88ff; font-size: 0.62rem;
+}
+.b2-sticker-action {
+  background: #ffffff; border-color: #1a1a1a; color: #200040;
+}
+
+/* ── Phase banner ── */
+.b2-phase-banner {
+  width: 100%; padding: 7px 12px; box-sizing: border-box;
+  background: rgba(0,0,0,0.9);
+  border: 1px solid rgba(170,0,255,0.45);
+  border-left: 3px solid #aa00ff;
+  text-align: center; position: relative; overflow: hidden;
+  animation: b2-banner-in 0.28s ease-out forwards;
+}
+.b2-phase-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(160,0,255,0.07), transparent);
+  animation: b2-banner-scan 1.4s linear infinite;
+}
+@keyframes b2-banner-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
+.b2-phase-banner-text {
+  position: relative; z-index: 1;
+  font-size: 0.82rem; font-weight: 900; letter-spacing: 0.28em; color: #ffffff;
+  text-shadow: 0 0 10px rgba(180,0,255,0.9), 0 0 28px rgba(180,0,255,0.4);
+  animation: b2-banner-glitch 0.5s steps(2) 0.15s;
+}
+@keyframes b2-banner-in {
+  0%   { transform: scaleX(0); opacity: 0; }
+  55%  { transform: scaleX(1.03); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+@keyframes b2-banner-glitch {
+  0%, 100% { text-shadow: 0 0 10px rgba(180,0,255,0.9), 0 0 28px rgba(180,0,255,0.4); }
+  30% { text-shadow: -3px 0 rgba(255,0,0,0.65), 3px 0 rgba(0,255,255,0.65), 0 0 10px rgba(180,0,255,0.8); letter-spacing: 0.34em; }
+  70% { text-shadow: 2px 0 rgba(255,0,0,0.4), -2px 0 rgba(0,255,255,0.4), 0 0 10px rgba(180,0,255,0.8); }
+}
+
+/* ── Live holder input feed ── */
+.b2-input-feed {
+  width: 100%; display: flex; flex-direction: column; gap: 5px;
+  padding: 6px 10px; box-sizing: border-box;
+  border: 1px solid rgba(255,60,0,0.15); background: rgba(0,0,0,0.5);
+}
+.b2-input-feed-label {
+  font-size: 0.5rem; font-weight: 700; letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.28); text-transform: uppercase;
+}
+.b2-input-pills { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.b2-input-pill {
+  font-size: 0.6rem; font-weight: 900; padding: 2px 6px;
+  border: 1px solid; font-family: monospace; letter-spacing: 0.06em;
+  animation: b2-pill-in 0.14s ease-out;
+}
+@keyframes b2-pill-in { 0% { transform: scale(0.65); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.b2-pill-correct { color: #00ff41; border-color: rgba(0,255,65,0.45); background: rgba(0,255,65,0.08); }
+.b2-pill-wrong   { color: #ff2200; border-color: rgba(255,34,0,0.45);  background: rgba(255,34,0,0.08); }

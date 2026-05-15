@@ -1,11 +1,6 @@
-interface ModeSelectProps {
-  onSelectFlash: () => void;
-  onSelectYesNo: () => void;
-  onSelectBomb: () => void;
-  onSelectBomb2: () => void;
-}
+import { Link } from "wouter";
 
-export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb, onSelectBomb2 }: ModeSelectProps) {
+export default function ModeSelect() {
   return (
     <div className="mode-screen">
       <div className="mode-inner">
@@ -13,7 +8,7 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb,
         <p className="mode-sub">Four games, one room code system</p>
 
         <div className="mode-cards">
-          <button className="mode-card mode-card-flash" onClick={onSelectFlash}>
+          <Link href="/flash" className="mode-card mode-card-flash">
             <div className="mode-card-icon">⚡</div>
             <div className="mode-card-content">
               <span className="mode-card-name">Flash</span>
@@ -25,9 +20,9 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb,
                 <span className="mode-tag">Memory</span>
               </div>
             </div>
-          </button>
+          </Link>
 
-          <button className="mode-card mode-card-yesno" onClick={onSelectYesNo}>
+          <Link href="/yesno" className="mode-card mode-card-yesno">
             <div className="mode-card-icon">🚫</div>
             <div className="mode-card-content">
               <span className="mode-card-name">Yes / No</span>
@@ -39,9 +34,9 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb,
                 <span className="mode-tag yn-tag">Under pressure</span>
               </div>
             </div>
-          </button>
+          </Link>
 
-          <button className="mode-card mode-card-bomb" onClick={onSelectBomb}>
+          <Link href="/bomb" className="mode-card mode-card-bomb">
             <div className="mode-card-icon">💣</div>
             <div className="mode-card-content">
               <span className="mode-card-name">The Bomb</span>
@@ -53,9 +48,9 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb,
                 <span className="mode-tag bomb-tag">Challenges</span>
               </div>
             </div>
-          </button>
+          </Link>
 
-          <button className="mode-card mode-card-bomb2" onClick={onSelectBomb2}>
+          <Link href="/reactor" className="mode-card mode-card-bomb2">
             <div className="mode-card-icon mode-card-icon-reactor">☢</div>
             <div className="mode-card-content">
               <span className="mode-card-name">Reactor</span>
@@ -67,7 +62,7 @@ export default function ModeSelect({ onSelectFlash, onSelectYesNo, onSelectBomb,
                 <span className="mode-tag b2-tag">Meltdown</span>
               </div>
             </div>
-          </button>
+          </Link>
         </div>
 
         <p className="mode-admin-note">

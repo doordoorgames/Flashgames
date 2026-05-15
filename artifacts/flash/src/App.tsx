@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import ModeSelect from "@/pages/ModeSelect";
 import Home from "@/pages/Home";
 import CreateRoom from "@/pages/CreateRoom";
@@ -16,7 +16,6 @@ import type { Player } from "@/lib/types";
 
 const queryClient = new QueryClient();
 
-type AppMode = "select" | "flash" | "yesno" | "bomb" | "bomb2";
 type FlashPhase = "home" | "create" | "join" | "lobby" | "game";
 
 interface GameSession {
@@ -69,18 +68,21 @@ function FlashApp({ onBack }: { onBack: () => void }) {
   return null;
 }
 
-function MainApp() {
-  const [mode, setMode] = useState<AppMode>("select");
-
-  return (
-    <div className="app-root">
-      {mode === "select" && <ModeSelect onSelectFlash={() => setMode("flash")} onSelectYesNo={() => setMode("yesno")} onSelectBomb={() => setMode("bomb")} onSelectBomb2={() => setMode("bomb2")} />}
-      {mode === "flash" && <FlashApp onBack={() => setMode("select")} />}
-      {mode === "yesno" && <YesNoApp onBack={() => setMode("select")} />}
-      {mode === "bomb" && <BombApp onBack={() => setMode("select")} />}
-      {mode === "bomb2" && <Bomb2App onBack={() => setMode("select")} />}
-    </div>
-  );
+function FlashRoute() {
+  const [, navigate] = useLocation();
+  return <div className="app-root"><FlashApp onBack={() => navigate("/")} /></div>;
+}
+function YesNoRoute() {
+  const [, navigate] = useLocation();
+  return <div className="app-root"><YesNoApp onBack={() => navigate("/")} /></div>;
+}
+function BombRoute() {
+  const [, navigate] = useLocation();
+  return <div className="app-root"><BombApp onBack={() => navigate("/")} /></div>;
+}
+function ReactorRoute() {
+  const [, navigate] = useLocation();
+  return <div className="app-root"><Bomb2App onBack={() => navigate("/")} /></div>;
 }
 
 export default function App() {
@@ -89,8 +91,14 @@ export default function App() {
       <WouterRouter base={import.meta.env.BASE_URL?.replace(/\/$/, "") ?? ""}>
         <Switch>
           <Route path="/admin" component={AdminPage} />
+          <Route path="/flash"   component={FlashRoute} />
+          <Route path="/yesno"   component={YesNoRoute} />
+          <Route path="/bomb"    component={BombRoute} />
+          <Route path="/reactor" component={ReactorRoute} />
           <Route>
-            <MainApp />
+            <div className="app-root">
+              <ModeSelect />
+            </div>
           </Route>
         </Switch>
       </WouterRouter>

@@ -6,6 +6,7 @@ import { setupSocketHandlers } from "./game/socketHandler.js";
 import { setupYesNoHandlers } from "./game/yesnoHandler.js";
 import { setupBombHandlers } from "./game/bombHandler.js";
 import { setupBomb2Handlers } from "./game/bomb2Handler.js";
+import { loadConfusionEntries } from "./game/confusionStore.js";
 
 const rawPort = process.env["PORT"];
 
@@ -35,6 +36,17 @@ setupSocketHandlers(io);
 setupYesNoHandlers(io);
 setupBombHandlers(io);
 setupBomb2Handlers(io);
+
+loadConfusionEntries().catch((err: Error) => {
+  console.error(
+    "[Supabase] CRITICAL: Failed to load confusion entries on startup:",
+    err.message,
+  );
+  console.error(
+    "[Supabase] Game will run WITHOUT confusion entries. Verify SUPABASE_URL and SUPABASE_ANON_KEY secrets.",
+  );
+  // Do NOT fall back to fake/sample data — fail loudly so the problem is visible
+});
 
 server.listen(port, (err?: Error) => {
   if (err) {

@@ -10,6 +10,13 @@ import type { Room, Player, PlayerAnswer, GameItem } from "./gameState.js";
 import { ROUND_CONFIG, TOTAL_ROUNDS, ANSWER_TIME_LIMIT } from "./gameState.js";
 import { isCorrectAnswer, calculatePoints } from "./scoring.js";
 import { getAdminItems } from "./adminStore.js";
+import { getConfusionItems } from "./confusionStore.js";
+
+function getCombinedItems() {
+  const admin = getAdminItems();
+  const confusion = getConfusionItems();
+  return [...admin, ...confusion];
+}
 
 export function setupSocketHandlers(io: Server): void {
   io.on("connection", (socket) => {
@@ -19,7 +26,7 @@ export function setupSocketHandlers(io: Server): void {
         data: { playerName: string },
         cb: (res: { code: string; playerId: string; error?: string }) => void
       ) => {
-        const items = getAdminItems();
+        const items = getCombinedItems();
         if (items.length < TOTAL_ROUNDS) {
           cb({
             code: "",
@@ -149,7 +156,7 @@ export function setupSocketHandlers(io: Server): void {
         return;
       }
       room.players.forEach(player => { player.score = 0; });
-      room.items = [...items].sort(() => Math.random() - 0.5);
+      room.items = [...getCombinedItems()].sort(() => Math.random() - 0.5);
       room.currentRound = 0;
       room.roundResults = [];
       room.phase = "lobby";

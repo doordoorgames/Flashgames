@@ -409,37 +409,36 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
 }) {
   const [temp, setTemp] = useState(startTemp);
   const done = useRef(false);
+  const hasEnteredSafe = useRef(false);
   const outsideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insideTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Steady cooling drift: −1 degree every 1.5s (no random jitter)
+  // Steady cooling: −1 degree every 0.5s
   useEffect(() => {
     const iv = setInterval(() => {
       if (done.current) return;
       setTemp(prev => Math.max(0, prev - 1));
-    }, 1500);
+    }, 500);
     return () => clearInterval(iv);
   }, []);
 
-  // Win / lose timers
+  // Win / lose timers — lose only activates after player reaches safe zone first
   useEffect(() => {
     if (done.current) return;
     const inSafe = temp >= safeMin && temp <= safeMax;
     if (inSafe) {
-      // clear lose timer
+      hasEnteredSafe.current = true;
       if (outsideTimer.current) { clearTimeout(outsideTimer.current); outsideTimer.current = null; }
-      // start win timer if not running
       if (!insideTimer.current) {
         insideTimer.current = setTimeout(() => {
           if (!done.current) { done.current = true; bombSounds.reactorCorrect(); setTimeout(onComplete, 500); }
           insideTimer.current = null;
-        }, 14000);
+        }, 10000);
       }
     } else {
-      // clear win timer
       if (insideTimer.current) { clearTimeout(insideTimer.current); insideTimer.current = null; }
-      // start lose timer if not running
-      if (!outsideTimer.current) {
+      // only penalise after player has first reached safe zone
+      if (hasEnteredSafe.current && !outsideTimer.current) {
         outsideTimer.current = setTimeout(() => {
           if (!done.current) { done.current = true; bombSounds.reactorWrong(); setTimeout(onPunishment, 200); }
           outsideTimer.current = null;
@@ -480,10 +479,16 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
     <div className={`reactor-control ${inSafe ? "reactor-stable" : "reactor-unstable"}`}>
       <div className="reactor-header">REACTOR TEMPERATURE CONTROL</div>
       <div className="reactor-center-layout">
-        <div className="reactor-gauge-big">
-          <div className="reactor-safe-zone" style={{ bottom: `${safeMin}%`, height: `${safeMax - safeMin}%` }} />
-          <div className="reactor-fill" style={{ height: `${pct}%`, background: fillColor }} />
-          <div className="reactor-indicator" style={{ bottom: `${pct}%`, borderColor: fillColor, boxShadow: `0 0 14px ${fillColor}, 0 0 4px #fff` }} />
+        <div className="reactor-gauge-wrapper">
+          <div className="reactor-gauge-big">
+            <div className="reactor-safe-zone" style={{ bottom: `${safeMin}%`, height: `${safeMax - safeMin}%` }} />
+            <div className="reactor-fill" style={{ height: `${pct}%`, background: fillColor }} />
+            <div className="reactor-indicator" style={{ bottom: `${pct}%`, borderColor: fillColor, boxShadow: `0 0 14px ${fillColor}, 0 0 4px #fff` }} />
+          </div>
+          <div className="reactor-sweet-label" style={{ bottom: `${(safeMin + safeMax) / 2}%` }}>
+            <span className="reactor-sweet-arrow">◄</span>
+            <div className="reactor-plaster">keep here<br/>10 sec!</div>
+          </div>
         </div>
         <div className="reactor-temp-big" style={{ color: fillColor }}>{temp}°</div>
         <div className={`reactor-status ${inSafe ? "reactor-status-ok" : "reactor-status-danger"}`}>

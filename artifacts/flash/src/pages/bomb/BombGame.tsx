@@ -11,7 +11,8 @@ export interface BombPlayer {
 export type BombAction =
   | { type: "tap"; required: number }
   | { type: "swipe"; pattern: string[] }
-  | { type: "code"; digits: string; direction: "ltr" | "rtl" };
+  | { type: "code"; digits: string; direction: "ltr" | "rtl" }
+  | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string };
 
 export type InputProgress =
   | { type: "tap"; taps: number; required: number }
@@ -38,6 +39,11 @@ interface Props {
 const ARROW_MAP: Record<string, string> = { up: "↑", down: "↓", left: "←", right: "→" };
 const ARROW_LABEL: Record<string, string> = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT" };
 
+const WIRE_COLOR_MAP: Record<string, string> = {
+  red: "#ff2244", green: "#00ff41", blue: "#0099ff", yellow: "#ffee00",
+  purple: "#cc44ff", orange: "#ff8800", white: "#e8e8e8", cyan: "#00ffff", pink: "#ff44cc",
+};
+
 /* ── Mute Button ── */
 function MuteButton() {
   const [muted, setMuted] = useState(bombSounds.muted);
@@ -63,6 +69,7 @@ function MissionBriefing({ holderName, action, onDismiss }: {
   const instruction =
     action.type === "tap" ? `TAP  ${action.required}  TIMES` :
     action.type === "swipe" ? "SWIPE  THE  SEQUENCE" :
+    action.type === "wire" ? "CUT  THE  CORRECT  WIRE" :
     "ENTER  THE  CODE";
 
   useEffect(() => {
@@ -450,6 +457,81 @@ function CodeAction({ digits, direction, onComplete, onPunishment, onProgress }:
   );
 }
 
+/* ── Cut the Wire Action ── */
+function CutWireAction({ wires, targetWord, onComplete, onPunishment }: {
+  wires: Array<{ color: string; word: string }>;
+  targetWord: string;
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
+  const [cutIdx, setCutIdx] = useState<number | null>(null);
+  const [wrongIdx, setWrongIdx] = useState<number | null>(null);
+  const [showInstruction, setShowInstruction] = useState(false);
+  const done = useRef(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowInstruction(true), 550);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleCut = useCallback((idx: number) => {
+    if (done.current || cutIdx !== null || wrongIdx !== null) return;
+    if (wires[idx].word === targetWord) {
+      done.current = true;
+      setCutIdx(idx);
+      bombSounds.wireSlice();
+      setTimeout(onComplete, 750);
+    } else {
+      setWrongIdx(idx);
+      bombSounds.wireWrong();
+      setTimeout(() => setWrongIdx(null), 600);
+      onPunishment();
+    }
+  }, [wires, targetWord, onComplete, onPunishment, cutIdx, wrongIdx]);
+
+  return (
+    <div className="bomb-action-wire">
+      <div className={`wire-instruction ${showInstruction ? "wire-instruction-visible" : ""}`}>
+        CUT THE WIRE THAT SAYS
+        <span className="wire-target-word">"{targetWord}"</span>
+      </div>
+      <div className="wire-grid" style={{ gridTemplateColumns: `repeat(${wires.length}, 1fr)` }}>
+        {wires.map((wire, idx) => {
+          const neon = WIRE_COLOR_MAP[wire.color] ?? "#ffffff";
+          const isCut = cutIdx === idx;
+          const isWrong = wrongIdx === idx;
+          return (
+            <div
+              key={idx}
+              className={`wire-item ${isCut ? "wire-cut-correct" : ""} ${isWrong ? "wire-cut-wrong" : ""}`}
+              style={{ animationDelay: `${idx * 0.22}s` }}
+              onPointerDown={() => handleCut(idx)}
+            >
+              <div className="wire-connector wire-top-connector" style={{ background: neon, boxShadow: `0 0 8px ${neon}` }} />
+              <div className="wire-cable" style={{
+                background: `linear-gradient(180deg, ${neon}cc 0%, ${neon} 50%, ${neon}cc 100%)`,
+                boxShadow: `0 0 10px ${neon}88, 0 0 20px ${neon}44`,
+              }}>
+                {isCut && (
+                  <>
+                    <div className="wire-cut-top" style={{ background: neon, boxShadow: `0 0 10px ${neon}` }} />
+                    <div className="wire-cut-bottom" style={{ background: neon, boxShadow: `0 0 10px ${neon}` }} />
+                    <div className="wire-spark-burst" style={{ color: neon }}>✦</div>
+                  </>
+                )}
+              </div>
+              <div className="wire-label-chip" style={{ borderColor: neon, color: neon, textShadow: `0 0 8px ${neon}` }}>
+                {wire.word}
+              </div>
+              <div className="wire-connector wire-bot-connector" style={{ background: neon, boxShadow: `0 0 8px ${neon}` }} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ── Watch Challenge (spectator live view) ── */
 function WatchChallenge({ action, progress }: { action: BombAction; progress: InputProgress | null }) {
   if (action.type === "tap") {
@@ -508,6 +590,17 @@ function WatchChallenge({ action, progress }: { action: BombAction; progress: In
             <div key={i} className={`watch-progress-dot ${i < entered ? "filled" : ""}`} />
           ))}
         </div>
+      </div>
+    );
+  }
+  if (action.type === "wire") {
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">CUT THE WIRE</span>
+        <span className="watch-challenge-value">"{action.targetWord}"</span>
+        <span className="watch-challenge-type" style={{ fontSize: "0.6rem", opacity: 0.6 }}>
+          {action.wires.length} WIRES
+        </span>
       </div>
     );
   }
@@ -720,6 +813,14 @@ export default function BombGame({
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
                             onProgress={onProgress}
+                          />
+                        )}
+                        {action.type === "wire" && (
+                          <CutWireAction
+                            wires={action.wires}
+                            targetWord={action.targetWord}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
                           />
                         )}
                       </div>

@@ -1,0 +1,105 @@
+Add a BRAND NEW bomb-defusing task type called:
+
+CUT THE CORRECT WIRE
+
+This is an ADDITIONAL task.
+Do NOT replace or modify:
+- tap task
+- swipe task
+- code entry task
+- sabotage systems
+- timers
+- layouts
+- bomb logic
+- room systems
+
+Simply add this as another possible randomly selected task.
+
+TASK GAMEPLAY:
+The player sees 4–6 hanging neon wires.
+
+Each wire has:
+- a RANDOM wire color
+- a RANDOM word written on it
+
+Example:
+- red wire labeled BLUE
+- green wire labeled RED
+- yellow wire labeled GREEN
+
+At the top, show an instruction like:
+CUT THE WIRE THAT SAYS “GREEN”
+
+IMPORTANT:
+- The answer is based ONLY on the WORD WRITTEN ON THE WIRE
+- NOT the wire color itself
+
+STRICT RULES:
+- There must ALWAYS be EXACTLY ONE correct wire
+- Only ONE wire may contain the target word
+- Never generate duplicate valid answers
+
+VALID example:
+Instruction:
+CUT THE WIRE THAT SAYS “GREEN”
+
+Wires:
+- red wire labeled BLUE
+- yellow wire labeled GREEN ← correct
+- green wire labeled RED
+- purple wire labeled WHITE
+
+INVALID example:
+- yellow wire labeled GREEN
+- blue wire labeled GREEN
+
+Never allow duplicate target words.
+
+DIFFICULTY:
+Easy:
+- 4 wires
+- visually distinct
+
+Medium:
+- 5 wires
+- more confusing combinations
+
+Hard:
+- 6 wires
+- intentionally misleading combinations
+- example:
+  - green wire says RED
+  - red wire says BLUE
+  - blue wire says GREEN
+
+VISUAL STYLE:
+- Thick futuristic cyberpunk wires
+- Neon glow
+- Subtle swaying movement
+- Reactor-room aesthetic
+- Sparks/electric flickers
+- Strong depth/shadows
+- Highly polished anime-style visuals
+- Not flat/basic web graphics
+
+SOUNDS:
+Correct cut:
+- satisfying slice sound
+- sparks
+- positive confirmation tone
+
+Wrong cut:
+- loud alarm buzz
+- glitch flash
+- screen shake
+- danger meter increase
+
+POLISH:
+- Add subtle ticking ambience
+- Add dramatic reactor hum
+- Instruction text should pulse/glow slightly
+- Tiny panic delay before instruction appears
+
+IMPORTANT:
+Keep all existing gameplay and systems exactly as they are.
+This should only add a new task into the random bomb-task pool.

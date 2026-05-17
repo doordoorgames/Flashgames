@@ -101,6 +101,23 @@ class BombSoundSystem {
     this.tickHandle = window.setInterval(doTick, ms);
   }
 
+  wireSlice() {
+    // Rising satisfying cut: high-pitched slice sweep
+    this.tone(600, 0.04, "square", 0.18);
+    setTimeout(() => this.tone(900, 0.05, "square", 0.20), 40);
+    setTimeout(() => this.tone(1320, 0.07, "square", 0.22), 80);
+    setTimeout(() => this.tone(1760, 0.12, "square", 0.18), 120);
+    setTimeout(() => this.tone(2200, 0.10, "sine", 0.15), 180);
+  }
+
+  wireWrong() {
+    // Harsh alarm buzz + double stab
+    this.tone(120, 0.3, "sawtooth", 0.5);
+    setTimeout(() => this.noise(0.15, 0.4), 40);
+    setTimeout(() => this.tone(100, 0.2, "sawtooth", 0.45), 180);
+    setTimeout(() => this.noise(0.1, 0.3), 320);
+  }
+
   stopTicking() {
     if (this.tickHandle !== null) {
       clearInterval(this.tickHandle);

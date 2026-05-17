@@ -3172,6 +3172,152 @@ html, body, #root {
   text-shadow: 0 0 8px rgba(255,34,0,0.5);
 }
 
+/* ── Cut the Wire task ── */
+.bomb-action-wire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.wire-instruction {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #00ff41;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  line-height: 1.5;
+  animation: wire-instr-pulse 2s ease-in-out infinite;
+}
+.wire-instruction-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@keyframes wire-instr-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(0,255,65,0.5); }
+  50% { text-shadow: 0 0 20px rgba(0,255,65,1), 0 0 40px rgba(0,255,65,0.4); }
+}
+.wire-target-word {
+  display: block;
+  font-size: 1.1rem;
+  letter-spacing: 0.22em;
+  color: #ffffff;
+  text-shadow: 0 0 16px #00ff41, 0 0 32px rgba(0,255,65,0.5);
+}
+.wire-grid {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+  padding: 0 4px;
+  align-items: stretch;
+}
+.wire-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  animation: wire-sway 3s ease-in-out infinite alternate;
+  transform-origin: top center;
+}
+@keyframes wire-sway {
+  0% { transform: rotate(-1.5deg); }
+  100% { transform: rotate(1.5deg); }
+}
+.wire-connector {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.wire-cable {
+  width: 10px;
+  flex: 1;
+  min-height: 60px;
+  border-radius: 5px;
+  position: relative;
+  transition: opacity 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.wire-item:active .wire-cable { filter: brightness(1.4); }
+.wire-label-chip {
+  font-family: 'Courier New', monospace;
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid;
+  padding: 2px 5px;
+  background: rgba(0,0,0,0.7);
+  margin: 4px 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* Correct cut */
+.wire-cut-correct { pointer-events: none; }
+.wire-cut-correct .wire-cable {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.wire-cut-top {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 45%;
+  border-radius: 5px 5px 0 0;
+  transform-origin: top;
+  animation: wire-fall-top 0.5s ease-in forwards;
+}
+.wire-cut-bottom {
+  position: absolute;
+  bottom: 0;
+  width: 10px;
+  height: 45%;
+  border-radius: 0 0 5px 5px;
+  transform-origin: bottom;
+  animation: wire-fall-bottom 0.5s ease-in forwards;
+}
+@keyframes wire-fall-top {
+  to { transform: translateX(-18px) rotate(-35deg); opacity: 0.3; }
+}
+@keyframes wire-fall-bottom {
+  to { transform: translateX(18px) rotate(35deg); opacity: 0.3; }
+}
+.wire-spark-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.4rem;
+  animation: wire-spark 0.5s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes wire-spark {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  60% { transform: translate(-50%, -50%) scale(1.8); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+/* Wrong cut */
+.wire-cut-wrong .wire-cable {
+  animation: wire-wrong-flash 0.55s ease;
+}
+@keyframes wire-wrong-flash {
+  0%, 100% { filter: brightness(1); }
+  20% { filter: brightness(3) saturate(0); }
+  40% { filter: brightness(0.3); }
+  60% { filter: brightness(2.5) saturate(0); }
+}
+
 /* ── Watching background ── */
 .bomb-crt-watching {
   background: url('/bomb-watch-bg.png') center center / cover no-repeat, #040608 !important;

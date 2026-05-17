@@ -10,7 +10,8 @@ interface BombPlayer {
 interface TapAction { type: "tap"; required: number; }
 interface SwipeAction { type: "swipe"; pattern: string[]; }
 interface CodeAction { type: "code"; digits: string; direction: "ltr" | "rtl"; }
-type BombAction = TapAction | SwipeAction | CodeAction;
+interface WireAction { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string; }
+type BombAction = TapAction | SwipeAction | CodeAction | WireAction;
 
 interface BombRoom {
   code: string;
@@ -32,18 +33,37 @@ function generateCode(): string {
   return code;
 }
 
+const WIRE_COLORS = ["red", "green", "blue", "yellow", "purple", "orange", "white", "cyan", "pink"];
+const WIRE_WORDS  = ["RED", "GREEN", "BLUE", "YELLOW", "PURPLE", "ORANGE", "WHITE", "CYAN", "PINK"];
+
+function generateWireAction(): WireAction {
+  const count = 4 + Math.floor(Math.random() * 3); // 4, 5, or 6
+  // Pick `count` unique words
+  const shuffledWords = [...WIRE_WORDS].sort(() => Math.random() - 0.5).slice(0, count);
+  // Pick one as the target
+  const targetWord = shuffledWords[Math.floor(Math.random() * shuffledWords.length)];
+  // Assign random colors independently — wire color ≠ wire word by design (misleading)
+  const wires = shuffledWords.map(word => {
+    const color = WIRE_COLORS[Math.floor(Math.random() * WIRE_COLORS.length)];
+    return { color, word };
+  });
+  return { type: "wire", wires, targetWord };
+}
+
 function generateAction(): BombAction {
   const roll = Math.random();
-  if (roll < 0.33) {
+  if (roll < 0.25) {
     return { type: "tap", required: 12 + Math.floor(Math.random() * 15) };
-  } else if (roll < 0.66) {
+  } else if (roll < 0.5) {
     const dirs = ["up", "down", "left", "right"];
     const pattern = Array.from({ length: 10 }, () => dirs[Math.floor(Math.random() * dirs.length)]);
     return { type: "swipe", pattern };
-  } else {
+  } else if (roll < 0.75) {
     const digits = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join("");
     const direction: "ltr" | "rtl" = Math.random() < 0.5 ? "ltr" : "rtl";
     return { type: "code", digits, direction };
+  } else {
+    return generateWireAction();
   }
 }
 

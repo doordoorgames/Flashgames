@@ -1,0 +1,164 @@
+REMOVE the current arrow-sequence task completely.
+Delete it from the random task pool because it feels too basic and repetitive.
+
+Replace it with TWO much more cinematic reactor tasks:
+
+--------------------------------------------------
+TASK 1 — MEMORY SCRAMBLE
+--------------------------------------------------
+
+Add a BRAND NEW bomb task called:
+
+MEMORY SCRAMBLE
+
+GAMEPLAY:
+- Show a sequence of EXACTLY 6 random letters
+- The letters appear using a dramatic old-airport split-flap animation
+- The letters rapidly flip mechanically before settling
+
+Example:
+K T R A M Q
+
+The player sees the sequence for a short moment only.
+
+Then:
+- the sequence disappears
+- the player must type/recreate the exact 6-letter sequence before time runs out
+
+IMPORTANT:
+- Use ONLY capital letters
+- No words
+- Random nonsense sequences only
+- Always exactly 6 letters
+
+EXAMPLES:
+XRQMTA
+PLKZOW
+TQVNRS
+
+VISUAL STYLE:
+- Old airport departure-board flipping letters
+- Loud mechanical flap-click sounds
+- Cyberpunk reactor terminal style
+- Neon glow + radar overlays
+- Slight flickering/glitching
+- Beautiful cinematic lighting
+- Feels like an emergency military computer system
+
+DIFFICULTY:
+Easy:
+- slower flipping
+- longer viewing time
+
+Medium:
+- shorter viewing time
+- more visual distractions
+
+Hard:
+- faster scrambling
+- partial glitches
+- fake decoy letters flicker briefly
+
+SUCCESS:
+- satisfying reactor confirmation sound
+- terminal flashes green
+- quick split-flap “ACCESS ACCEPTED”
+
+FAILURE:
+- harsh buzzer
+- red glitch flash
+- screen shake
+- reactor instability increases
+
+--------------------------------------------------
+TASK 2 — REACTOR TEMPERATURE CONTROL
+--------------------------------------------------
+
+Add a BRAND NEW bomb task called:
+
+REACTOR TEMPERATURE CONTROL
+
+This task should feel BEAUTIFUL, animated, and stressful.
+
+CORE GAMEPLAY:
+- A giant glowing vertical reactor thermometer/gauge is displayed
+- In the CENTER is a highlighted SAFE ZONE
+- The temperature constantly rises and falls dynamically
+- Player must keep the reactor INSIDE the safe zone
+
+IMPORTANT:
+The reactor should NEVER feel static.
+Everything should move and pulse dramatically.
+
+MECHANICS:
+- If temperature rises too high:
+  player must COOL the reactor
+
+- If temperature falls too low:
+  player must HEAT the reactor
+
+CONTROLS:
+There are 2–4 random reactor buttons/switches.
+
+Examples:
+COOLANT
+VENT
+BOOST
+STABILIZE
+
+Every tap changes temperature by a RANDOM amount:
+- sometimes +1
+- sometimes +2
+- sometimes +5
+- sometimes -3
+- sometimes -4
+
+IMPORTANT:
+The player never fully trusts the controls.
+This creates panic and chaotic guessing.
+
+The value changes should always feel unpredictable.
+
+VISUAL STYLE:
+- Extremely animated
+- Reactor core glowing intensely
+- Pulsing neon energy
+- Heat distortion
+- Sparks
+- Steam bursts
+- Flickering warning lights
+- Moving pressure lines
+- Radar overlays
+- Anime-style reactor aesthetics
+
+SAFE ZONE:
+- Bright glowing highlighted area
+- Reactor becomes visually calmer when inside it
+- Reactor becomes unstable visually when outside it
+
+AUDIO:
+- Deep reactor hum
+- Warning sirens when overheating
+- Steam hiss
+- Mechanical clicks
+- Stressful ticking
+- Energy surges
+
+SUCCESS:
+- reactor stabilizes
+- smooth cooling effect
+- satisfying confirmation tone
+- green stabilization pulse
+
+FAILURE:
+- reactor overload warning
+- violent screen shake
+- glitch effects
+- loud alarm
+- danger meter increases
+
+IMPORTANT:
+- Keep all current bomb systems, sabotage systems, rooms, timers, and layouts unchanged
+- ONLY remove the old arrow-sequence task
+- Add these two new cinematic tasks into the random task pool
+- Everything must remain mobile-friendly and centered inside the invisible gameplay frame

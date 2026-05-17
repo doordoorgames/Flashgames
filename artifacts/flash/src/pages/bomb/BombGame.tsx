@@ -11,14 +11,15 @@ export interface BombPlayer {
 
 export type BombAction =
   | { type: "tap"; required: number }
-  | { type: "swipe"; pattern: string[] }
+  | { type: "memory"; letters: string[] }
+  | { type: "reactor"; safeMin: number; safeMax: number; startTemp: number; controls: string[] }
   | { type: "code"; digits: string; direction: "ltr" | "rtl" }
   | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string }
   | { type: "country"; target: string; choices: string[] };
 
 export type InputProgress =
   | { type: "tap"; taps: number; required: number }
-  | { type: "swipe"; step: number; total: number }
+
   | { type: "code"; entered: number; total: number };
 
 interface Props {
@@ -38,8 +39,8 @@ interface Props {
   watchProgress: InputProgress | null;
 }
 
-const ARROW_MAP: Record<string, string> = { up: "↑", down: "↓", left: "←", right: "→" };
-const ARROW_LABEL: Record<string, string> = { up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT" };
+const FLAP_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+const FLAP_KEYBOARD = Array.from(FLAP_CHARS);
 
 const WIRE_COLOR_MAP: Record<string, string> = {
   red: "#ff2244", green: "#00ff41", blue: "#0099ff", yellow: "#ffee00",
@@ -70,9 +71,10 @@ function MissionBriefing({ holderName, action, onDismiss }: {
   const [typed, setTyped] = useState("");
   const instruction =
     action.type === "tap" ? `TAP  ${action.required}  TIMES` :
-    action.type === "swipe" ? "SWIPE  THE  SEQUENCE" :
     action.type === "wire" ? "CUT  THE  CORRECT  WIRE" :
     action.type === "country" ? `ASK  ${action.target.toUpperCase()}  FOR  HELP` :
+    action.type === "memory" ? "MEMORIZE  THE  SEQUENCE" :
+    action.type === "reactor" ? "CONTROL  THE  REACTOR" :
     "ENTER  THE  CODE";
 
   useEffect(() => {
@@ -281,98 +283,207 @@ function TapAction({ required, onComplete, onPunishment, onGlitch, onProgress }:
   );
 }
 
-/* ── Swipe Action ── */
-function SwipeAction({ pattern, onComplete, onPunishment, onProgress }: {
-  pattern: string[];
+/* ── Memory Scramble ── */
+function MemoryScramble({ letters, onComplete, onPunishment }: {
+  letters: string[];
   onComplete: () => void;
   onPunishment: () => void;
-  onProgress: (p: InputProgress) => void;
 }) {
-  const [step, setStep] = useState(0);
-  const [failed, setFailed] = useState(false);
-  const [lastCorrectIdx, setLastCorrectIdx] = useState(-1);
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const [phase, setPhase] = useState<"show" | "recall">("show");
+  const [display, setDisplay] = useState<string[]>(letters.map(() => FLAP_CHARS[0]));
+  const [settled, setSettled] = useState<boolean[]>(Array(6).fill(false));
+  const [input, setInput] = useState<string[]>([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [wrongFlash, setWrongFlash] = useState(false);
   const done = useRef(false);
-  void onPunishment;
 
-  const handleSwipe = useCallback((dir: string) => {
-    if (done.current) return;
-    if (dir === pattern[step]) {
-      const next = step + 1;
-      setLastCorrectIdx(step);
-      setTimeout(() => setLastCorrectIdx(-1), 200);
-      bombSounds.correctInput();
-      setStep(next);
-      onProgress({ type: "swipe", step: next, total: pattern.length });
-      if (next >= pattern.length) {
+  useEffect(() => {
+    const buf = [...display];
+    const ivs: ReturnType<typeof setInterval>[] = [];
+    const tos: ReturnType<typeof setTimeout>[] = [];
+
+    letters.forEach((letter, i) => {
+      const iv = setInterval(() => {
+        buf[i] = FLAP_CHARS[Math.floor(Math.random() * FLAP_CHARS.length)];
+        setDisplay([...buf]);
+        bombSounds.flapClick();
+      }, 55);
+      ivs.push(iv);
+
+      const settleAt = 500 + i * 300 + Math.random() * 100;
+      tos.push(setTimeout(() => {
+        clearInterval(ivs[i]);
+        buf[i] = letter;
+        setDisplay([...buf]);
+        setSettled(prev => { const n = [...prev]; n[i] = true; return n; });
+      }, settleAt));
+    });
+
+    const lastSettle = 500 + 5 * 300 + 100;
+    tos.push(setTimeout(() => {
+      ivs.forEach(clearInterval);
+      setPhase("recall");
+    }, lastSettle + 1800));
+
+    return () => { ivs.forEach(clearInterval); tos.forEach(clearTimeout); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const addLetter = useCallback((ch: string) => {
+    if (submitted || done.current) return;
+    setInput(prev => {
+      if (prev.length >= 6) return prev;
+      const next = [...prev, ch];
+      if (next.length === 6) {
         done.current = true;
-        bombSounds.transferSuccess();
-        setTimeout(onComplete, 300);
+        setSubmitted(true);
+        const ok = next.join("") === letters.join("");
+        if (ok) {
+          bombSounds.memoryCorrect();
+          setTimeout(onComplete, 700);
+        } else {
+          bombSounds.memoryWrong();
+          setWrongFlash(true);
+          setTimeout(() => { setWrongFlash(false); setSubmitted(false); done.current = false; setInput([]); }, 800);
+          onPunishment();
+        }
       }
-    } else {
-      setFailed(true);
-      bombSounds.wrongInput();
-      setTimeout(() => setFailed(false), 500);
-    }
-  }, [step, pattern, onComplete, onProgress]);
+      return next;
+    });
+  }, [letters, onComplete, onPunishment, submitted]);
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  };
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart.current) return;
-    const dx = e.changedTouches[0].clientX - touchStart.current.x;
-    const dy = e.changedTouches[0].clientY - touchStart.current.y;
-    touchStart.current = null;
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-    if (Math.abs(dx) > Math.abs(dy)) handleSwipe(dx > 0 ? "right" : "left");
-    else handleSwipe(dy > 0 ? "down" : "up");
-  };
+  const delLetter = useCallback(() => {
+    if (submitted) return;
+    setInput(prev => prev.slice(0, -1));
+  }, [submitted]);
 
-  const row1 = pattern.slice(0, 5);
-  const row2 = pattern.slice(5);
-
-  const arrowClass = (gi: number) => {
-    if (gi < step) return "done";
-    if (gi === step) return "current";
-    if (gi === lastCorrectIdx) return "correct-flash";
-    return "pending";
-  };
-
-  return (
-    <div className="bomb-action-swipe">
-      <p className="bomb-action-label">SWIPE  THE  SEQUENCE</p>
-      <div className="bomb-swipe-sequence-wrap">
-        <div className="bomb-swipe-sequence">
-          {row1.map((dir, i) => (
-            <span key={i} className={`bomb-swipe-arrow ${arrowClass(i)}`}>{ARROW_MAP[dir]}</span>
+  if (phase === "show") {
+    return (
+      <div className="memory-show">
+        <div className="memory-label">MEMORIZE THE SEQUENCE</div>
+        <div className="memory-flap-row">
+          {letters.map((_, i) => (
+            <div key={i} className={`memory-flap-cell ${settled[i] ? "memory-flap-settled" : "memory-flap-cycling"}`}>
+              {display[i]}
+            </div>
           ))}
         </div>
-        {row2.length > 0 && (
-          <div className="bomb-swipe-sequence">
-            {row2.map((dir, i) => (
-              <span key={i} className={`bomb-swipe-arrow ${arrowClass(i + 5)}`}>{ARROW_MAP[dir]}</span>
-            ))}
-          </div>
-        )}
+        <div className="memory-sublabel">sequence will vanish…</div>
       </div>
-      <div
-        className={`bomb-swipe-pad ${failed ? "bomb-swipe-fail" : ""}`}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        <div className="bomb-swipe-hint">
-          {failed ? "ERR — RETRY" : `SWIPE  ${ARROW_LABEL[pattern[Math.min(step, pattern.length - 1)]] ?? ""}`}
-        </div>
-        <div className="bomb-swipe-arrows-big">
-          <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("up")}>↑</button>
-          <div className="bomb-dir-row">
-            <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("left")}>←</button>
-            <div className="bomb-dir-center" />
-            <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("right")}>→</button>
+    );
+  }
+
+  const slots = Array(6).fill(null).map((_, i) => input[i] ?? "");
+
+  return (
+    <div className="memory-recall">
+      <div className="memory-label">ENTER THE SEQUENCE</div>
+      <div className="memory-flap-row">
+        {slots.map((ch, i) => (
+          <div
+            key={i}
+            className={`memory-flap-cell memory-flap-recall ${wrongFlash ? "memory-flap-wrong" : ""} ${i === input.length && !submitted ? "memory-flap-cursor" : ""}`}
+          >
+            {ch}
           </div>
-          <button className="bomb-dir-btn" onPointerDown={() => handleSwipe("down")}>↓</button>
+        ))}
+      </div>
+      <div className="memory-keyboard">
+        {FLAP_KEYBOARD.map(ch => (
+          <button key={ch} className="memory-key" onPointerDown={() => addLetter(ch)}>{ch}</button>
+        ))}
+        <button className="memory-key memory-key-del" onPointerDown={delLetter}>⌫</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Reactor Temperature Control ── */
+const REACTOR_DELTAS = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+
+function ReactorControl({ safeMin, safeMax, startTemp, controls, onComplete, onPunishment }: {
+  safeMin: number;
+  safeMax: number;
+  startTemp: number;
+  controls: string[];
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
+  const [temp, setTemp] = useState(startTemp);
+  const done = useRef(false);
+  const stableStart = useRef<number | null>(null);
+
+  // Auto-drift every 700ms
+  useEffect(() => {
+    const iv = setInterval(() => {
+      if (done.current) return;
+      setTemp(prev => {
+        const drift = (Math.random() < 0.5 ? 1 : -1) * (1 + Math.floor(Math.random() * 2));
+        return Math.max(1, Math.min(99, prev + drift));
+      });
+    }, 700);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Stability check on each temp change
+  useEffect(() => {
+    if (done.current) return;
+    const inSafe = temp >= safeMin && temp <= safeMax;
+    if (inSafe) {
+      if (stableStart.current === null) stableStart.current = Date.now();
+      else if (Date.now() - stableStart.current >= 2500) {
+        done.current = true;
+        bombSounds.reactorCorrect();
+        setTimeout(onComplete, 500);
+      }
+    } else {
+      stableStart.current = null;
+      if (temp <= 3 || temp >= 97) {
+        done.current = true;
+        bombSounds.reactorWrong();
+        setTimeout(onPunishment, 200);
+      }
+    }
+  }, [temp, safeMin, safeMax, onComplete, onPunishment]);
+
+  const handleControl = useCallback(() => {
+    if (done.current) return;
+    const delta = REACTOR_DELTAS[Math.floor(Math.random() * REACTOR_DELTAS.length)];
+    setTemp(prev => Math.max(1, Math.min(99, prev + delta)));
+    bombSounds.reactorClick();
+  }, []);
+
+  const inSafe = temp >= safeMin && temp <= safeMax;
+  const pct = temp; // 0-100, 0=bottom
+
+  // Gauge color based on temperature
+  const fillColor = temp < safeMin
+    ? `hsl(${200 + (safeMin - temp) * 2},100%,60%)`  // cold = blue
+    : temp > safeMax
+    ? `hsl(${Math.max(0, 30 - (temp - safeMax) * 2)},100%,55%)` // hot = orange→red
+    : `hsl(145,100%,55%)`; // safe = green
+
+  return (
+    <div className={`reactor-control ${inSafe ? "reactor-stable" : "reactor-unstable"}`}>
+      <div className="reactor-header">REACTOR TEMPERATURE CONTROL</div>
+      <div className="reactor-layout">
+        <div className="reactor-gauge-wrap">
+          <div className="reactor-gauge">
+            <div className="reactor-safe-zone" style={{ bottom: `${safeMin}%`, height: `${safeMax - safeMin}%` }} />
+            <div className="reactor-fill" style={{ height: `${pct}%`, background: fillColor }} />
+            <div className="reactor-indicator" style={{ bottom: `${pct}%`, borderColor: fillColor, boxShadow: `0 0 10px ${fillColor}` }} />
+          </div>
+          <div className="reactor-temp-value" style={{ color: fillColor }}>{temp}°</div>
         </div>
+        <div className="reactor-controls-grid">
+          {controls.map(label => (
+            <button key={label} className={`reactor-btn ${inSafe ? "reactor-btn-stable" : "reactor-btn-danger"}`} onPointerDown={handleControl}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={`reactor-status ${inSafe ? "reactor-status-ok" : "reactor-status-danger"}`}>
+        {inSafe ? "■ STABLE — HOLD POSITION" : "▲ DANGER — ADJUST TEMPERATURE"}
       </div>
     </div>
   );
@@ -651,31 +762,23 @@ function WatchChallenge({ action, progress }: { action: BombAction; progress: In
       </div>
     );
   }
-  if (action.type === "swipe") {
-    const step = progress?.type === "swipe" ? progress.step : 0;
-    const half = Math.ceil(action.pattern.length / 2);
+  if (action.type === "memory") {
     return (
       <div className="watch-challenge-content">
-        <span className="watch-challenge-type">SWIPE</span>
-        <div className="watch-swipe-sequence">
-          {action.pattern.slice(0, half).map((d, i) => (
-            <span key={i} className={`watch-swipe-arrow ${i < step ? "done" : i === step ? "current" : "pending"}`}>
-              {ARROW_MAP[d]}
-            </span>
+        <span className="watch-challenge-type">MEMORY SCRAMBLE</span>
+        <div className="watch-memory-row">
+          {action.letters.map((l, i) => (
+            <span key={i} className="watch-memory-letter">{l}</span>
           ))}
         </div>
-        {action.pattern.length > half && (
-          <div className="watch-swipe-sequence">
-            {action.pattern.slice(half).map((d, i) => {
-              const gi = i + half;
-              return (
-                <span key={i} className={`watch-swipe-arrow ${gi < step ? "done" : gi === step ? "current" : "pending"}`}>
-                  {ARROW_MAP[d]}
-                </span>
-              );
-            })}
-          </div>
-        )}
+      </div>
+    );
+  }
+  if (action.type === "reactor") {
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">REACTOR</span>
+        <span className="watch-challenge-value">ZONE {action.safeMin}–{action.safeMax}°</span>
       </div>
     );
   }
@@ -906,12 +1009,21 @@ export default function BombGame({
                             onProgress={onProgress}
                           />
                         )}
-                        {action.type === "swipe" && (
-                          <SwipeAction
-                            pattern={action.pattern}
+                        {action.type === "memory" && (
+                          <MemoryScramble
+                            letters={action.letters}
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
-                            onProgress={onProgress}
+                          />
+                        )}
+                        {action.type === "reactor" && (
+                          <ReactorControl
+                            safeMin={action.safeMin}
+                            safeMax={action.safeMax}
+                            startTemp={action.startTemp}
+                            controls={action.controls}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
                           />
                         )}
                         {action.type === "code" && (

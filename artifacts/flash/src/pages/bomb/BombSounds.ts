@@ -135,6 +135,45 @@ class BombSoundSystem {
     setTimeout(() => this.noise(0.1, 0.3), 320);
   }
 
+  flapClick() {
+    this.noise(0.025, 0.28);
+    this.tone(3200, 0.015, "square", 0.08);
+  }
+
+  memoryCorrect() {
+    this.tone(440, 0.06, "square", 0.18);
+    setTimeout(() => this.tone(660, 0.07, "square", 0.18), 60);
+    setTimeout(() => this.tone(880, 0.08, "square", 0.20), 130);
+    setTimeout(() => this.tone(1320, 0.14, "sine", 0.16), 220);
+  }
+
+  memoryWrong() {
+    this.tone(200, 0.15, "sawtooth", 0.5);
+    setTimeout(() => this.noise(0.12, 0.45), 60);
+    setTimeout(() => this.tone(160, 0.2, "sawtooth", 0.45), 140);
+    setTimeout(() => this.noise(0.1, 0.35), 300);
+  }
+
+  reactorClick() {
+    this.noise(0.018, 0.22);
+    this.tone(280, 0.04, "square", 0.14);
+  }
+
+  reactorCorrect() {
+    this.tone(330, 0.09, "sine", 0.18);
+    setTimeout(() => this.tone(440, 0.10, "sine", 0.20), 90);
+    setTimeout(() => this.tone(554, 0.12, "sine", 0.18), 190);
+    setTimeout(() => this.tone(660, 0.20, "sine", 0.15), 300);
+  }
+
+  reactorWrong() {
+    this.tone(220, 0.18, "sawtooth", 0.5);
+    setTimeout(() => this.noise(0.2, 0.5), 60);
+    setTimeout(() => this.tone(180, 0.18, "sawtooth", 0.48), 200);
+    setTimeout(() => this.noise(0.15, 0.4), 380);
+    setTimeout(() => this.tone(140, 0.2, "sawtooth", 0.45), 520);
+  }
+
   stopTicking() {
     if (this.tickHandle !== null) {
       clearInterval(this.tickHandle);

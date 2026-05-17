@@ -7,12 +7,13 @@ interface BombPlayer {
   isAdmin: boolean;
 }
 
-interface TapAction { type: "tap"; required: number; }
-interface SwipeAction { type: "swipe"; pattern: string[]; }
-interface CodeAction { type: "code"; digits: string; direction: "ltr" | "rtl"; }
-interface WireAction { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string; }
-interface CountryAction { type: "country"; target: string; choices: string[]; }
-type BombAction = TapAction | SwipeAction | CodeAction | WireAction | CountryAction;
+interface TapAction    { type: "tap";     required: number; }
+interface CodeAction   { type: "code";    digits: string; direction: "ltr" | "rtl"; }
+interface WireAction   { type: "wire";    wires: Array<{ color: string; word: string }>; targetWord: string; }
+interface CountryAction{ type: "country"; target: string; choices: string[]; }
+interface MemoryAction { type: "memory";  letters: string[]; }
+interface ReactorAction{ type: "reactor"; safeMin: number; safeMax: number; startTemp: number; controls: string[]; }
+type BombAction = TapAction | CodeAction | WireAction | CountryAction | MemoryAction | ReactorAction;
 
 interface BombRoom {
   code: string;
@@ -65,22 +66,54 @@ function generateCountryAction(): CountryAction {
   return { type: "country", target, choices };
 }
 
+const MEMORY_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // no I/O to avoid confusion
+
+function generateMemoryAction(): MemoryAction {
+  const letters = Array.from({ length: 6 }, () =>
+    MEMORY_LETTERS[Math.floor(Math.random() * MEMORY_LETTERS.length)]
+  );
+  return { type: "memory", letters };
+}
+
+const REACTOR_CONTROLS_POOL = [
+  "COOLANT", "VENT", "EXHAUST", "BOOST", "PURGE",
+  "FLUSH", "IGNITE", "OVERRIDE", "SUPPRESS", "STABILIZE",
+];
+
+function generateReactorAction(): ReactorAction {
+  const safeMin = 32 + Math.floor(Math.random() * 18);
+  const safeMax = Math.min(safeMin + 20 + Math.floor(Math.random() * 12), 88);
+  const startOutside = Math.random() < 0.55;
+  let startTemp: number;
+  if (startOutside) {
+    startTemp = Math.random() < 0.5
+      ? Math.floor(Math.random() * safeMin)
+      : safeMax + Math.floor(Math.random() * (92 - safeMax));
+  } else {
+    startTemp = safeMin + Math.floor(Math.random() * (safeMax - safeMin));
+  }
+  const controls = [...REACTOR_CONTROLS_POOL]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 4);
+  return { type: "reactor", safeMin, safeMax, startTemp, controls };
+}
+
 function generateAction(): BombAction {
   const roll = Math.random();
-  if (roll < 0.2) {
+  if (roll < 1 / 6) {
     return { type: "tap", required: 12 + Math.floor(Math.random() * 15) };
-  } else if (roll < 0.4) {
-    const dirs = ["up", "down", "left", "right"];
-    const pattern = Array.from({ length: 10 }, () => dirs[Math.floor(Math.random() * dirs.length)]);
-    return { type: "swipe", pattern };
-  } else if (roll < 0.6) {
+  } else if (roll < 2 / 6) {
     const digits = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join("");
     const direction: "ltr" | "rtl" = Math.random() < 0.5 ? "ltr" : "rtl";
     return { type: "code", digits, direction };
-  } else if (roll < 0.8) {
+  } else if (roll < 3 / 6) {
     return generateWireAction();
-  } else {
+  } else if (roll < 4 / 6) {
     return generateCountryAction();
+  } else if (roll < 5 / 6) {
+    return generateMemoryAction();
+  } else {
+    return generateReactorAction();
   }
 }
 

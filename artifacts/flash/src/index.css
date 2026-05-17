@@ -3318,6 +3318,293 @@ html, body, #root {
   60% { filter: brightness(2.5) saturate(0); }
 }
 
+/* ── Memory Scramble task ── */
+.memory-show, .memory-recall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.memory-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #00ffc8;
+  text-transform: uppercase;
+  text-align: center;
+}
+.memory-sublabel {
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: rgba(0,255,200,0.4);
+  letter-spacing: 0.1em;
+  animation: country-blink 1s steps(1) infinite;
+}
+.memory-flap-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.memory-flap-cell {
+  width: 34px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 1.35rem;
+  font-weight: 900;
+  border-radius: 3px;
+  border: 1px solid rgba(0,255,200,0.2);
+  background: rgba(0,15,12,0.9);
+  color: #00ffc8;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.05s;
+}
+.memory-flap-cell::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%; height: 1px;
+  background: rgba(0,255,200,0.15);
+}
+.memory-flap-cycling {
+  color: rgba(0,255,200,0.6);
+  border-color: rgba(0,255,200,0.15);
+  animation: flap-flicker 0.055s steps(1) infinite;
+}
+@keyframes flap-flicker {
+  0%  { transform: scaleY(1); }
+  45% { transform: scaleY(0.92) translateY(1px); }
+  50% { transform: scaleY(0.05); }
+  55% { transform: scaleY(0.92) translateY(-1px); }
+  100%{ transform: scaleY(1); }
+}
+.memory-flap-settled {
+  color: #ffffff;
+  border-color: #00ffc8;
+  box-shadow: 0 0 10px rgba(0,255,200,0.4), inset 0 0 8px rgba(0,255,200,0.06);
+  text-shadow: 0 0 8px #00ffc8;
+  animation: flap-settle-pop 0.2s ease-out;
+}
+@keyframes flap-settle-pop {
+  0%  { transform: scaleY(0.1); }
+  60% { transform: scaleY(1.05); }
+  100%{ transform: scaleY(1); }
+}
+.memory-flap-recall {
+  color: rgba(0,255,200,0.9);
+  border-color: rgba(0,255,200,0.35);
+  background: rgba(0,255,200,0.04);
+}
+.memory-flap-cursor {
+  border-color: #00ffc8 !important;
+  box-shadow: 0 0 8px rgba(0,255,200,0.5);
+  animation: cursor-blink 0.7s steps(1) infinite;
+}
+@keyframes cursor-blink {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,255,200,0.5); }
+  50%       { box-shadow: none; }
+}
+.memory-flap-wrong {
+  border-color: #ff2244 !important;
+  color: #ff2244 !important;
+  box-shadow: 0 0 10px rgba(255,34,68,0.5) !important;
+  animation: country-wrong-shake 0.4s ease;
+}
+.memory-keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+  width: 100%;
+  max-width: 220px;
+}
+.memory-key {
+  width: 30px;
+  height: 28px;
+  background: rgba(0,20,16,0.85);
+  border: 1px solid rgba(0,255,200,0.2);
+  border-radius: 3px;
+  color: #00ffc8;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s;
+}
+.memory-key:active {
+  background: rgba(0,255,200,0.15);
+  border-color: #00ffc8;
+}
+.memory-key-del {
+  width: 46px;
+  background: rgba(40,0,10,0.85);
+  border-color: rgba(255,80,80,0.2);
+  color: rgba(255,100,100,0.8);
+}
+.memory-key-del:active {
+  background: rgba(255,34,68,0.15);
+  border-color: #ff2244;
+}
+/* WatchChallenge memory row */
+.watch-memory-row { display: flex; gap: 4px; justify-content: center; }
+.watch-memory-letter {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #00ffc8;
+  text-shadow: 0 0 6px rgba(0,255,200,0.6);
+  width: 18px;
+  text-align: center;
+}
+
+/* ── Reactor Temperature Control task ── */
+.reactor-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.reactor-control.reactor-unstable {
+  animation: reactor-shake 0.35s ease-in-out infinite;
+}
+@keyframes reactor-shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-2px) rotate(-0.3deg); }
+  75%      { transform: translateX(2px)  rotate(0.3deg); }
+}
+.reactor-header {
+  font-family: 'Courier New', monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: rgba(0,255,200,0.7);
+  text-transform: uppercase;
+  text-align: center;
+}
+.reactor-layout {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+}
+.reactor-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.reactor-gauge {
+  width: 28px;
+  height: 110px;
+  background: rgba(0,10,8,0.9);
+  border: 1px solid rgba(0,255,200,0.25);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.reactor-safe-zone {
+  position: absolute;
+  left: 0; right: 0;
+  background: rgba(0,255,128,0.12);
+  border-top: 1px solid rgba(0,255,128,0.5);
+  border-bottom: 1px solid rgba(0,255,128,0.5);
+  transition: bottom 0.3s, height 0.3s;
+  pointer-events: none;
+}
+.reactor-fill {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  border-radius: 14px 14px 14px 14px;
+  transition: height 0.35s ease, background 0.35s ease;
+  opacity: 0.8;
+}
+.reactor-indicator {
+  position: absolute;
+  left: 2px; right: 2px;
+  height: 4px;
+  border-radius: 2px;
+  background: #fff;
+  border: 1.5px solid #00ffc8;
+  transition: bottom 0.35s ease, border-color 0.35s, box-shadow 0.35s;
+  transform: translateY(50%);
+}
+.reactor-temp-value {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  transition: color 0.35s;
+  min-width: 36px;
+  text-align: center;
+}
+.reactor-controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  flex: 1;
+}
+.reactor-btn {
+  padding: 8px 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  border: 1px solid;
+  transition: background 0.1s, transform 0.1s;
+}
+.reactor-btn:active { transform: scale(0.94); }
+.reactor-btn-stable {
+  background: rgba(0,20,16,0.85);
+  border-color: rgba(0,255,200,0.3);
+  color: #00ffc8;
+}
+.reactor-btn-stable:active { background: rgba(0,255,200,0.12); }
+.reactor-btn-danger {
+  background: rgba(20,5,0,0.85);
+  border-color: rgba(255,100,60,0.4);
+  color: rgba(255,140,80,0.9);
+  animation: reactor-btn-pulse 0.9s ease-in-out infinite;
+}
+@keyframes reactor-btn-pulse {
+  0%,100% { box-shadow: none; }
+  50%      { box-shadow: 0 0 8px rgba(255,100,60,0.3); }
+}
+.reactor-btn-danger:active { background: rgba(255,60,20,0.15); }
+.reactor-status {
+  font-family: 'Courier New', monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.reactor-status-ok {
+  color: #00ff80;
+  text-shadow: 0 0 8px rgba(0,255,128,0.6);
+  animation: wire-instr-pulse 1.5s ease-in-out infinite;
+}
+.reactor-status-danger {
+  color: #ff4422;
+  animation: country-blink 0.5s steps(1) infinite;
+}
+
 /* ── Ask Country task ── */
 .bomb-action-country {
   display: flex;

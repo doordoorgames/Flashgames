@@ -86,7 +86,7 @@ function generateReactorAction(): ReactorAction {
   const startOutside = Math.random() < 0.55;
   let startTemp: number;
   void startOutside;
-  startTemp = Math.round((safeMin + safeMax) / 2);
+  startTemp = 0;
   return { type: "reactor", safeMin, safeMax, startTemp };
 }
 

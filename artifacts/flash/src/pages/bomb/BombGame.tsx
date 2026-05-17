@@ -412,15 +412,12 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
   const outsideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insideTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-drift every 600ms: ±1–3 degrees
+  // Steady cooling drift: −1 degree every 1.5s (no random jitter)
   useEffect(() => {
     const iv = setInterval(() => {
       if (done.current) return;
-      setTemp(prev => {
-        const drift = (Math.random() < 0.5 ? 1 : -1) * (1 + Math.floor(Math.random() * 3));
-        return Math.max(1, Math.min(99, prev + drift));
-      });
-    }, 600);
+      setTemp(prev => Math.max(0, prev - 1));
+    }, 1500);
     return () => clearInterval(iv);
   }, []);
 
@@ -436,7 +433,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
         insideTimer.current = setTimeout(() => {
           if (!done.current) { done.current = true; bombSounds.reactorCorrect(); setTimeout(onComplete, 500); }
           insideTimer.current = null;
-        }, 4000);
+        }, 14000);
       }
     } else {
       // clear win timer

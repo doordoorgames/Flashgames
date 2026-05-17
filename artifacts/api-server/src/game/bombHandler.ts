@@ -12,7 +12,7 @@ interface CodeAction   { type: "code";    digits: string; direction: "ltr" | "rt
 interface WireAction   { type: "wire";    wires: Array<{ color: string; word: string }>; targetWord: string; }
 interface CountryAction{ type: "country"; target: string; choices: string[]; }
 interface MemoryAction { type: "memory";  letters: string[]; }
-interface ReactorAction{ type: "reactor"; safeMin: number; safeMax: number; startTemp: number; controls: string[]; }
+interface ReactorAction{ type: "reactor"; safeMin: number; safeMax: number; startTemp: number; }
 type BombAction = TapAction | CodeAction | WireAction | CountryAction | MemoryAction | ReactorAction;
 
 interface BombRoom {
@@ -85,17 +85,9 @@ function generateReactorAction(): ReactorAction {
   const safeMax = Math.min(safeMin + 20 + Math.floor(Math.random() * 12), 88);
   const startOutside = Math.random() < 0.55;
   let startTemp: number;
-  if (startOutside) {
-    startTemp = Math.random() < 0.5
-      ? Math.floor(Math.random() * safeMin)
-      : safeMax + Math.floor(Math.random() * (92 - safeMax));
-  } else {
-    startTemp = safeMin + Math.floor(Math.random() * (safeMax - safeMin));
-  }
-  const controls = [...REACTOR_CONTROLS_POOL]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 4);
-  return { type: "reactor", safeMin, safeMax, startTemp, controls };
+  void startOutside;
+  startTemp = Math.round((safeMin + safeMax) / 2);
+  return { type: "reactor", safeMin, safeMax, startTemp };
 }
 
 function generateAction(): BombAction {

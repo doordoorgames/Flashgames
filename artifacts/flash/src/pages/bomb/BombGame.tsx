@@ -12,7 +12,7 @@ export interface BombPlayer {
 export type BombAction =
   | { type: "tap"; required: number }
   | { type: "memory"; letters: string[] }
-  | { type: "reactor"; safeMin: number; safeMax: number; startTemp: number; controls: string[] }
+  | { type: "reactor"; safeMin: number; safeMax: number; startTemp: number }
   | { type: "code"; digits: string; direction: "ltr" | "rtl" }
   | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string }
   | { type: "country"; target: string; choices: string[] };
@@ -400,90 +400,106 @@ function MemoryScramble({ letters, onComplete, onPunishment }: {
 /* ── Reactor Temperature Control ── */
 const REACTOR_DELTAS = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
 
-function ReactorControl({ safeMin, safeMax, startTemp, controls, onComplete, onPunishment }: {
+function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment }: {
   safeMin: number;
   safeMax: number;
   startTemp: number;
-  controls: string[];
   onComplete: () => void;
   onPunishment: () => void;
 }) {
   const [temp, setTemp] = useState(startTemp);
   const done = useRef(false);
-  const stableStart = useRef<number | null>(null);
+  const outsideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insideTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-drift every 700ms
+  // Auto-drift every 600ms: ±1–3 degrees
   useEffect(() => {
     const iv = setInterval(() => {
       if (done.current) return;
       setTemp(prev => {
-        const drift = (Math.random() < 0.5 ? 1 : -1) * (1 + Math.floor(Math.random() * 2));
+        const drift = (Math.random() < 0.5 ? 1 : -1) * (1 + Math.floor(Math.random() * 3));
         return Math.max(1, Math.min(99, prev + drift));
       });
-    }, 700);
+    }, 600);
     return () => clearInterval(iv);
   }, []);
 
-  // Stability check on each temp change
+  // Win / lose timers
   useEffect(() => {
     if (done.current) return;
     const inSafe = temp >= safeMin && temp <= safeMax;
     if (inSafe) {
-      if (stableStart.current === null) stableStart.current = Date.now();
-      else if (Date.now() - stableStart.current >= 2500) {
-        done.current = true;
-        bombSounds.reactorCorrect();
-        setTimeout(onComplete, 500);
+      // clear lose timer
+      if (outsideTimer.current) { clearTimeout(outsideTimer.current); outsideTimer.current = null; }
+      // start win timer if not running
+      if (!insideTimer.current) {
+        insideTimer.current = setTimeout(() => {
+          if (!done.current) { done.current = true; bombSounds.reactorCorrect(); setTimeout(onComplete, 500); }
+          insideTimer.current = null;
+        }, 4000);
       }
     } else {
-      stableStart.current = null;
-      if (temp <= 3 || temp >= 97) {
-        done.current = true;
-        bombSounds.reactorWrong();
-        setTimeout(onPunishment, 200);
+      // clear win timer
+      if (insideTimer.current) { clearTimeout(insideTimer.current); insideTimer.current = null; }
+      // start lose timer if not running
+      if (!outsideTimer.current) {
+        outsideTimer.current = setTimeout(() => {
+          if (!done.current) { done.current = true; bombSounds.reactorWrong(); setTimeout(onPunishment, 200); }
+          outsideTimer.current = null;
+        }, 3000);
       }
     }
   }, [temp, safeMin, safeMax, onComplete, onPunishment]);
 
-  const handleControl = useCallback(() => {
+  // Clean up timers on unmount
+  useEffect(() => () => {
+    if (outsideTimer.current) clearTimeout(outsideTimer.current);
+    if (insideTimer.current)  clearTimeout(insideTimer.current);
+  }, []);
+
+  const heat = useCallback(() => {
     if (done.current) return;
-    const delta = REACTOR_DELTAS[Math.floor(Math.random() * REACTOR_DELTAS.length)];
-    setTemp(prev => Math.max(1, Math.min(99, prev + delta)));
+    const delta = 1 + Math.floor(Math.random() * 5); // 1–5
+    setTemp(prev => Math.min(99, prev + delta));
+    bombSounds.reactorClick();
+  }, []);
+
+  const cool = useCallback(() => {
+    if (done.current) return;
+    const delta = 1 + Math.floor(Math.random() * 6); // 1–6
+    setTemp(prev => Math.max(1, prev - delta));
     bombSounds.reactorClick();
   }, []);
 
   const inSafe = temp >= safeMin && temp <= safeMax;
-  const pct = temp; // 0-100, 0=bottom
-
-  // Gauge color based on temperature
+  const pct = temp;
   const fillColor = temp < safeMin
-    ? `hsl(${200 + (safeMin - temp) * 2},100%,60%)`  // cold = blue
+    ? `hsl(${210 + Math.min((safeMin - temp) * 3, 30)},100%,58%)`
     : temp > safeMax
-    ? `hsl(${Math.max(0, 30 - (temp - safeMax) * 2)},100%,55%)` // hot = orange→red
-    : `hsl(145,100%,55%)`; // safe = green
+    ? `hsl(${Math.max(0, 28 - (temp - safeMax) * 2)},100%,55%)`
+    : `hsl(145,100%,55%)`;
 
   return (
     <div className={`reactor-control ${inSafe ? "reactor-stable" : "reactor-unstable"}`}>
       <div className="reactor-header">REACTOR TEMPERATURE CONTROL</div>
-      <div className="reactor-layout">
-        <div className="reactor-gauge-wrap">
-          <div className="reactor-gauge">
-            <div className="reactor-safe-zone" style={{ bottom: `${safeMin}%`, height: `${safeMax - safeMin}%` }} />
-            <div className="reactor-fill" style={{ height: `${pct}%`, background: fillColor }} />
-            <div className="reactor-indicator" style={{ bottom: `${pct}%`, borderColor: fillColor, boxShadow: `0 0 10px ${fillColor}` }} />
-          </div>
-          <div className="reactor-temp-value" style={{ color: fillColor }}>{temp}°</div>
+      <div className="reactor-center-layout">
+        <div className="reactor-gauge-big">
+          <div className="reactor-safe-zone" style={{ bottom: `${safeMin}%`, height: `${safeMax - safeMin}%` }} />
+          <div className="reactor-fill" style={{ height: `${pct}%`, background: fillColor }} />
+          <div className="reactor-indicator" style={{ bottom: `${pct}%`, borderColor: fillColor, boxShadow: `0 0 14px ${fillColor}, 0 0 4px #fff` }} />
         </div>
-        <div className="reactor-controls-grid">
-          {controls.map(label => (
-            <button key={label} className={`reactor-btn ${inSafe ? "reactor-btn-stable" : "reactor-btn-danger"}`} onPointerDown={handleControl}>
-              {label}
-            </button>
-          ))}
+        <div className="reactor-temp-big" style={{ color: fillColor }}>{temp}°</div>
+        <div className={`reactor-status ${inSafe ? "reactor-status-ok" : "reactor-status-danger"}`}>
+          {inSafe ? "■ STABLE" : "▲ DANGER"}
         </div>
       </div>
-      <div className={`reactor-status ${inSafe ? "reactor-status-ok" : "reactor-status-danger"}`}>
-        {inSafe ? "■ STABLE — HOLD POSITION" : "▲ DANGER — ADJUST TEMPERATURE"}
+      <div className="reactor-anime-buttons">
+        <button className="reactor-anime-btn reactor-cool-btn" onPointerDown={cool}>
+          ❄ COOL IT
+        </button>
+        <button className="reactor-anime-btn reactor-heat-btn" onPointerDown={heat}>
+          🔥 HEAT IT
+        </button>
       </div>
     </div>
   );
@@ -1021,7 +1037,6 @@ export default function BombGame({
                             safeMin={action.safeMin}
                             safeMax={action.safeMax}
                             startTemp={action.startTemp}
-                            controls={action.controls}
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
                           />

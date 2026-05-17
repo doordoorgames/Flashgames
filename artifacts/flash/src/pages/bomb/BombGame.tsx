@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { bombSounds } from "./BombSounds";
+import { COUNTRY_PATHS } from "./CountrySilhouettes";
 
 export interface BombPlayer {
   id: string;
@@ -12,7 +13,8 @@ export type BombAction =
   | { type: "tap"; required: number }
   | { type: "swipe"; pattern: string[] }
   | { type: "code"; digits: string; direction: "ltr" | "rtl" }
-  | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string };
+  | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string }
+  | { type: "country"; target: string; choices: string[] };
 
 export type InputProgress =
   | { type: "tap"; taps: number; required: number }
@@ -70,6 +72,7 @@ function MissionBriefing({ holderName, action, onDismiss }: {
     action.type === "tap" ? `TAP  ${action.required}  TIMES` :
     action.type === "swipe" ? "SWIPE  THE  SEQUENCE" :
     action.type === "wire" ? "CUT  THE  CORRECT  WIRE" :
+    action.type === "country" ? `ASK  ${action.target.toUpperCase()}  FOR  HELP` :
     "ENTER  THE  CODE";
 
   useEffect(() => {
@@ -457,6 +460,103 @@ function CodeAction({ digits, direction, onComplete, onPunishment, onProgress }:
   );
 }
 
+/* ── Country Silhouette SVG ── */
+function CountryShape({ country }: { country: string }) {
+  const path = COUNTRY_PATHS[country];
+  const id = `cg-${country.replace(/\s+/g, "-")}`;
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: "visible" }}>
+      <defs>
+        <filter id={id} x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      {path ? (
+        <path
+          d={path}
+          fill="rgba(0,255,200,0.14)"
+          stroke="#00ffc8"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          filter={`url(#${id})`}
+          className="country-silhouette-path"
+        />
+      ) : (
+        <rect x="15" y="15" width="70" height="70" fill="rgba(0,255,200,0.1)" stroke="#00ffc8" strokeWidth="1.5" />
+      )}
+    </svg>
+  );
+}
+
+/* ── Ask Country Action ── */
+function AskCountryAction({ target, choices, onComplete, onPunishment }: {
+  target: string;
+  choices: string[];
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
+  const [phase, setPhase] = useState<"intro" | "active">("intro");
+  const [result, setResult] = useState<{ idx: number; correct: boolean } | null>(null);
+  const done = useRef(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("active"), 1100);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleChoice = useCallback((country: string, idx: number) => {
+    if (done.current || result !== null) return;
+    if (country === target) {
+      done.current = true;
+      setResult({ idx, correct: true });
+      bombSounds.countryCorrect();
+      setTimeout(onComplete, 700);
+    } else {
+      setResult({ idx, correct: false });
+      bombSounds.countryWrong();
+      setTimeout(() => setResult(null), 600);
+      onPunishment();
+    }
+  }, [target, onComplete, onPunishment, result]);
+
+  if (phase === "intro") {
+    return (
+      <div className="country-intro">
+        <div className="country-intro-line1">WE NEED INTERNATIONAL ASSISTANCE</div>
+        <div className="country-intro-line2">CONTACTING {target.toUpperCase()}…</div>
+        <div className="country-radar-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bomb-action-country">
+      <div className="country-instruction">
+        LET'S ASK <span className="country-target-name">{target.toUpperCase()}</span> FOR HELP
+      </div>
+      <div className="country-grid">
+        {choices.map((country, idx) => {
+          const isCorrect = result?.idx === idx && result.correct;
+          const isWrong = result?.idx === idx && !result.correct;
+          return (
+            <div
+              key={country}
+              className={`country-card ${isCorrect ? "country-card-correct" : ""} ${isWrong ? "country-card-wrong" : ""}`}
+              onPointerDown={() => handleChoice(country, idx)}
+            >
+              <div className="country-svg-wrap">
+                <CountryShape country={country} />
+              </div>
+              <div className="country-label">{country}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ── Cut the Wire Action ── */
 function CutWireAction({ wires, targetWord, onComplete, onPunishment }: {
   wires: Array<{ color: string; word: string }>;
@@ -601,6 +701,14 @@ function WatchChallenge({ action, progress }: { action: BombAction; progress: In
         <span className="watch-challenge-type" style={{ fontSize: "0.6rem", opacity: 0.6 }}>
           {action.wires.length} WIRES
         </span>
+      </div>
+    );
+  }
+  if (action.type === "country") {
+    return (
+      <div className="watch-challenge-content">
+        <span className="watch-challenge-type">ASK COUNTRY</span>
+        <span className="watch-challenge-value">{action.target.toUpperCase()}</span>
       </div>
     );
   }
@@ -819,6 +927,14 @@ export default function BombGame({
                           <CutWireAction
                             wires={action.wires}
                             targetWord={action.targetWord}
+                            onComplete={onCompleteAction}
+                            onPunishment={triggerPunishment}
+                          />
+                        )}
+                        {action.type === "country" && (
+                          <AskCountryAction
+                            target={action.target}
+                            choices={action.choices}
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
                           />

@@ -11,7 +11,8 @@ interface TapAction { type: "tap"; required: number; }
 interface SwipeAction { type: "swipe"; pattern: string[]; }
 interface CodeAction { type: "code"; digits: string; direction: "ltr" | "rtl"; }
 interface WireAction { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string; }
-type BombAction = TapAction | SwipeAction | CodeAction | WireAction;
+interface CountryAction { type: "country"; target: string; choices: string[]; }
+type BombAction = TapAction | SwipeAction | CodeAction | WireAction | CountryAction;
 
 interface BombRoom {
   code: string;
@@ -50,20 +51,36 @@ function generateWireAction(): WireAction {
   return { type: "wire", wires, targetWord };
 }
 
+const COUNTRY_POOL = [
+  "Russia", "Oman", "Congo", "Brazil", "Japan", "Canada", "Saudi Arabia",
+  "India", "Egypt", "Argentina", "Australia", "Mexico", "Turkey", "France",
+  "Italy", "China", "South Korea", "South Africa", "Norway", "Germany",
+  "Chile", "USA", "Peru", "Colombia",
+];
+
+function generateCountryAction(): CountryAction {
+  const shuffled = [...COUNTRY_POOL].sort(() => Math.random() - 0.5);
+  const target = shuffled[0];
+  const choices = [target, ...shuffled.slice(1, 4)].sort(() => Math.random() - 0.5);
+  return { type: "country", target, choices };
+}
+
 function generateAction(): BombAction {
   const roll = Math.random();
-  if (roll < 0.25) {
+  if (roll < 0.2) {
     return { type: "tap", required: 12 + Math.floor(Math.random() * 15) };
-  } else if (roll < 0.5) {
+  } else if (roll < 0.4) {
     const dirs = ["up", "down", "left", "right"];
     const pattern = Array.from({ length: 10 }, () => dirs[Math.floor(Math.random() * dirs.length)]);
     return { type: "swipe", pattern };
-  } else if (roll < 0.75) {
+  } else if (roll < 0.6) {
     const digits = Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join("");
     const direction: "ltr" | "rtl" = Math.random() < 0.5 ? "ltr" : "rtl";
     return { type: "code", digits, direction };
-  } else {
+  } else if (roll < 0.8) {
     return generateWireAction();
+  } else {
+    return generateCountryAction();
   }
 }
 

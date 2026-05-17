@@ -101,6 +101,23 @@ class BombSoundSystem {
     this.tickHandle = window.setInterval(doTick, ms);
   }
 
+  countryCorrect() {
+    // Sonar/radar confirmation ping
+    this.tone(880, 0.06, "sine", 0.22);
+    setTimeout(() => this.tone(1100, 0.08, "sine", 0.20), 80);
+    setTimeout(() => this.tone(1320, 0.12, "sine", 0.18), 170);
+    setTimeout(() => this.tone(1760, 0.18, "sine", 0.15), 280);
+  }
+
+  countryWrong() {
+    // Alarm siren: descending wail + static
+    this.tone(900, 0.12, "sawtooth", 0.42);
+    setTimeout(() => this.tone(700, 0.12, "sawtooth", 0.42), 120);
+    setTimeout(() => this.tone(500, 0.14, "sawtooth", 0.45), 240);
+    setTimeout(() => this.noise(0.18, 0.38), 360);
+    setTimeout(() => this.tone(350, 0.12, "sawtooth", 0.4), 400);
+  }
+
   wireSlice() {
     // Rising satisfying cut: high-pitched slice sweep
     this.tone(600, 0.04, "square", 0.18);

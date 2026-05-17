@@ -1,0 +1,137 @@
+Add a BRAND NEW bomb-defusing task called:
+
+ASK COUNTRY FOR HELP
+
+This is an ADDITIONAL random bomb task.
+Do NOT replace or modify existing tasks.
+
+GAMEPLAY:
+A dramatic reactor warning appears.
+
+Then the screen says:
+
+LET’S ASK RUSSIA FOR HELP
+or
+LET’S ASK OMAN FOR HELP
+or
+LET’S ASK CONGO FOR HELP
+
+A target country is randomly selected every round.
+
+Then show 4 large selectable country panels/cards on screen.
+
+ONLY ONE is correct.
+
+The player must quickly tap the correct country before time runs out.
+
+IMPORTANT:
+- The countries should be represented visually by BEAUTIFUL glowing country map silhouettes/shapes
+- NOT flags
+- The country shape itself should be the main visual
+- Each round includes:
+  - 1 correct country
+  - 3 random incorrect countries
+
+Example:
+Instruction:
+LET’S ASK OMAN FOR HELP
+
+Choices:
+- Oman ← correct
+- Brazil
+- Japan
+- Canada
+
+Another round:
+LET’S ASK RUSSIA FOR HELP
+
+Choices:
+- Russia ← correct
+- Chile
+- Egypt
+- Australia
+
+VISUAL STYLE:
+- Neon radar-room aesthetic
+- Futuristic anime reactor UI
+- Country silhouettes glowing like holograms
+- Thin radar grid lines behind maps
+- Animated scanning effects
+- Subtle rotating radar circles
+- Soft bloom/glow
+- Dark cyberpunk background
+- Beautiful high-tech military-command-center feeling
+- Each country card should feel premium and dynamic
+
+MAP DESIGN:
+- Use simplified glowing outlines/silhouettes of the countries
+- Make them instantly recognizable but stylish
+- Slight animated pulse
+- Hover/tap effects feel satisfying
+
+LAYOUT:
+- 4 country choices arranged in a clean grid
+- Large enough to instantly tap on mobile
+- No scrolling ever
+- Everything stays centered in the invisible gameplay frame
+
+DIFFICULTY:
+Easy:
+- very distinct country shapes
+
+Medium:
+- somewhat similar shapes
+
+Hard:
+- visually confusing choices
+- similar-looking country silhouettes
+
+CORRECT ANSWER EFFECT:
+- radar confirmation pulse
+- reactor stabilizes briefly
+- satisfying futuristic success sound
+- green scanning effect
+
+WRONG ANSWER EFFECT:
+- loud warning siren
+- red glitch flash
+- danger meter increases
+- screen shake
+- distorted radio static sound
+
+ADDITIONAL POLISH:
+- Add dramatic voice/radio text feeling
+- Example:
+  “WE NEED INTERNATIONAL ASSISTANCE”
+  “CONTACTING RUSSIA…”
+- Add subtle communication/radio ambience
+- Add scanning animations while player decides
+- Make the entire task feel cinematic and tense
+
+COUNTRY POOL:
+Use many countries from around the world including:
+Russia
+Oman
+Congo
+Brazil
+Japan
+Canada
+Saudi Arabia
+India
+Egypt
+Argentina
+Australia
+Mexico
+Turkey
+France
+Italy
+China
+South Korea
+South Africa
+Norway
+Germany
+and many more.
+
+IMPORTANT:
+Keep all existing gameplay, rooms, sabotage systems, bomb systems, timers, and layouts unchanged.
+Only add this as another random task in the bomb-task pool.

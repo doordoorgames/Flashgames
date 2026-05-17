@@ -9,14 +9,7 @@ import {
 import type { Room, Player, PlayerAnswer, GameItem } from "./gameState.js";
 import { ROUND_CONFIG, TOTAL_ROUNDS, ANSWER_TIME_LIMIT } from "./gameState.js";
 import { isCorrectAnswer, calculatePoints } from "./scoring.js";
-import { getAdminItems } from "./adminStore.js";
 import { getConfusionItems } from "./confusionStore.js";
-
-function getCombinedItems() {
-  const admin = getAdminItems();
-  const confusion = getConfusionItems();
-  return [...admin, ...confusion];
-}
 
 export function setupSocketHandlers(io: Server): void {
   io.on("connection", (socket) => {
@@ -26,12 +19,12 @@ export function setupSocketHandlers(io: Server): void {
         data: { playerName: string },
         cb: (res: { code: string; playerId: string; error?: string }) => void
       ) => {
-        const items = getCombinedItems();
+        const items = getConfusionItems();
         if (items.length < TOTAL_ROUNDS) {
           cb({
             code: "",
             playerId: "",
-            error: `Not enough items loaded in admin panel. Need at least ${TOTAL_ROUNDS}, have ${items.length}.`,
+            error: `Not enough confusion entries loaded from Supabase. Need at least ${TOTAL_ROUNDS}, have ${items.length}.`,
           });
           return;
         }
@@ -148,15 +141,15 @@ export function setupSocketHandlers(io: Server): void {
       const room = getRoom(data.code);
       if (!room || socket.id !== room.adminId) return;
       if (room.phase !== "leaderboard") return;
-      const items = getAdminItems();
+      const items = getConfusionItems();
       if (items.length < TOTAL_ROUNDS) {
         io.to(data.code).emit("error-msg", {
-          message: `Need at least ${TOTAL_ROUNDS} items. You have ${items.length}.`,
+          message: `Need at least ${TOTAL_ROUNDS} confusion entries from Supabase. Have ${items.length}.`,
         });
         return;
       }
       room.players.forEach(player => { player.score = 0; });
-      room.items = [...getCombinedItems()].sort(() => Math.random() - 0.5);
+      room.items = [...getConfusionItems()].sort(() => Math.random() - 0.5);
       room.currentRound = 0;
       room.roundResults = [];
       room.phase = "lobby";

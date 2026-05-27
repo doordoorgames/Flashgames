@@ -9,7 +9,7 @@ import {
 import type { Room, Player, PlayerAnswer, GameItem } from "./gameState.js";
 import { ROUND_CONFIG, TOTAL_ROUNDS, ANSWER_TIME_LIMIT } from "./gameState.js";
 import { isCorrectAnswer, calculatePoints } from "./scoring.js";
-import { getConfusionItems } from "./confusionStore.js";
+import { getFlashPool } from "./confusionStore.js";
 
 export function setupSocketHandlers(io: Server): void {
   io.on("connection", (socket) => {
@@ -19,30 +19,34 @@ export function setupSocketHandlers(io: Server): void {
         data: { playerName: string },
         cb: (res: { code: string; playerId: string; error?: string }) => void
       ) => {
-        const items = getConfusionItems();
-        if (items.length < TOTAL_ROUNDS) {
+        const easy   = getFlashPool("easy");
+        const medium = getFlashPool("medium");
+        const hard   = getFlashPool("hard");
+        console.log(`[Flash] create-room: pools easy=${easy.length}, medium=${medium.length}, hard=${hard.length}`);
+        if (easy.length < 3 || medium.length < 3 || hard.length < 3) {
           cb({
             code: "",
             playerId: "",
-            error: `Not enough confusion entries loaded from Supabase. Need at least ${TOTAL_ROUNDS}, have ${items.length}.`,
+            error: `Not enough flash_items per difficulty. Need 3+ each. easy=${easy.length}, medium=${medium.length}, hard=${hard.length}.`,
           });
           return;
         }
+        const pick3 = (pool: GameItem[]) => [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+        const items = [...pick3(easy), ...pick3(medium), ...pick3(hard)];
+        console.log(`[Flash] Session items selected (3 easy + 3 medium + 3 hard):`);
+        items.forEach((item, i) => {
+          const cfg = ROUND_CONFIG[i];
+          console.log(`  Round ${i + 1} (${cfg.difficulty}, ${cfg.flashDurationMs}ms): "${item.prompt}"`);
+        });
         const code = generateRoomCode();
-        const player: Player = {
-          id: socket.id,
-          name: data.playerName,
-          score: 0,
-          isAdmin: true,
-        };
-        const shuffled = [...items].sort(() => Math.random() - 0.5);
+        const player: Player = { id: socket.id, name: data.playerName, score: 0, isAdmin: true };
         const room: Room = {
           code,
           adminId: socket.id,
           players: new Map([[socket.id, player]]),
           phase: "lobby",
           currentRound: 0,
-          items: shuffled,
+          items,
           currentAnswers: new Map(),
           roundResults: [],
         };
@@ -141,15 +145,25 @@ export function setupSocketHandlers(io: Server): void {
       const room = getRoom(data.code);
       if (!room || socket.id !== room.adminId) return;
       if (room.phase !== "leaderboard") return;
-      const items = getConfusionItems();
-      if (items.length < TOTAL_ROUNDS) {
+      const easy   = getFlashPool("easy");
+      const medium = getFlashPool("medium");
+      const hard   = getFlashPool("hard");
+      console.log(`[Flash] restart-game: pools easy=${easy.length}, medium=${medium.length}, hard=${hard.length}`);
+      if (easy.length < 3 || medium.length < 3 || hard.length < 3) {
         io.to(data.code).emit("error-msg", {
-          message: `Need at least ${TOTAL_ROUNDS} confusion entries from Supabase. Have ${items.length}.`,
+          message: `Not enough flash_items per difficulty. Need 3+ each. easy=${easy.length}, medium=${medium.length}, hard=${hard.length}.`,
         });
         return;
       }
+      const pick3 = (pool: GameItem[]) => [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+      const items = [...pick3(easy), ...pick3(medium), ...pick3(hard)];
+      console.log(`[Flash] Restart items selected:`);
+      items.forEach((item, i) => {
+        const cfg = ROUND_CONFIG[i];
+        console.log(`  Round ${i + 1} (${cfg.difficulty}, ${cfg.flashDurationMs}ms): "${item.prompt}"`);
+      });
       room.players.forEach(player => { player.score = 0; });
-      room.items = [...getConfusionItems()].sort(() => Math.random() - 0.5);
+      room.items = items;
       room.currentRound = 0;
       room.roundResults = [];
       room.phase = "lobby";
@@ -198,6 +212,8 @@ function startNextRound(io: Server, code: string): void {
   const roundIndex = room.currentRound - 1;
   const config = ROUND_CONFIG[roundIndex];
   const item = room.items[roundIndex];
+
+  console.log(`[Flash] Round ${room.currentRound}/${TOTAL_ROUNDS}: difficulty=${config.difficulty}, flashDuration=${config.flashDurationMs}ms, item="${item.prompt}"`);
 
   room.phase = "round-info";
   setRoom(code, room);

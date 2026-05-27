@@ -57,15 +57,15 @@ export const ROUND_CONFIG: Array<{
   difficulty: Difficulty;
   flashDurationMs: number;
 }> = [
-  { difficulty: "Easy", flashDurationMs: 1000 },
-  { difficulty: "Easy", flashDurationMs: 1000 },
-  { difficulty: "Easy", flashDurationMs: 1000 },
-  { difficulty: "Medium", flashDurationMs: 800 },
-  { difficulty: "Medium", flashDurationMs: 800 },
-  { difficulty: "Medium", flashDurationMs: 800 },
-  { difficulty: "Hard", flashDurationMs: 600 },
-  { difficulty: "Hard", flashDurationMs: 600 },
-  { difficulty: "Hard", flashDurationMs: 600 },
+  { difficulty: "Easy",   flashDurationMs: 900 },
+  { difficulty: "Easy",   flashDurationMs: 900 },
+  { difficulty: "Easy",   flashDurationMs: 900 },
+  { difficulty: "Medium", flashDurationMs: 700 },
+  { difficulty: "Medium", flashDurationMs: 700 },
+  { difficulty: "Medium", flashDurationMs: 700 },
+  { difficulty: "Hard",   flashDurationMs: 500 },
+  { difficulty: "Hard",   flashDurationMs: 500 },
+  { difficulty: "Hard",   flashDurationMs: 500 },
 ];
 
 export const TOTAL_ROUNDS = 9;

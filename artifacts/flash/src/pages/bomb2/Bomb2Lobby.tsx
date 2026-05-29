@@ -1,4 +1,5 @@
 import type { B2Player } from "./Bomb2App";
+import RoomJoinQR from "@/components/RoomJoinQR";
 
 interface Props {
   code: string;
@@ -30,6 +31,7 @@ export default function Bomb2Lobby({ code, playerId, isAdmin, players, errorMsg,
               <span className="b2-lobby-code-label">REACTOR CODE</span>
               <span className="b2-lobby-code">{code}</span>
               <span className="b2-lobby-code-hint">Share with operatives</span>
+              <RoomJoinQR roomCode={code} />
             </div>
             <div className="b2-lobby-players">
               <p className="b2-lobby-players-label">OPERATIVES CONNECTED — {players.length}</p>

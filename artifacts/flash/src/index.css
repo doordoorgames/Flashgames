@@ -301,6 +301,69 @@ html, body, #root {
   margin-top: 6px;
 }
 
+/* ── RoomJoinQR ── */
+.rjq-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(160,110,255,0.18);
+}
+.rjq-qr {
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px;
+  border: 4px solid #c084fc;
+  box-shadow: 5px 5px 0 #000;
+  line-height: 0;
+}
+.rjq-arabic-scan {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #c084fc;
+  direction: rtl;
+  text-shadow: 0 0 10px rgba(192,132,252,0.45);
+  margin: 0;
+}
+.rjq-arabic-sub {
+  font-size: 0.72rem;
+  color: rgba(180,150,255,0.5);
+  direction: rtl;
+  margin: 0;
+}
+.rjq-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+.rjq-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  border: 2px solid;
+  transition: transform 0.08s;
+}
+.rjq-btn:active { transform: scale(0.93); }
+.rjq-copy {
+  background: rgba(192,132,252,0.12);
+  border-color: #c084fc;
+  color: #c084fc;
+  box-shadow: 3px 3px 0 #000;
+}
+.rjq-share {
+  background: rgba(74,222,128,0.1);
+  border-color: #4ade80;
+  color: #4ade80;
+  box-shadow: 3px 3px 0 #000;
+}
+
 .lobby-players-title {
   font-size: 0.75rem;
   text-transform: uppercase;

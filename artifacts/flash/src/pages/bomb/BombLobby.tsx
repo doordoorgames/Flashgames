@@ -1,3 +1,5 @@
+import RoomJoinQR from "@/components/RoomJoinQR";
+
 interface BombPlayer {
   id: string;
   name: string;
@@ -27,6 +29,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
               <p className="rcd-label">Room Code</p>
               <p className="rcd-code">{code}</p>
               <p className="rcd-hint">Share with players</p>
+              <RoomJoinQR roomCode={code} />
             </div>
 
             <div className="lobby-players">

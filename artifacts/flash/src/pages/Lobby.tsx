@@ -1,4 +1,5 @@
 import type { Player } from "@/lib/types";
+import RoomJoinQR from "@/components/RoomJoinQR";
 
 interface LobbyProps {
   code: string;
@@ -19,6 +20,7 @@ export default function Lobby({ code, players, isAdmin, itemCount, onStartGame }
           <p className="rcd-label">Room Code</p>
           <p className="rcd-code">{code}</p>
           <p className="rcd-hint">Share this with your players</p>
+          <RoomJoinQR roomCode={code} />
         </div>
 
         <div className="lobby-players">

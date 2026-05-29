@@ -1,4 +1,5 @@
 import type { YNSession, YNPlayer } from "./YesNoApp";
+import RoomJoinQR from "@/components/RoomJoinQR";
 
 interface LobbyState {
   players: YNPlayer[];
@@ -27,6 +28,7 @@ export default function YesNoLobby({ session, lobbyState, errorMsg, onStartGame,
           <p className="rcd-label">Room Code</p>
           <p className="rcd-code">{session.code}</p>
           <p className="rcd-hint">Share with players</p>
+          <RoomJoinQR roomCode={session.code} />
         </div>
 
         <div className="lobby-players">

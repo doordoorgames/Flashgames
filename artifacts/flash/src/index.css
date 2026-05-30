@@ -246,10 +246,11 @@ html, body, #root {
 .lobby-screen {
   min-height: 100dvh;
   display: flex;
-  align-items: center;
+  align-items: safe center;
   justify-content: center;
   background: radial-gradient(ellipse at top, #2a1050 0%, #0d0a1a 70%);
   padding: 24px 20px;
+  overflow-y: auto;
 }
 
 .lobby-card {
@@ -1479,10 +1480,11 @@ html, body, #root {
 .yn-lobby-screen {
   min-height: 100dvh;
   display: flex;
-  align-items: center;
+  align-items: safe center;
   justify-content: center;
   background: radial-gradient(ellipse at 50% 30%, #0d2017 0%, #070f0a 70%);
   padding: 24px 20px;
+  overflow-y: auto;
 }
 
 .yn-lobby-card {
@@ -2480,7 +2482,8 @@ html, body, #root {
   top: var(--safe-margin-y);
   bottom: var(--safe-margin-y);
   background: transparent;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   z-index: 1;
 }
 /* Animated CRT grain noise — inside screen-safe-area only */
@@ -2519,10 +2522,11 @@ html, body, #root {
   position: relative;
   z-index: 3;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #ffffff;
 }
 /* Very subtle holder indicator — slight border pulse */
@@ -4710,7 +4714,9 @@ html, body, #root {
 }
 .b2-safe {
   position: absolute; inset: 0; z-index: 5;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: safe center; justify-content: center;
+  overflow-y: auto;
+  padding: 16px 0;
 }
 
 /* ── Reactor rings (decorative, behind content) ── */

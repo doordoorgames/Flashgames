@@ -45,6 +45,7 @@ interface Props {
 }
 
 export default function YesNoApp({ onBack }: Props) {
+  const [initialCode] = useState(() => new URLSearchParams(window.location.search).get("room")?.replace(/\D/g, "").slice(0, 5) ?? "");
   const [phase, setPhase] = useState<YNPhase>("home");
   const [session, setSession] = useState<YNSession | null>(null);
   const [lobbyState, setLobbyState] = useState<YNLobbyState>({ players: [], adminId: "", questionCount: 0 });
@@ -210,6 +211,7 @@ export default function YesNoApp({ onBack }: Props) {
     <YesNoHome
       onBack={onBack}
       onJoined={handleJoined}
+      initialCode={initialCode}
     />
   );
 }

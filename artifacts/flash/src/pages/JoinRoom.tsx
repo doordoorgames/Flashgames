@@ -4,11 +4,12 @@ import { getSocket } from "@/lib/socket";
 interface JoinRoomProps {
   onBack: () => void;
   onJoined: (code: string, playerId: string, name: string) => void;
+  initialCode?: string;
 }
 
-export default function JoinRoom({ onBack, onJoined }: JoinRoomProps) {
+export default function JoinRoom({ onBack, onJoined, initialCode = "" }: JoinRoomProps) {
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 

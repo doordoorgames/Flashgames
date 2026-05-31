@@ -4,14 +4,15 @@ import { getSocket } from "@/lib/socket";
 interface Props {
   onBack: () => void;
   onJoined: (code: string, playerId: string, name: string, isAdmin: boolean) => void;
+  initialCode?: string;
 }
 
 type Sub = "choose" | "create" | "join";
 
-export default function Bomb2Home({ onBack, onJoined }: Props) {
-  const [sub, setSub] = useState<Sub>("choose");
+export default function Bomb2Home({ onBack, onJoined, initialCode = "" }: Props) {
+  const [sub, setSub] = useState<Sub>(initialCode ? "join" : "choose");
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 

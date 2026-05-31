@@ -31,6 +31,7 @@ interface Props { onBack: () => void; }
 const MAX_INPUT_LOG = 40;
 
 export default function Bomb2App({ onBack }: Props) {
+  const [initialCode] = useState(() => new URLSearchParams(window.location.search).get("room")?.replace(/\D/g, "").slice(0, 5) ?? "");
   const [phase, setPhase] = useState<AppPhase>("home");
   const [session, setSession] = useState<Session | null>(null);
   const [players, setPlayers] = useState<B2Player[]>([]);
@@ -266,5 +267,5 @@ export default function Bomb2App({ onBack }: Props) {
     );
   }
 
-  return <Bomb2Home onBack={onBack} onJoined={handleJoined} />;
+  return <Bomb2Home onBack={onBack} onJoined={handleJoined} initialCode={initialCode} />;
 }

@@ -4,14 +4,15 @@ import { getSocket } from "@/lib/socket";
 interface Props {
   onBack: () => void;
   onJoined: (code: string, playerId: string, name: string, isAdmin: boolean) => void;
+  initialCode?: string;
 }
 
 type SubPhase = "choose" | "create" | "join";
 
-export default function YesNoHome({ onBack, onJoined }: Props) {
-  const [sub, setSub] = useState<SubPhase>("choose");
+export default function YesNoHome({ onBack, onJoined, initialCode = "" }: Props) {
+  const [sub, setSub] = useState<SubPhase>(initialCode ? "join" : "choose");
   const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 

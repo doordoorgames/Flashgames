@@ -17,6 +17,7 @@ interface Props {
 }
 
 export default function BombApp({ onBack }: Props) {
+  const [initialCode] = useState(() => new URLSearchParams(window.location.search).get("room")?.replace(/\D/g, "").slice(0, 5) ?? "");
   const [phase, setPhase] = useState<BombPhase>("home");
   const [session, setSession] = useState<BombSession | null>(null);
   const [players, setPlayers] = useState<BombPlayer[]>([]);
@@ -145,5 +146,5 @@ export default function BombApp({ onBack }: Props) {
     );
   }
 
-  return <BombHome onBack={onBack} onJoined={handleJoined} />;
+  return <BombHome onBack={onBack} onJoined={handleJoined} initialCode={initialCode} />;
 }

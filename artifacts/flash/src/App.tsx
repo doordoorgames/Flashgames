@@ -26,7 +26,8 @@ interface GameSession {
 }
 
 function FlashApp({ onBack }: { onBack: () => void }) {
-  const [phase, setPhase] = useState<FlashPhase>("home");
+  const [initialCode] = useState(() => new URLSearchParams(window.location.search).get("room")?.replace(/\D/g, "").slice(0, 5) ?? "");
+  const [phase, setPhase] = useState<FlashPhase>(initialCode ? "join" : "home");
   const [session, setSession] = useState<GameSession | null>(null);
   const [lobbyPlayers, setLobbyPlayers] = useState<Player[]>([]);
   const [itemCount, setItemCount] = useState(0);
@@ -62,7 +63,7 @@ function FlashApp({ onBack }: { onBack: () => void }) {
 
   if (phase === "home") return <Home onCreateGame={() => setPhase("create")} onJoinGame={() => setPhase("join")} onBack={onBack} />;
   if (phase === "create") return <CreateRoom onBack={() => setPhase("home")} onRoomCreated={(code, playerId, name) => handleJoined(code, playerId, name, true)} />;
-  if (phase === "join") return <JoinRoom onBack={() => setPhase("home")} onJoined={(code, playerId, name) => handleJoined(code, playerId, name, false)} />;
+  if (phase === "join") return <JoinRoom onBack={() => setPhase("home")} onJoined={(code, playerId, name) => handleJoined(code, playerId, name, false)} initialCode={initialCode} />;
   if (phase === "lobby" && session) return <Lobby code={session.code} players={lobbyPlayers} isAdmin={session.isAdmin} playerId={session.playerId} itemCount={itemCount} onStartGame={handleStartGame} />;
   if (phase === "game" && session) return <GameView code={session.code} playerId={session.playerId} isAdmin={session.isAdmin} playerName={session.playerName} />;
   return null;

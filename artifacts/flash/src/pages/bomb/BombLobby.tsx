@@ -1,4 +1,5 @@
 import RoomJoinQR from "@/components/RoomJoinQR";
+import FloatingStartBtn from "@/components/FloatingStartBtn";
 
 interface BombPlayer {
   id: string;
@@ -51,17 +52,14 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
 
             {isAdmin ? (
               <div className="bomb-lobby-admin">
-                {players.length >= 2 ? (
-                  <button className="bomb-submit-btn" onClick={onStartGame}>
-                    START GAME
-                  </button>
-                ) : (
+                {players.length < 2 && (
                   <p className="bomb-waiting-hint">Waiting for at least 2 players...</p>
                 )}
               </div>
             ) : (
               <p className="lobby-waiting">Waiting for the host to start...</p>
             )}
+            {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={players.length < 2} />}
 
             <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Change Game</button>
           </div>

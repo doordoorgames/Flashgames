@@ -1,5 +1,6 @@
 import type { B2Player } from "./Bomb2App";
 import RoomJoinQR from "@/components/RoomJoinQR";
+import FloatingStartBtn from "@/components/FloatingStartBtn";
 
 interface Props {
   code: string;
@@ -46,16 +47,13 @@ export default function Bomb2Lobby({ code, playerId, isAdmin, players, errorMsg,
             </div>
             {errorMsg && <p className="b2-input-error">[!] {errorMsg}</p>}
             {isAdmin ? (
-              <button
-                className="b2-submit-btn"
-                onClick={onStartGame}
-                disabled={players.length < 2}
-              >
-                {players.length < 2 ? "WAITING FOR OPERATIVES..." : "▶ INITIATE MELTDOWN"}
-              </button>
+              players.length < 2 && (
+                <p className="b2-lobby-waiting">[ WAITING FOR OPERATIVES ]</p>
+              )
             ) : (
               <p className="b2-lobby-waiting">[ AWAITING HOST AUTHORIZATION ]</p>
             )}
+            {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={players.length < 2} />}
           </div>
         </div>
       </div>

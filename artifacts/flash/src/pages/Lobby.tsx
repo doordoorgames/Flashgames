@@ -1,5 +1,6 @@
 import type { Player } from "@/lib/types";
 import RoomJoinQR from "@/components/RoomJoinQR";
+import FloatingStartBtn from "@/components/FloatingStartBtn";
 
 interface LobbyProps {
   code: string;
@@ -39,16 +40,11 @@ export default function Lobby({ code, players, isAdmin, itemCount, onStartGame }
         {isAdmin ? (
           <div className="lobby-admin-area">
             <p className="lobby-items-info">{itemCount} game items loaded</p>
-            <button
-              className="entry-btn"
-              onClick={onStartGame}
-            >
-              Begin Game
-            </button>
           </div>
         ) : (
           <p className="lobby-waiting">The host will start the game soon...</p>
         )}
+        {isAdmin && <FloatingStartBtn onClick={onStartGame} />}
       </div>
     </div>
   );

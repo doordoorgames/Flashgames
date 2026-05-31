@@ -1,5 +1,6 @@
 import type { YNSession, YNPlayer } from "./YesNoApp";
 import RoomJoinQR from "@/components/RoomJoinQR";
+import FloatingStartBtn from "@/components/FloatingStartBtn";
 
 interface LobbyState {
   players: YNPlayer[];
@@ -52,16 +53,7 @@ export default function YesNoLobby({ session, lobbyState, errorMsg, onStartGame,
             <p className={`yn-q-count ${questionCount >= 1 ? "yn-q-ready" : "yn-q-warn"}`}>
               {questionCount >= 1 ? `✓ ${questionCount} questions loaded` : `⚠ No questions loaded — upload at /admin`}
             </p>
-            {isReady ? (
-              <>
-                <p className="yn-select-label" style={{ marginBottom: 12, opacity: 0.8 }}>
-                  Player order will be randomised automatically.
-                </p>
-                <button className="yn-submit-btn" onClick={onStartGame}>
-                  Start Game →
-                </button>
-              </>
-            ) : (
+            {!isReady && (
               <p className="yn-waiting-hint">
                 {questionCount < 1 ? "Upload questions at /admin first." : "Waiting for players to join..."}
               </p>
@@ -70,6 +62,7 @@ export default function YesNoLobby({ session, lobbyState, errorMsg, onStartGame,
         ) : (
           <p className="lobby-waiting">Waiting for the host to start...</p>
         )}
+        {session.isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={!isReady} />}
 
         <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Change Game</button>
       </div>

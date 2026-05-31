@@ -295,34 +295,38 @@ html, body, #root {
 .lobby-card {
   width: 100%;
   max-width: 380px;
-  background: rgba(25,18,45,0.95);
-  border: 1px solid rgba(160,110,255,0.2);
-  border-radius: 20px;
-  padding: 32px 28px;
+  background: #eceaf4;
+  border: 3px solid #0d0018;
+  border-radius: 4px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  box-shadow: 6px 6px 0 #000;
+  overflow: hidden;
 }
 
 .lobby-brand {
-  font-size: 1.5rem;
-  font-weight: 900;
+  background: #0d0018;
   color: #c084fc;
+  font-size: 0.95rem;
+  font-weight: 900;
   text-align: center;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 13px 24px;
 }
 
 .room-code-display {
   text-align: center;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(160,110,255,0.22);
-  border-radius: 14px;
-  padding: 20px;
+  background: #160028;
+  border-bottom: 3px solid #0d0018;
+  padding: 22px 20px 24px;
 }
 
 .rcd-label {
-  font-size: 0.7rem;
+  font-size: 0.58rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.2em;
   color: rgba(180,150,255,0.5);
   margin-bottom: 4px;
 }
@@ -336,8 +340,8 @@ html, body, #root {
 }
 
 .rcd-hint {
-  font-size: 0.75rem;
-  color: rgba(180,150,255,0.4);
+  font-size: 0.72rem;
+  color: rgba(180,150,255,0.38);
   margin-top: 6px;
 }
 
@@ -456,35 +460,43 @@ html, body, #root {
   box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
 }
 
+.lobby-players {
+  padding: 20px 22px 0;
+}
+
 .lobby-players-title {
-  font-size: 0.75rem;
+  font-size: 0.58rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(180,150,255,0.5);
+  letter-spacing: 0.2em;
+  color: #0d0018;
+  border-bottom: 2px solid #0d0018;
+  padding-bottom: 7px;
   margin-bottom: 10px;
 }
 
 .lobby-players-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .lobby-player {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  background: rgba(0,0,0,0.35);
-  border: 1px solid rgba(150,100,255,0.14);
-  border-radius: 10px;
+  padding: 9px 13px;
+  background: #ffffff;
+  border: 2px solid #0d0018;
+  border-radius: 3px;
+  box-shadow: 2px 2px 0 #000;
 }
 
 .lobby-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4ade80;
+  background: #16a34a;
   flex-shrink: 0;
   animation: pulse-dot 2s ease-in-out infinite;
 }
@@ -496,22 +508,24 @@ html, body, #root {
 
 .lobby-pname {
   flex: 1;
-  font-size: 0.95rem;
-  color: #e0d4ff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0d0018;
 }
 
 .lobby-host-tag {
-  font-size: 0.6rem;
-  font-weight: 800;
+  font-size: 0.52rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #c084fc;
-  background: rgba(130,80,255,0.18);
-  padding: 2px 7px;
-  border-radius: 4px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: #0d0018;
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
 .lobby-admin-area {
+  padding: 16px 22px 22px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -519,14 +533,21 @@ html, body, #root {
 }
 
 .lobby-items-info {
-  font-size: 0.8rem;
-  color: rgba(180,150,255,0.5);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #4a3a6e;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .lobby-waiting {
   text-align: center;
-  color: rgba(180,150,255,0.45);
-  font-size: 0.9rem;
+  color: #4a3a6e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 16px 22px 22px;
 }
 
 /* ===========================

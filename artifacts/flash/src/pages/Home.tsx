@@ -18,14 +18,20 @@ export default function Home({ onCreateGame, onJoinGame, onBack }: HomeProps) {
 
         <div className="home-buttons">
           <button className="home-btn home-btn-join" onClick={onJoinGame}>
-            <span className="home-btn-icon">🎮</span>
-            <span className="home-btn-label">Join Game</span>
-            <span className="home-btn-sub">Enter a room code</span>
+            <span className="home-btn-tag">JOIN</span>
+            <div className="home-btn-text">
+              <span className="home-btn-label">Join Game</span>
+              <span className="home-btn-sub">Enter a room code</span>
+            </div>
+            <span className="home-btn-arrow">→</span>
           </button>
           <button className="home-btn home-btn-create" onClick={onCreateGame}>
-            <span className="home-btn-icon">🎯</span>
-            <span className="home-btn-label">Create Game</span>
-            <span className="home-btn-sub">Host a new room</span>
+            <span className="home-btn-tag">HOST</span>
+            <div className="home-btn-text">
+              <span className="home-btn-label">Create Game</span>
+              <span className="home-btn-sub">Start a new room</span>
+            </div>
+            <span className="home-btn-arrow">→</span>
           </button>
         </div>
       </div>

@@ -73,48 +73,87 @@ html, body, #root {
 
 .home-btn {
   width: 100%;
-  padding: 22px 24px;
-  border: none;
-  border-radius: 18px;
+  padding: 0;
+  border: 3px solid #0d0018;
+  border-radius: 4px;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: stretch;
   text-align: left;
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 5px 5px 0 #000;
+  overflow: hidden;
+  transition: transform 0.08s, box-shadow 0.08s;
+  background: none;
 }
-
-.home-btn:active { transform: scale(0.97); }
+.home-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 #000;
+}
 
 .home-btn-join {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(180,140,255,0.25);
+  background: #eceaf4;
 }
-
 .home-btn-create {
-  background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%);
-  box-shadow: 0 4px 32px rgba(109,40,217,0.45);
+  background: #c084fc;
 }
 
-.home-btn-icon {
-  font-size: 1.8rem;
+.home-btn-tag {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  padding: 14px 9px;
+  background: #0d0018;
+  color: #c084fc;
   flex-shrink: 0;
+}
+.home-btn-create .home-btn-tag {
+  color: #e8d8ff;
+}
+
+.home-btn-text {
+  flex: 1;
+  padding: 18px 16px;
 }
 
 .home-btn-label {
   display: block;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #f0ecff;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
   line-height: 1;
+  color: #0d0018;
+}
+.home-btn-create .home-btn-label {
+  color: #ffffff;
 }
 
 .home-btn-sub {
   display: block;
-  font-size: 0.8rem;
-  color: rgba(220,200,255,0.6);
-  margin-top: 3px;
-  font-weight: 400;
+  font-size: 0.73rem;
+  color: #7a6e8a;
+  margin-top: 5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.home-btn-create .home-btn-sub {
+  color: rgba(255,255,255,0.6);
+}
+
+.home-btn-arrow {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: rgba(13,0,24,0.22);
+  flex-shrink: 0;
+}
+.home-btn-create .home-btn-arrow {
+  color: rgba(255,255,255,0.35);
 }
 
 /* ===========================

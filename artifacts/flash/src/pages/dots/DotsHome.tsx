@@ -8,6 +8,8 @@ interface Props {
   onBack?: () => void;
 }
 
+type AckRes = { success: boolean; code?: string; playerId?: string; error?: string };
+
 export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack }: Props) {
   const [view, setView] = useState<"main" | "create" | "join">(initialCode ? "join" : "main");
   const [name, setName] = useState("");
@@ -16,28 +18,21 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
   const [loading, setLoading] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  const socket = getSocket();
-
   const handleCreate = () => {
     const n = name.trim();
     if (!n) { setErr("Enter your name first."); return; }
     setLoading(true);
     setErr("");
-
-    const onCreatedEvt = (data: { code: string; playerId: string }) => {
-      setLoading(false);
-      onCreated(data.code, data.playerId, n);
-    };
-    const onErr = (data: { message: string }) => {
-      setLoading(false);
-      setErr(data.message);
-      socket.off("dots:room-created", onCreatedEvt);
-      socket.off("dots:error", onErr);
-    };
-
-    socket.once("dots:room-created", onCreatedEvt);
-    socket.once("dots:error", onErr);
-    socket.emit("dots:create-room", { playerName: n });
+    getSocket().timeout(8000).emit(
+      "dots:create-room",
+      { playerName: n },
+      (timeoutErr: Error | null, res: AckRes) => {
+        setLoading(false);
+        if (timeoutErr) { setErr("Connection timed out. Try again."); return; }
+        if (!res.success) { setErr(res.error ?? "Could not create room."); return; }
+        onCreated(res.code!, res.playerId!, n);
+      },
+    );
   };
 
   const handleJoin = () => {
@@ -47,21 +42,16 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
     if (c.length !== 5) { setErr("Enter a valid 5-digit room code."); return; }
     setLoading(true);
     setErr("");
-
-    const onJoinedEvt = (data: { code: string; playerId: string }) => {
-      setLoading(false);
-      onJoined(data.code, data.playerId, n);
-    };
-    const onErr = (data: { message: string }) => {
-      setLoading(false);
-      setErr(data.message);
-      socket.off("dots:room-joined", onJoinedEvt);
-      socket.off("dots:error", onErr);
-    };
-
-    socket.once("dots:room-joined", onJoinedEvt);
-    socket.once("dots:error", onErr);
-    socket.emit("dots:join-room", { code: c, playerName: n });
+    getSocket().timeout(8000).emit(
+      "dots:join-room",
+      { code: c, playerName: n },
+      (timeoutErr: Error | null, res: AckRes) => {
+        setLoading(false);
+        if (timeoutErr) { setErr("Connection timed out. Try again."); return; }
+        if (!res.success) { setErr(res.error ?? "Could not join room."); return; }
+        onJoined(res.code!, res.playerId!, n);
+      },
+    );
   };
 
   return (
@@ -92,7 +82,6 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
               value={name}
               maxLength={20}
               onChange={(e) => { setName(e.target.value); setErr(""); }}
-              onKeyDown={(e) => e.key === "Enter" && setView("create")}
               autoFocus
             />
             {err && <p className="dots-err">{err}</p>}
@@ -138,11 +127,7 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
               autoFocus
             />
             {err && <p className="dots-err">{err}</p>}
-            <button
-              className="dots-action-btn"
-              onClick={handleCreate}
-              disabled={loading}
-            >
+            <button className="dots-action-btn" onClick={handleCreate} disabled={loading}>
               {loading ? "Creating…" : "Create Room →"}
             </button>
             <button className="back-btn" style={{ marginTop: 8 }} onClick={() => { setView("main"); setErr(""); }}>
@@ -176,7 +161,7 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
             <button
               className="dots-action-btn"
               onClick={handleJoin}
-              disabled={loading}
+              disabled={loading || code.length !== 5 || !name.trim()}
             >
               {loading ? "Joining…" : "Join Room →"}
             </button>

@@ -161,11 +161,11 @@ function cleanupRoom(io: Server, roomKey: string) {
 
 export function setupDotsHandlers(io: Server): void {
   io.on("connection", (socket: Socket) => {
-    socket.on("dots:create-room", ({ playerName }: { playerName: string }) => {
-      if (!playerName?.trim()) {
-        socket.emit("dots:error", { message: "Name is required." });
-        return;
-      }
+    socket.on("dots:create-room", (
+      { playerName }: { playerName: string },
+      callback: (res: { success: boolean; code?: string; playerId?: string; error?: string }) => void,
+    ) => {
+      if (!playerName?.trim()) { callback({ success: false, error: "Name is required." }); return; }
       const code = generateCode();
       const playerId = Math.random().toString(36).slice(2, 9);
       const player: DotsPlayer = {
@@ -194,7 +194,7 @@ export function setupDotsHandlers(io: Server): void {
       };
       rooms.set("DOTS" + code, room);
       socket.join("DOTS" + code);
-      socket.emit("dots:room-created", { code, playerId });
+      callback({ success: true, code, playerId });
       broadcastToRoom(io, code, "dots:lobby-update", {
         players: [...room.players.values()].map((p) => ({
           id: p.id,
@@ -205,13 +205,16 @@ export function setupDotsHandlers(io: Server): void {
       });
     });
 
-    socket.on("dots:join-room", ({ code, playerName }: { code: string; playerName: string }) => {
+    socket.on("dots:join-room", (
+      { code, playerName }: { code: string; playerName: string },
+      callback: (res: { success: boolean; code?: string; playerId?: string; error?: string }) => void,
+    ) => {
       const roomKey = "DOTS" + code;
       const room = rooms.get(roomKey);
-      if (!room) { socket.emit("dots:error", { message: "Room not found." }); return; }
-      if (room.phase !== "lobby") { socket.emit("dots:error", { message: "Game already in progress." }); return; }
-      if (room.players.size >= 2) { socket.emit("dots:error", { message: "Room is full (max 2 players)." }); return; }
-      if (!playerName?.trim()) { socket.emit("dots:error", { message: "Name is required." }); return; }
+      if (!room) { callback({ success: false, error: "Room not found. Check the code and try again." }); return; }
+      if (room.phase !== "lobby") { callback({ success: false, error: "Game already in progress." }); return; }
+      if (room.players.size >= 2) { callback({ success: false, error: "Room is full (max 2 players)." }); return; }
+      if (!playerName?.trim()) { callback({ success: false, error: "Name is required." }); return; }
 
       const playerId = Math.random().toString(36).slice(2, 9);
       const player: DotsPlayer = {
@@ -223,7 +226,7 @@ export function setupDotsHandlers(io: Server): void {
       room.players.set(playerId, player);
       room.socketToPlayer.set(socket.id, playerId);
       socket.join(roomKey);
-      socket.emit("dots:room-joined", { code, playerId });
+      callback({ success: true, code, playerId });
       broadcastToRoom(io, code, "dots:lobby-update", {
         players: [...room.players.values()].map((p) => ({
           id: p.id,

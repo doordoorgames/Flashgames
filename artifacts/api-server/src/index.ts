@@ -6,6 +6,7 @@ import { setupSocketHandlers } from "./game/socketHandler.js";
 import { setupYesNoHandlers } from "./game/yesnoHandler.js";
 import { setupBombHandlers } from "./game/bombHandler.js";
 import { setupBomb2Handlers } from "./game/bomb2Handler.js";
+import { setupDotsHandlers } from "./game/dotsHandler.js";
 import { loadConfusionEntries } from "./game/confusionStore.js";
 
 const rawPort = process.env["PORT"];
@@ -36,6 +37,7 @@ setupSocketHandlers(io);
 setupYesNoHandlers(io);
 setupBombHandlers(io);
 setupBomb2Handlers(io);
+setupDotsHandlers(io);
 
 loadConfusionEntries().catch((err: Error) => {
   console.error(

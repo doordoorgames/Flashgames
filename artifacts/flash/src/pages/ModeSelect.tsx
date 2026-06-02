@@ -5,7 +5,7 @@ export default function ModeSelect() {
     <div className="mode-screen">
       <div className="mode-inner">
         <h1 className="mode-title">Choose Your Game</h1>
-        <p className="mode-sub">Four games, one room code system</p>
+        <p className="mode-sub">Five games, one room code system</p>
 
         <div className="mode-cards">
           <Link href="/flash" className="mode-card mode-card-flash">
@@ -60,6 +60,20 @@ export default function ModeSelect() {
                 <span className="mode-tag b2-tag">Control Room</span>
                 <span className="mode-tag b2-tag">Sabotage</span>
                 <span className="mode-tag b2-tag">Meltdown</span>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/dots" className="mode-card mode-card-dots">
+            <div className="mode-card-icon">🎯</div>
+            <div className="mode-card-content">
+              <span className="mode-card-name">Dots</span>
+              <span className="mode-card-ar">نقاط</span>
+              <p className="mode-card-desc">1v1 chase. Thief steals dots, Catcher hunts blind. Swap roles after 45s. Highest score wins.</p>
+              <div className="mode-card-tags">
+                <span className="mode-tag dots-tag">1v1</span>
+                <span className="mode-tag dots-tag">2 rounds</span>
+                <span className="mode-tag dots-tag">Chase</span>
               </div>
             </div>
           </Link>

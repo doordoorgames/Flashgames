@@ -11,6 +11,7 @@ import AdminPage from "@/pages/AdminPage";
 import YesNoApp from "@/pages/yesno/YesNoApp";
 import BombApp from "@/pages/bomb/BombApp";
 import Bomb2App from "@/pages/bomb2/Bomb2App";
+import DotsApp from "@/pages/dots/DotsApp";
 import { getSocket } from "@/lib/socket";
 import type { Player } from "@/lib/types";
 
@@ -85,6 +86,10 @@ function ReactorRoute() {
   const [, navigate] = useLocation();
   return <div className="app-root"><Bomb2App onBack={() => navigate("/")} /></div>;
 }
+function DotsRoute() {
+  const [, navigate] = useLocation();
+  return <div className="app-root"><DotsApp onBack={() => navigate("/")} /></div>;
+}
 
 export default function App() {
   return (
@@ -96,6 +101,7 @@ export default function App() {
           <Route path="/yesno"   component={YesNoRoute} />
           <Route path="/bomb"    component={BombRoute} />
           <Route path="/reactor" component={ReactorRoute} />
+          <Route path="/dots"    component={DotsRoute} />
           <Route>
             <div className="app-root">
               <ModeSelect />

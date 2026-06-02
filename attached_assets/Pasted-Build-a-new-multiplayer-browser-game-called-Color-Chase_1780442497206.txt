@@ -1,0 +1,186 @@
+Build a new multiplayer browser game called Color Chase using the same multiplayer system already used in my other games:
+
+* Player enters a nickname.
+* Host creates a room.
+* A 5-digit room code is generated.
+* Other players join using the room code.
+* Mobile-first design.
+* No accounts required.
+* Reuse the existing lobby, room code, QR code, and player synchronization systems.
+
+GAME OVERVIEW
+
+This is a 1v1 competitive game.
+
+One player is the Thief.
+One player is the Catcher.
+
+Both players play on the same board layout but see different information.
+
+ROUND FLOW
+
+1. Two players join a room.
+2. Game starts.
+3. Randomly assign:
+    * Thief
+    * Catcher
+4. A 45-second timer begins.
+5. When the timer ends, show a dramatic animated transition:
+    * Large retro arcade style text.
+    * Mortal Kombat / Tekken style energy.
+    * “SWITCH SIDES”
+    * Flashing colors.
+    * Screen shake.
+    * 2-second transition.
+6. Players swap roles.
+7. Second 45-second round begins.
+8. When finished, show final scores.
+9. Highest score wins.
+
+VISUAL STYLE
+
+Bright.
+Colorful.
+Simple.
+Fun.
+
+Use a navy blue background.
+
+Board consists of large colorful watercolor circles arranged in a grid similar to the reference concept.
+
+The Thief sees colorful circles.
+
+The Catcher sees dark circles on the same layout.
+
+The game should feel playful, readable, and satisfying on phones.
+
+BOARD
+
+Start with a simple 5 width 9 height grid.
+
+45 circles total.
+
+Large touch targets.
+
+No zooming.
+
+No scrolling.
+
+Everything visible on screen.
+
+THIEF RULES
+
+The Thief starts on a random circle.
+
+The Catcher does NOT know where the Thief starts.
+
+The Thief may move only to adjacent circles:
+
+* Up
+* Down
+* Left
+* Right
+
+No diagonal movement.
+
+To claim a circle:
+
+* Press and hold for 1 second.
+* Circle fills with the Thief’s color.
+* Score +1.
+
+The Thief may move freely.
+
+Already claimed circles cannot be scored again.
+
+Goal:
+Claim as many circles as possible before being caught.
+
+CATCHER RULES
+
+The Catcher sees the same grid.
+
+The Catcher does NOT see the Thief.
+
+To search a circle:
+
+* Press and hold for 1 second.
+* A flashlight scan animation appears.
+* Circle briefly lights up.
+
+If the Thief is currently on that circle:
+
+* Immediate capture.
+* Round ends instantly.
+* Catcher wins the round.
+
+SCORE SYSTEM
+
+Each claimed circle = 1 point.
+
+If Catcher catches the Thief:
+
+* Round ends immediately.
+* Thief keeps points earned.
+
+After both players have played as Thief:
+
+Final score comparison.
+
+Player with highest score wins.
+
+ANIMATIONS
+
+Add satisfying animations:
+
+* Circle capture pulse.
+* Score pop.
+* Flashlight sweep effect.
+* Countdown timer urgency.
+* Capture explosion effect.
+* Retro arcade victory animation.
+* Dramatic “SWITCH SIDES” transition between rounds.
+
+SOUND
+
+Light arcade sounds only.
+
+No music.
+
+Examples:
+
+* Capture ping.
+* Flashlight scan.
+* Countdown warning.
+* Capture success.
+* Victory stinger.
+
+TECHNICAL
+
+Use the same room architecture already used in my games.
+
+Synchronize all gameplay in real time.
+
+Handle:
+
+* Disconnects.
+* Refreshes.
+* Rejoins.
+* Invalid room codes.
+
+Store all game state centrally so both players remain synchronized.
+
+Build Version 1 only.
+
+Do NOT add:
+
+* Powerups.
+* Home base.
+* Special circles.
+* Different point values.
+* Teleports.
+* Abilities.
+
+Focus entirely on making the core gameplay loop fun, polished, and playable first.
+
+This is the version I’d test first. If players are laughing and demanding rematches after 5 rounds, then it’s worth adding gold circles, traps, larger circles, decoys, and other mechanics later. The core loop should prove itself before you add complexity.

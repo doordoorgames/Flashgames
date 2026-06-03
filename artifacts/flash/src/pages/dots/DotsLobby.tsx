@@ -1,6 +1,7 @@
 import RoomJoinQR from "@/components/RoomJoinQR";
 import FloatingStartBtn from "@/components/FloatingStartBtn";
 import litBuilding from "@assets/8FB02617-28A8-4F70-9E10-F24EE18E0E04_1780489207343.png";
+import nawafethLogo from "@assets/726E20E0-2EB9-4A9A-8E8C-FD46A4093A1E_1780495624232.png";
 
 interface DotsLobbyPlayer {
   id: string;
@@ -27,7 +28,7 @@ export default function DotsLobby({ code, playerId, isAdmin, players, onStartGam
       <div className="nawafeth-content nawafeth-lobby-content">
         {/* Brand */}
         <div className="nawafeth-title-wrap" style={{ marginBottom: 16 }}>
-          <h1 className="nawafeth-title" style={{ fontSize: "3.2rem" }}>نوافذ</h1>
+          <img src={nawafethLogo} alt="نوافذ" className="nawafeth-logo nawafeth-logo-sm" />
           <p className="nawafeth-subtitle">NAWAFETH · LOBBY</p>
         </div>
 

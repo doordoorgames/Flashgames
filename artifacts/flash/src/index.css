@@ -452,6 +452,13 @@ html, body, #root {
   transition: transform 0.08s;
 }
 .fsb-btn:active:not(.fsb-disabled) { transform: scale(0.88); }
+.fsb-badge-ar {
+  font-family: 'Noto Naskh Arabic', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 900;
+  direction: rtl;
+  letter-spacing: 0;
+}
 .fsb-disabled {
   background: rgba(10,186,181,0.18);
   border-color: rgba(7,143,139,0.25);
@@ -6187,7 +6194,8 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Blurred lit-building background */
@@ -6222,16 +6230,31 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 32px;
+  padding: 0 20px 48px;
   gap: 0;
-  overflow-y: auto;
-  max-height: 100dvh;
+  min-height: 100dvh;
 }
 
 /* Lobby pushes card more visible */
 .nawafeth-lobby-content {
   justify-content: flex-start;
   padding-top: 40px;
+}
+
+/* ── Logo ── */
+.nawafeth-logo {
+  width: 240px;
+  max-width: 64vw;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  /* PNG has black bg — multiply blends it away */
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 4px 24px rgba(254,202,87,0.40));
+}
+.nawafeth-logo-sm {
+  width: 160px;
+  max-width: 44vw;
 }
 
 /* ── Title ── */

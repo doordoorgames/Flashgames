@@ -278,31 +278,7 @@ export default function DotsGame({
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>
-      {/* ── Header ── */}
-      <div className="dots-game-header">
-        <div className="dots-role-badge" data-role={role}>
-          {role === "thief" ? "🔴 THIEF" : "🔵 CATCHER"}
-        </div>
-        <div className={`dots-timer${urgent ? " dots-timer-urgent" : ""}`}>
-          {timerStr}
-        </div>
-        <div className="dots-round-badge">ROUND {round}/2</div>
-      </div>
-
-      {/* ── Score bar ── */}
-      <div className="dots-score-bar">
-        <div className="dots-score-item">
-          <span className="dots-score-label">{role === "thief" ? "WINDOWS" : "THIEF"}</span>
-          <span className="dots-score-val">{score}</span>
-        </div>
-        <div className="dots-score-divider" />
-        <div className="dots-score-item">
-          <span className="dots-score-label">{role === "thief" ? thiefName : catcherName}</span>
-          <span className="dots-score-name">{myName}</span>
-        </div>
-      </div>
-
-      {/* ── Building ── */}
+      {/* ── Building (full height) ── */}
       <div className="building-wrap">
         <div className="building-container">
           {/* Dark building – always-visible base layer */}
@@ -326,6 +302,19 @@ export default function DotsGame({
 
           {/* Invisible interaction cells */}
           {windowCells}
+
+          {/* ── Floating HUD stickers ── */}
+          <div className="hud-role" data-role={role} aria-label="role">
+            {role === "thief" ? "THIEF" : "CATCHER"}
+          </div>
+
+          <div className={`hud-timer${urgent ? " hud-timer-urgent" : ""}`} aria-label="timer">
+            {timerStr}
+          </div>
+
+          <div className="hud-round" aria-label="round">
+            {round}/2
+          </div>
 
           {/* Round-end overlay */}
           {overlay && (

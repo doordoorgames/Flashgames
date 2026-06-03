@@ -5639,97 +5639,81 @@ html, body, #root {
   user-select: none;
   -webkit-user-select: none;
 }
-.dots-game-header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px 8px;
-  background: #0a1428;
-  border-bottom: 2px solid #0d1a2e;
-  height: 52px;
-  box-sizing: border-box;
+
+/* ── Floating HUD stickers (inside building-container) ── */
+.hud-role,
+.hud-timer,
+.hud-round {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
 }
-.dots-role-badge {
-  font-size: 0.75rem;
+
+/* Role badge – top-left */
+.hud-role {
+  top: 10px;
+  left: 10px;
+  font-size: 0.65rem;
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 3px;
-  border: 2px solid;
+  padding: 4px 9px;
+  border-radius: 4px;
+  border: 1.5px solid;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.dots-role-badge[data-role="thief"] {
-  color: #ff6b9d;
-  border-color: rgba(255,107,157,0.4);
-  background: rgba(255,107,157,0.1);
+.hud-role[data-role="thief"] {
+  color: #ff8fb8;
+  border-color: rgba(255,107,157,0.45);
+  background: rgba(10,6,20,0.55);
 }
-.dots-role-badge[data-role="catcher"] {
-  color: #54A0FF;
-  border-color: rgba(84,160,255,0.4);
-  background: rgba(84,160,255,0.1);
+.hud-role[data-role="catcher"] {
+  color: #7fc4ff;
+  border-color: rgba(84,160,255,0.45);
+  background: rgba(10,6,20,0.55);
 }
-.dots-timer {
-  font-size: 1.3rem;
+
+/* Timer – centered top */
+.hud-timer {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.35rem;
   font-weight: 900;
   color: #fff;
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
+  padding: 4px 14px;
+  border-radius: 6px;
+  background: rgba(6,10,22,0.60);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
 }
-.dots-timer-urgent {
+.hud-timer-urgent {
   color: #FF6B9D;
   animation: dots-timer-pulse 0.5s ease-in-out infinite alternate;
 }
 @keyframes dots-timer-pulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.08); }
+  from { transform: translateX(-50%) scale(1); }
+  to   { transform: translateX(-50%) scale(1.08); }
 }
-.dots-round-badge {
-  font-size: 0.62rem;
+
+/* Round badge – top-right */
+.hud-round {
+  top: 10px;
+  right: 10px;
+  font-size: 0.65rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
-}
-.dots-score-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  height: 42px;
-  background: #0c1830;
-  border-bottom: 1px solid #0d1a2e;
-}
-.dots-score-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-.dots-score-label {
-  font-size: 0.48rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: rgba(255,255,255,0.35);
-}
-.dots-score-val {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #FECA57;
-  line-height: 1;
-}
-.dots-score-name {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.6);
-  line-height: 1;
-}
-.dots-score-divider {
-  width: 1px;
-  height: 28px;
-  background: rgba(255,255,255,0.1);
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.75);
+  padding: 4px 9px;
+  border-radius: 4px;
+  background: rgba(6,10,22,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.12);
 }
 .dots-grid-wrap {
   flex: 1;
@@ -6105,17 +6089,15 @@ html, body, #root {
 
 .building-wrap {
   flex: 1;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  overflow: hidden;
-  padding: 0 4px;
 }
 
 .building-container {
   position: relative;
   width: 100%;
-  max-width: 420px;
   user-select: none;
   -webkit-user-select: none;
 }

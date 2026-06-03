@@ -127,16 +127,15 @@ export default function DotsGame({
   const [timeLeft,     setTimeLeft]     = useState(() =>
     Math.max(0, Math.floor((roundEndTime - Date.now()) / 1000))
   );
-  const [holdKey,      setHoldKey]      = useState<string | null>(null);
-  const [holdProgress, setHoldProgress] = useState(0);
+  // Which cell is currently showing the tap animation (clears automatically)
+  const [activeCell,   setActiveCell]   = useState<string | null>(null);
+  const [animKey,      setAnimKey]      = useState(0); // bump to restart animation
   const [flashKeys,    setFlashKeys]    = useState<Map<string, number>>(new Map());
   const [overlay,      setOverlay]      = useState<"caught" | "timeup" | null>(null);
   const [active,       setActive]       = useState(true);
 
-  const holdStartRef  = useRef<number>(0);
-  const holdRafRef    = useRef<number>(0);
-  const holdTargetRef = useRef<string | null>(null);
-  const timerRef      = useRef(0);
+  const activeCellTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const timerRef           = useRef(0);
   const socket = getSocket();
 
   // Merged view: everything lit on screen (confirmed ∪ optimistic)
@@ -208,23 +207,16 @@ export default function DotsGame({
     };
   }, []);
 
-  // ── Hold mechanics ─────────────────────────────────────────────────────────
-  const cancelHold = useCallback(() => {
-    if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
-    holdTargetRef.current = null;
-    setHoldKey(null);
-    setHoldProgress(0);
-  }, []);
-
-  const completeHold = useCallback((key: string) => {
+  // ── Tap action — fires immediately, ring is a CSS flourish only ───────────
+  const fireAction = useCallback((key: string) => {
     const [xs, ys] = key.split(",");
     const x = Number(xs), y = Number(ys);
 
     if (role === "thief") {
-      // ── Optimistic update: light the window NOW, before the socket round-trip ──
+      // Optimistic: light the window instantly
       setOptimisticCells(prev => new Set([...prev, key]));
 
-      // Schedule a rollback if the server doesn't confirm within 6 s
+      // Rollback if server doesn't confirm in 6 s
       const rollbackTimer = setTimeout(() => {
         pendingTimeoutsRef.current.delete(key);
         setOptimisticCells(prev => { const n = new Set(prev); n.delete(key); return n; });
@@ -233,52 +225,33 @@ export default function DotsGame({
       }, 6000);
       pendingTimeoutsRef.current.set(key, rollbackTimer);
 
-      // Fire-and-forget — UI is already updated above
-      requestAnimationFrame(() => {
-        socket.emit("dots:claim", { code, x, y });
-      });
+      socket.emit("dots:claim", { code, x, y });
     } else {
       socket.emit("dots:search", { code, x, y });
     }
   }, [role, code]);
 
-  const startHold = useCallback((key: string) => {
-    // Spec: only one active action at a time — no implicit cancel of existing hold
-    if (holdTargetRef.current !== null) return;
-    holdTargetRef.current = key;
-    holdStartRef.current  = Date.now();
-    setHoldKey(key);
-    setHoldProgress(0);
-
-    const holdMs = role === "thief" ? THIEF_HOLD_MS : CATCHER_HOLD_MS;
-
-    const animate = () => {
-      if (holdTargetRef.current !== key) return; // cancelled externally
-      const prog = Math.min(1, (Date.now() - holdStartRef.current) / holdMs);
-      setHoldProgress(prog);
-      if (prog < 1) {
-        holdRafRef.current = requestAnimationFrame(animate);
-      } else {
-        holdTargetRef.current = null;
-        setHoldKey(null);
-        setHoldProgress(0);
-        completeHold(key);
-      }
-    };
-    holdRafRef.current = requestAnimationFrame(animate);
-  }, [completeHold, role]);
-
   const handlePointerDown = useCallback((col: number, row: number) => {
     if (!active) return;
-    if (holdKey !== null) return; // one ring at a time
+    if (activeCell !== null) return; // one animation at a time
     const key = cellKey(col, row);
+
     if (role === "thief") {
-      // Block if already confirmed OR already optimistically lit (pending)
-      if (!claimedCells.has(key) && !optimisticCells.has(key)) startHold(key);
-    } else {
-      startHold(key);
+      if (claimedCells.has(key) || optimisticCells.has(key)) return;
     }
-  }, [active, role, claimedCells, optimisticCells, startHold, holdKey]);
+
+    // Show animation immediately
+    setActiveCell(key);
+    setAnimKey(k => k + 1);
+
+    // Fire action on next frame so the paint happens first
+    requestAnimationFrame(() => fireAction(key));
+
+    // Animation duration: thief 600 ms, catcher 350 ms
+    const animMs = role === "thief" ? 600 : 350;
+    clearTimeout(activeCellTimerRef.current);
+    activeCellTimerRef.current = setTimeout(() => setActiveCell(null), animMs);
+  }, [active, role, claimedCells, optimisticCells, activeCell, fireAction]);
 
   // ── CSS mask for precise lit-building reveal ───────────────────────────────
   // Each claimed cell unmasks exactly the glass area from the lit building image.
@@ -300,28 +273,23 @@ export default function DotsGame({
   const timerStr = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`;
 
   // ── Window cells ───────────────────────────────────────────────────────────
-  const ringStroke  = role === "thief"
-    ? "rgba(190,80,255,0.95)"   // purple for thief
-    : "rgba(255,195,30,0.95)";  // gold  for catcher
+  const ringStroke   = role === "thief" ? "rgba(190,80,255,0.95)" : "rgba(255,195,30,0.95)";
+  const ringDuration = role === "thief" ? "600ms" : "350ms";
 
   const windowCells = useMemo(() => {
     const out: React.ReactNode[] = [];
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        const key       = cellKey(c, r);
-        const cell      = CELL_COLS[c];
-        const cellRow   = CELL_ROWS[r];
-        const isHolding = holdKey === key;
-        const isMiss    = flashKeys.has(key);
-
-        const holdClass = isHolding
-          ? ` window-cell-holding window-cell-holding-${role}`
-          : "";
+        const key     = cellKey(c, r);
+        const cell    = CELL_COLS[c];
+        const cellRow = CELL_ROWS[r];
+        const isActive = activeCell === key;
+        const isMiss   = flashKeys.has(key);
 
         out.push(
           <div
             key={key}
-            className={`window-cell${isMiss ? " window-cell-miss" : ""}${holdClass}`}
+            className={`window-cell${isMiss ? " window-cell-miss" : ""}${isActive ? ` window-cell-holding window-cell-holding-${role}` : ""}`}
             style={{
               left:   `${cell.left}%`,
               top:    `${cellRow.top}%`,
@@ -329,34 +297,31 @@ export default function DotsGame({
               height: `${cellRow.h}%`,
             }}
             onPointerDown={(e) => { e.preventDefault(); handlePointerDown(c, r); }}
-            onPointerUp={cancelHold}
-            onPointerLeave={cancelHold}
-            onPointerCancel={cancelHold}
           >
-            {isHolding && (
+            {isActive && (
               <>
-                {/* Role icon — appears immediately on tap */}
+                {/* Icon appears instantly */}
                 <div className={`dots-window-icon dots-window-icon-${role}`}>
                   {role === "thief" ? <ThiefIcon /> : <CatcherIcon />}
                 </div>
-                {/* Progress ring filling over hold duration */}
+                {/* Ring auto-fills via CSS — no holding required */}
                 <svg className="dots-progress-ring" viewBox="0 0 44 44">
-                  {/* Faint track */}
+                  <circle cx="22" cy="22" r="18" fill="none"
+                    stroke="rgba(255,255,255,0.12)" strokeWidth="3" />
                   <circle
-                    cx="22" cy="22" r="18"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.12)"
-                    strokeWidth="3"
-                  />
-                  {/* Filling arc */}
-                  <circle
+                    key={animKey}
                     cx="22" cy="22" r="18"
                     fill="none"
                     stroke={ringStroke}
                     strokeWidth="3.5"
-                    strokeDasharray={`${holdProgress * RING_CIRC} ${RING_CIRC}`}
                     strokeLinecap="round"
-                    style={{ transform: "rotate(-90deg)", transformOrigin: "22px 22px" }}
+                    strokeDasharray={RING_CIRC}
+                    strokeDashoffset={RING_CIRC}
+                    style={{
+                      transform: "rotate(-90deg)",
+                      transformOrigin: "22px 22px",
+                      animation: `dots-ring-fill ${ringDuration} ease-out forwards`,
+                    }}
                   />
                 </svg>
               </>
@@ -367,7 +332,7 @@ export default function DotsGame({
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [holdKey, holdProgress, flashKeys, handlePointerDown, cancelHold, role, ringStroke]);
+  }, [activeCell, animKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>

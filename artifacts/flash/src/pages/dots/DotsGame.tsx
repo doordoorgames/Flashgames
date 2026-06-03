@@ -52,10 +52,37 @@ const CELL_ROWS = [
   { top: 72.63, h: 7.59 },
 ] as const;
 
-const COLS = 5;
-const ROWS = 9;
-const HOLD_MS   = 950;
-const RING_CIRC = 113.1; // 2π × 18
+const COLS           = 5;
+const ROWS           = 9;
+const THIEF_HOLD_MS  = 1000;
+const CATCHER_HOLD_MS = 500;
+const RING_CIRC      = 113.1; // 2π × 18
+
+// ─── Role icons (flat vector silhouettes) ────────────────────────────────────
+function ThiefIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="dots-role-svg" aria-hidden="true">
+      {/* balaclava head */}
+      <path d="M12 3C7.5 3 5 7 5 11c0 4 1.2 6 3 7v2h8v-2c1.8-1 3-3 3-7 0-4-2.5-8-7-8z" fill="white"/>
+      {/* mask band */}
+      <rect x="5" y="9.5" width="14" height="3.5" rx="1.75" fill="rgba(20,0,50,0.7)"/>
+      {/* eye holes */}
+      <ellipse cx="9" cy="11.25" rx="1.4" ry="1.2" fill="rgba(20,0,50,0.9)"/>
+      <ellipse cx="15" cy="11.25" rx="1.4" ry="1.2" fill="rgba(20,0,50,0.9)"/>
+    </svg>
+  );
+}
+
+function CatcherIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="dots-role-svg" aria-hidden="true">
+      {/* shield */}
+      <path d="M12 3L20 7v6c0 4.5-3.5 7.5-8 9-4.5-1.5-8-4.5-8-9V7z" fill="white"/>
+      {/* 5-point star */}
+      <path d="M12 8.5l.9 2.8H16l-2.4 1.7.9 2.8L12 14l-2.5 1.8.9-2.8L8 11.3h3.1z" fill="rgba(50,30,0,0.55)"/>
+    </svg>
+  );
+}
 
 // ─── CSS mask-position correction ───────────────────────────────────────────
 // mask-position: X% Y% follows the background-position formula:
@@ -216,30 +243,34 @@ export default function DotsGame({
   }, [role, code]);
 
   const startHold = useCallback((key: string) => {
-    cancelHold();
+    // Spec: only one active action at a time — no implicit cancel of existing hold
+    if (holdTargetRef.current !== null) return;
     holdTargetRef.current = key;
     holdStartRef.current  = Date.now();
     setHoldKey(key);
     setHoldProgress(0);
 
+    const holdMs = role === "thief" ? THIEF_HOLD_MS : CATCHER_HOLD_MS;
+
     const animate = () => {
-      const prog = Math.min(1, (Date.now() - holdStartRef.current) / HOLD_MS);
+      if (holdTargetRef.current !== key) return; // cancelled externally
+      const prog = Math.min(1, (Date.now() - holdStartRef.current) / holdMs);
       setHoldProgress(prog);
       if (prog < 1) {
         holdRafRef.current = requestAnimationFrame(animate);
       } else {
-        const target = holdTargetRef.current;
         holdTargetRef.current = null;
         setHoldKey(null);
         setHoldProgress(0);
-        if (target) completeHold(target);
+        completeHold(key);
       }
     };
     holdRafRef.current = requestAnimationFrame(animate);
-  }, [cancelHold, completeHold]);
+  }, [completeHold, role]);
 
   const handlePointerDown = useCallback((col: number, row: number) => {
     if (!active) return;
+    if (holdKey !== null) return; // one ring at a time
     const key = cellKey(col, row);
     if (role === "thief") {
       // Block if already confirmed OR already optimistically lit (pending)
@@ -247,7 +278,7 @@ export default function DotsGame({
     } else {
       startHold(key);
     }
-  }, [active, role, claimedCells, optimisticCells, startHold]);
+  }, [active, role, claimedCells, optimisticCells, startHold, holdKey]);
 
   // ── CSS mask for precise lit-building reveal ───────────────────────────────
   // Each claimed cell unmasks exactly the glass area from the lit building image.
@@ -269,6 +300,10 @@ export default function DotsGame({
   const timerStr = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, "0")}`;
 
   // ── Window cells ───────────────────────────────────────────────────────────
+  const ringStroke  = role === "thief"
+    ? "rgba(190,80,255,0.95)"   // purple for thief
+    : "rgba(255,195,30,0.95)";  // gold  for catcher
+
   const windowCells = useMemo(() => {
     const out: React.ReactNode[] = [];
     for (let r = 0; r < ROWS; r++) {
@@ -279,10 +314,14 @@ export default function DotsGame({
         const isHolding = holdKey === key;
         const isMiss    = flashKeys.has(key);
 
+        const holdClass = isHolding
+          ? ` window-cell-holding window-cell-holding-${role}`
+          : "";
+
         out.push(
           <div
             key={key}
-            className={`window-cell${isMiss ? " window-cell-miss" : ""}${isHolding ? " window-cell-holding" : ""}`}
+            className={`window-cell${isMiss ? " window-cell-miss" : ""}${holdClass}`}
             style={{
               left:   `${cell.left}%`,
               top:    `${cellRow.top}%`,
@@ -295,17 +334,32 @@ export default function DotsGame({
             onPointerCancel={cancelHold}
           >
             {isHolding && (
-              <svg className="dots-progress-ring" viewBox="0 0 44 44">
-                <circle
-                  cx="22" cy="22" r="18"
-                  fill="none"
-                  stroke="rgba(255,255,255,0.92)"
-                  strokeWidth="3.5"
-                  strokeDasharray={`${holdProgress * RING_CIRC} ${RING_CIRC}`}
-                  strokeLinecap="round"
-                  style={{ transform: "rotate(-90deg)", transformOrigin: "22px 22px" }}
-                />
-              </svg>
+              <>
+                {/* Role icon — appears immediately on tap */}
+                <div className={`dots-window-icon dots-window-icon-${role}`}>
+                  {role === "thief" ? <ThiefIcon /> : <CatcherIcon />}
+                </div>
+                {/* Progress ring filling over hold duration */}
+                <svg className="dots-progress-ring" viewBox="0 0 44 44">
+                  {/* Faint track */}
+                  <circle
+                    cx="22" cy="22" r="18"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.12)"
+                    strokeWidth="3"
+                  />
+                  {/* Filling arc */}
+                  <circle
+                    cx="22" cy="22" r="18"
+                    fill="none"
+                    stroke={ringStroke}
+                    strokeWidth="3.5"
+                    strokeDasharray={`${holdProgress * RING_CIRC} ${RING_CIRC}`}
+                    strokeLinecap="round"
+                    style={{ transform: "rotate(-90deg)", transformOrigin: "22px 22px" }}
+                  />
+                </svg>
+              </>
             )}
           </div>
         );
@@ -313,7 +367,7 @@ export default function DotsGame({
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [holdKey, holdProgress, flashKeys, handlePointerDown, cancelHold]);
+  }, [holdKey, holdProgress, flashKeys, handlePointerDown, cancelHold, role, ringStroke]);
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>

@@ -1,0 +1,94 @@
+Update the skyscraper thief vs police game UI and interaction system.
+
+VISUAL DIRECTION
+
+* Keep the current building artwork as the hero.
+* Icons must remain very small and simple, similar to the reference image.
+* No cartoon avatars.
+* No large character portraits.
+* No emojis.
+* No clipart style.
+* Flat vector silhouettes only.
+
+THIEF ICON
+
+* Simple masked burglar silhouette.
+* White icon.
+* Very small.
+* Centered inside the selected window.
+* Slight purple glow.
+
+POLICE ICON
+
+* Simple police silhouette or badge silhouette.
+* White icon.
+* Very small.
+* Centered inside the selected window.
+* Slight gold glow.
+
+THIEF GAMEPLAY
+
+* Thief taps a window once.
+* Immediately show the thief icon inside that window.
+* Window begins blinking softly.
+* Show a circular progress ring around that specific window.
+* Progress ring fills over 1.0 second.
+* While progress is filling, the thief icon remains visible.
+* When completed:
+    * Window becomes permanently captured by the thief.
+    * Window lights up.
+    * Blinking stops.
+* If capture is cancelled before completion:
+    * Remove icon.
+    * Remove progress ring.
+    * Window returns to normal.
+
+POLICE GAMEPLAY
+
+* Police taps a window once.
+* Immediately show the police icon inside that window.
+* Window begins scanning/blinking.
+* Show a circular progress ring around that specific window.
+* Progress ring fills over 0.5 seconds.
+* Police icon remains visible during scan.
+* When completed:
+    * Run capture check.
+    * Show success/failure result.
+    * Remove temporary scan animation.
+
+PROGRESS RING
+
+* Keep the ring.
+* It is important because new players need to understand they are waiting for completion.
+* Ring should be large enough to clearly surround the selected window.
+* Ring should not cover neighboring windows.
+* Smooth 60fps animation.
+* Modern premium mobile game quality.
+
+COLORS
+Thief:
+
+* Purple
+* Magenta
+* Soft orange highlights
+
+Police:
+
+* Gold
+* Amber
+* Warm yellow highlights
+
+ANIMATION
+
+* Immediate response on tap.
+* No delay before icon appears.
+* Window pulse animation should be subtle.
+* Avoid flashy effects.
+* Premium, clean, readable.
+
+IMPORTANT
+Only one active action per player at a time.
+A player cannot start capturing multiple windows simultaneously.
+While a progress ring is active, disable additional window selections until the current action completes or is cancelled.
+
+The final look should feel like a polished mobile strategy game, not an arcade game, with tiny icons inside windows and the building remaining the primary visual focus.

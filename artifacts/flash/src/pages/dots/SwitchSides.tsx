@@ -52,7 +52,8 @@ export default function SwitchSides({ round1Score, round1ThiefId, playerNames, o
           </p>
 
           <div className="dots-switch-title">
-            SWITCH<br />SIDES
+            <span className="dots-switch-word-left">SWITCH</span>
+            <span className="dots-switch-word-right">SIDES</span>
           </div>
 
           <p className="dots-switch-roles">

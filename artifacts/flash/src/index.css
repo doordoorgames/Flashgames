@@ -6153,3 +6153,356 @@ html, body, #root {
   gap: 8px;
   border-radius: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NAWAFETH نوافذ — Home, Lobby, shared UI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Full-screen wrapper */
+.nawafeth-home {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+/* Blurred lit-building background */
+.nawafeth-bg {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center top;
+  filter: blur(14px) brightness(0.82) saturate(1.15);
+  z-index: 0;
+}
+/* Subtle dark overlay for readability */
+.nawafeth-home::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(20,8,40,0.30) 0%,
+    rgba(10,4,24,0.15) 40%,
+    rgba(10,4,24,0.55) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Scrollable content above overlay */
+.nawafeth-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 32px;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 100dvh;
+}
+
+/* Lobby pushes card more visible */
+.nawafeth-lobby-content {
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+
+/* ── Title ── */
+.nawafeth-title-wrap {
+  text-align: center;
+  margin-bottom: 28px;
+  margin-top: 20px;
+}
+.nawafeth-title {
+  font-family: 'Noto Naskh Arabic', 'Scheherazade New', 'Arabic Typesetting', serif;
+  font-size: 5.5rem;
+  font-weight: 900;
+  color: #FECA57;
+  text-shadow:
+    0 2px 24px rgba(254,202,87,0.65),
+    0 0 60px rgba(254,160,30,0.35);
+  line-height: 1;
+  direction: rtl;
+  margin: 0;
+}
+.nawafeth-subtitle {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(254,202,87,0.70);
+  margin: 6px 0 0;
+}
+
+/* ── Back button ── */
+.nawafeth-back-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.60);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 0;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.nawafeth-back-btn:hover { color: #fff; }
+
+/* ── Form area ── */
+.nawafeth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nawafeth-field-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.65);
+  margin: 0 0 -4px;
+}
+
+/* ── Cream translucent inputs ── */
+.nawafeth-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(253,245,210,0.38);
+  border: 2.5px solid rgba(255,255,255,0.85);
+  border-radius: 10px;
+  color: #1e0040;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 13px 16px;
+  outline: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+  transition: border-color 0.15s, background 0.15s;
+}
+.nawafeth-input::placeholder {
+  color: rgba(44,10,74,0.45);
+  font-weight: 500;
+}
+.nawafeth-input:focus {
+  background: rgba(253,245,210,0.52);
+  border-color: rgba(255,255,255,1);
+}
+.nawafeth-input-code {
+  font-size: 1.5rem;
+  letter-spacing: 0.35em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Cream translucent buttons ── */
+.nawafeth-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nawafeth-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(253,245,210,0.42);
+  border: 2.5px solid rgba(255,255,255,0.88);
+  border-radius: 12px;
+  color: #1e0040;
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 14px 18px;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  text-shadow: 0 1px 3px rgba(255,255,255,0.7);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+.nawafeth-btn:active { transform: scale(0.98); }
+.nawafeth-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.nawafeth-btn:not(:disabled):hover {
+  background: rgba(253,245,210,0.60);
+  border-color: #fff;
+}
+.nawafeth-btn-tag {
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: rgba(30,0,64,0.18);
+  color: #3a006e;
+  border: 1.5px solid rgba(30,0,64,0.22);
+  flex-shrink: 0;
+}
+.nawafeth-btn-label { flex: 1; text-align: left; }
+.nawafeth-btn-arrow {
+  font-size: 1.1rem;
+  color: rgba(44,10,74,0.55);
+  flex-shrink: 0;
+}
+
+.nawafeth-err {
+  color: #ffe0e0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Lobby card ── */
+.nawafeth-card {
+  width: 100%;
+  background: rgba(253,245,210,0.40);
+  border: 2.5px solid rgba(255,255,255,0.85);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  color: #1e0040;
+}
+
+/* Room code section */
+.nawafeth-room-code-wrap {
+  padding: 20px 20px 16px;
+  text-align: center;
+  border-bottom: 1.5px solid rgba(255,255,255,0.30);
+}
+.nawafeth-rcd-label {
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(30,0,64,0.55);
+  margin: 0 0 4px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+.nawafeth-rcd-code {
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #1e0040;
+  letter-spacing: 0.25em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 8px rgba(255,255,255,0.5);
+  margin: 0 0 2px;
+}
+.nawafeth-rcd-hint {
+  font-size: 0.68rem;
+  color: rgba(30,0,64,0.50);
+  margin: 0 0 12px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+}
+.nawafeth-qr-wrap {
+  display: flex;
+  justify-content: center;
+}
+/* Make QR code legible on cream background */
+.nawafeth-qr-wrap canvas,
+.nawafeth-qr-wrap svg {
+  border-radius: 8px;
+  background: rgba(255,255,255,0.85) !important;
+  padding: 8px;
+}
+
+/* Players section */
+.nawafeth-players {
+  padding: 14px 20px;
+  border-bottom: 1.5px solid rgba(255,255,255,0.30);
+}
+.nawafeth-players-title {
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(30,0,64,0.55);
+  margin: 0 0 10px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nawafeth-ready-tag {
+  color: #1e7a50;
+  font-weight: 900;
+  font-size: 0.62rem;
+}
+.nawafeth-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.nawafeth-player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.28);
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.45);
+}
+.nawafeth-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3a006e;
+  flex-shrink: 0;
+}
+.nawafeth-player-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e0040;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+}
+.nawafeth-tag {
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-shadow: none;
+}
+.nawafeth-tag-host {
+  background: rgba(30,0,64,0.18);
+  color: #3a006e;
+  border: 1px solid rgba(30,0,64,0.22);
+}
+.nawafeth-tag-you {
+  background: rgba(84,160,255,0.18);
+  color: #1444a0;
+  border: 1px solid rgba(84,160,255,0.30);
+}
+
+/* Rules section */
+.nawafeth-rules {
+  padding: 12px 20px 14px;
+}
+.nawafeth-rule-line {
+  font-size: 0.75rem;
+  color: rgba(30,0,64,0.65);
+  margin: 0 0 4px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  font-weight: 600;
+}
+.nawafeth-waiting {
+  font-size: 0.72rem;
+  text-align: center;
+  color: rgba(30,0,64,0.50);
+  padding: 0 20px 14px;
+  margin: 0;
+  font-weight: 600;
+}

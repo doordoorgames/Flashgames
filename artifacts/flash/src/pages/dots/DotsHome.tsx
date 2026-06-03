@@ -1,31 +1,30 @@
 import { useState, useRef } from "react";
 import { getSocket } from "@/lib/socket";
+import litBuilding from "@assets/8FB02617-28A8-4F70-9E10-F24EE18E0E04_1780489207343.png";
 
 interface Props {
   initialCode?: string;
   onCreated: (code: string, playerId: string, name: string) => void;
-  onJoined: (code: string, playerId: string, name: string) => void;
+  onJoined:  (code: string, playerId: string, name: string) => void;
   onBack?: () => void;
 }
 
 type AckRes = { success: boolean; code?: string; playerId?: string; error?: string };
 
 export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack }: Props) {
-  const [view, setView] = useState<"main" | "create" | "join">(initialCode ? "join" : "main");
-  const [name, setName] = useState("");
-  const [code, setCode] = useState(initialCode);
-  const [err, setErr] = useState("");
+  const [view,    setView]    = useState<"main" | "create" | "join">(initialCode ? "join" : "main");
+  const [name,    setName]    = useState("");
+  const [code,    setCode]    = useState(initialCode);
+  const [err,     setErr]     = useState("");
   const [loading, setLoading] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
   const handleCreate = () => {
     const n = name.trim();
     if (!n) { setErr("Enter your name first."); return; }
-    setLoading(true);
-    setErr("");
+    setLoading(true); setErr("");
     getSocket().timeout(8000).emit(
-      "dots:create-room",
-      { playerName: n },
+      "dots:create-room", { playerName: n },
       (timeoutErr: Error | null, res: AckRes) => {
         setLoading(false);
         if (timeoutErr) { setErr("Connection timed out. Try again."); return; }
@@ -40,11 +39,9 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
     const c = code.replace(/\D/g, "").slice(0, 5);
     if (!n) { setErr("Enter your name first."); return; }
     if (c.length !== 5) { setErr("Enter a valid 5-digit room code."); return; }
-    setLoading(true);
-    setErr("");
+    setLoading(true); setErr("");
     getSocket().timeout(8000).emit(
-      "dots:join-room",
-      { code: c, playerName: n },
+      "dots:join-room", { code: c, playerName: n },
       (timeoutErr: Error | null, res: AckRes) => {
         setLoading(false);
         if (timeoutErr) { setErr("Connection timed out. Try again."); return; }
@@ -55,70 +52,70 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
   };
 
   return (
-    <div className="home-screen dots-home-bg">
-      <div className="home-inner">
+    <div className="nawafeth-home">
+      {/* Blurred building background */}
+      <div className="nawafeth-bg" style={{ backgroundImage: `url(${litBuilding})` }} />
+
+      {/* Content */}
+      <div className="nawafeth-content">
         {onBack && (
-          <button className="back-btn" style={{ alignSelf: "flex-start" }} onClick={onBack}>
+          <button className="nawafeth-back-btn" onClick={onBack}>
             ← Games
           </button>
         )}
 
-        <div className="dots-logo-wrap">
-          <div className="dots-logo-circles">
-            {["#FF6B9D","#FECA57","#54A0FF","#10AC84","#D980FA"].map((c, i) => (
-              <span key={i} className="dots-logo-dot" style={{ background: c }} />
-            ))}
-          </div>
-          <span className="dots-logo-title">DOTS</span>
-          <p className="dots-logo-sub">1v1 Chase · نقاط</p>
+        {/* Title */}
+        <div className="nawafeth-title-wrap">
+          <h1 className="nawafeth-title">نوافذ</h1>
+          <p className="nawafeth-subtitle">NAWAFETH · 1v1</p>
         </div>
 
+        {/* ── Main view ── */}
         {view === "main" && (
-          <div className="dots-name-wrap">
+          <div className="nawafeth-form">
             <input
               ref={nameRef}
-              className="dots-name-input"
-              placeholder="Your name"
+              className="nawafeth-input"
+              placeholder="Your name / اسمك"
               value={name}
               maxLength={20}
               onChange={(e) => { setName(e.target.value); setErr(""); }}
               autoFocus
             />
-            {err && <p className="dots-err">{err}</p>}
-            <div className="home-buttons" style={{ marginTop: 8 }}>
-              <button className="home-btn home-btn-join" onClick={() => {
-                if (!name.trim()) { setErr("Enter your name first."); return; }
-                setErr("");
-                setView("join");
-              }}>
-                <span className="home-btn-tag">JOIN</span>
-                <div className="home-btn-text">
-                  <span className="home-btn-label">Join Game</span>
-                  <span className="home-btn-sub">Enter a room code</span>
-                </div>
-                <span className="home-btn-arrow">→</span>
+            {err && <p className="nawafeth-err">{err}</p>}
+            <div className="nawafeth-btns">
+              <button
+                className="nawafeth-btn nawafeth-btn-join"
+                onClick={() => {
+                  if (!name.trim()) { setErr("Enter your name first."); return; }
+                  setErr(""); setView("join");
+                }}
+              >
+                <span className="nawafeth-btn-tag">JOIN</span>
+                <span className="nawafeth-btn-label">Join Game</span>
+                <span className="nawafeth-btn-arrow">→</span>
               </button>
-              <button className="home-btn home-btn-create" onClick={() => {
-                if (!name.trim()) { setErr("Enter your name first."); return; }
-                setErr("");
-                setView("create");
-              }}>
-                <span className="home-btn-tag">HOST</span>
-                <div className="home-btn-text">
-                  <span className="home-btn-label">Create Game</span>
-                  <span className="home-btn-sub">Start a new room</span>
-                </div>
-                <span className="home-btn-arrow">→</span>
+              <button
+                className="nawafeth-btn nawafeth-btn-create"
+                onClick={() => {
+                  if (!name.trim()) { setErr("Enter your name first."); return; }
+                  setErr(""); setView("create");
+                }}
+              >
+                <span className="nawafeth-btn-tag">HOST</span>
+                <span className="nawafeth-btn-label">Create Game</span>
+                <span className="nawafeth-btn-arrow">→</span>
               </button>
             </div>
           </div>
         )}
 
+        {/* ── Create view ── */}
         {view === "create" && (
-          <div className="dots-entry-card">
-            <p className="dots-entry-label">Playing as</p>
+          <div className="nawafeth-form">
+            <p className="nawafeth-field-label">Playing as</p>
             <input
-              className="dots-name-input"
+              className="nawafeth-input"
               placeholder="Your name"
               value={name}
               maxLength={20}
@@ -126,29 +123,31 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               autoFocus
             />
-            {err && <p className="dots-err">{err}</p>}
-            <button className="dots-action-btn" onClick={handleCreate} disabled={loading}>
-              {loading ? "Creating…" : "Create Room →"}
+            {err && <p className="nawafeth-err">{err}</p>}
+            <button className="nawafeth-btn nawafeth-btn-create" onClick={handleCreate} disabled={loading}>
+              <span className="nawafeth-btn-label">{loading ? "Creating…" : "Create Room"}</span>
+              <span className="nawafeth-btn-arrow">→</span>
             </button>
-            <button className="back-btn" style={{ marginTop: 8 }} onClick={() => { setView("main"); setErr(""); }}>
+            <button className="nawafeth-back-btn" onClick={() => { setView("main"); setErr(""); }}>
               ← Back
             </button>
           </div>
         )}
 
+        {/* ── Join view ── */}
         {view === "join" && (
-          <div className="dots-entry-card">
-            <p className="dots-entry-label">Playing as</p>
+          <div className="nawafeth-form">
+            <p className="nawafeth-field-label">Playing as</p>
             <input
-              className="dots-name-input"
+              className="nawafeth-input"
               placeholder="Your name"
               value={name}
               maxLength={20}
               onChange={(e) => { setName(e.target.value); setErr(""); }}
             />
-            <p className="dots-entry-label" style={{ marginTop: 14 }}>Room code</p>
+            <p className="nawafeth-field-label" style={{ marginTop: 14 }}>Room code</p>
             <input
-              className="dots-code-input"
+              className="nawafeth-input nawafeth-input-code"
               placeholder="12345"
               value={code}
               maxLength={5}
@@ -157,15 +156,16 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
               onKeyDown={(e) => e.key === "Enter" && handleJoin()}
               autoFocus={!initialCode}
             />
-            {err && <p className="dots-err">{err}</p>}
+            {err && <p className="nawafeth-err">{err}</p>}
             <button
-              className="dots-action-btn"
+              className="nawafeth-btn nawafeth-btn-join"
               onClick={handleJoin}
               disabled={loading || code.length !== 5 || !name.trim()}
             >
-              {loading ? "Joining…" : "Join Room →"}
+              <span className="nawafeth-btn-label">{loading ? "Joining…" : "Join Room"}</span>
+              <span className="nawafeth-btn-arrow">→</span>
             </button>
-            <button className="back-btn" style={{ marginTop: 8 }} onClick={() => { setView("main"); setErr(""); }}>
+            <button className="nawafeth-back-btn" onClick={() => { setView("main"); setErr(""); }}>
               ← Back
             </button>
           </div>

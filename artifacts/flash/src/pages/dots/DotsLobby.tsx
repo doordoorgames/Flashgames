@@ -1,5 +1,6 @@
 import RoomJoinQR from "@/components/RoomJoinQR";
 import FloatingStartBtn from "@/components/FloatingStartBtn";
+import litBuilding from "@assets/8FB02617-28A8-4F70-9E10-F24EE18E0E04_1780489207343.png";
 
 interface DotsLobbyPlayer {
   id: string;
@@ -20,65 +21,70 @@ export default function DotsLobby({ code, playerId, isAdmin, players, onStartGam
   const ready = players.length === 2;
 
   return (
-    <div className="lobby-screen">
-      <div className="lobby-card">
-        <div className="lobby-brand" style={{ background: "#0d1a2e", color: "#54A0FF" }}>
-          DOTS · نقاط
+    <div className="nawafeth-home">
+      <div className="nawafeth-bg" style={{ backgroundImage: `url(${litBuilding})` }} />
+
+      <div className="nawafeth-content nawafeth-lobby-content">
+        {/* Brand */}
+        <div className="nawafeth-title-wrap" style={{ marginBottom: 16 }}>
+          <h1 className="nawafeth-title" style={{ fontSize: "3.2rem" }}>نوافذ</h1>
+          <p className="nawafeth-subtitle">NAWAFETH · LOBBY</p>
         </div>
 
-        <div className="room-code-display" style={{ background: "#0a1428" }}>
-          <p className="rcd-label">Room Code</p>
-          <p className="rcd-code" style={{ color: "#54A0FF" }}>{code}</p>
-          <p className="rcd-hint">Share with your opponent</p>
-          <RoomJoinQR roomCode={code} />
-        </div>
-
-        <div className="lobby-players">
-          <p className="lobby-players-title">
-            Players ({players.length}/2)
-            {ready && <span style={{ marginLeft: 8, color: "#10AC84", fontWeight: 900 }}>READY</span>}
-          </p>
-          <div className="lobby-players-list">
-            {players.map((p) => (
-              <div key={p.id} className="lobby-player">
-                <span className="lobby-dot" />
-                <span className="lobby-pname">{p.name}</span>
-                {p.isAdmin && <span className="lobby-host-tag">HOST</span>}
-                {p.id === playerId && (
-                  <span style={{
-                    fontSize: "0.52rem", fontWeight: 900, textTransform: "uppercase",
-                    color: "#54A0FF", background: "rgba(84,160,255,0.12)",
-                    padding: "2px 6px", borderRadius: 2,
-                  }}>YOU</span>
-                )}
-              </div>
-            ))}
-            {players.length < 2 && (
-              <div className="lobby-player" style={{ opacity: 0.4, borderStyle: "dashed" }}>
-                <span className="lobby-dot" style={{ background: "#555" }} />
-                <span className="lobby-pname" style={{ color: "#888" }}>Waiting for opponent…</span>
-              </div>
-            )}
+        {/* Lobby card */}
+        <div className="nawafeth-card">
+          {/* Room code + QR */}
+          <div className="nawafeth-room-code-wrap">
+            <p className="nawafeth-rcd-label">Room Code</p>
+            <p className="nawafeth-rcd-code">{code}</p>
+            <p className="nawafeth-rcd-hint">Share with your opponent</p>
+            <div className="nawafeth-qr-wrap">
+              <RoomJoinQR roomCode={code} />
+            </div>
           </div>
-        </div>
 
-        <div className="dots-lobby-rules">
-          <p className="dots-rule-line">🔴 Thief steals dots — hold to claim</p>
-          <p className="dots-rule-line">🔵 Catcher hunts — hold to search</p>
-          <p className="dots-rule-line">⏱ 45 seconds · 2 rounds · swap roles</p>
-        </div>
-
-        {isAdmin ? (
-          <div className="lobby-admin-area">
-            {!ready && <p className="lobby-items-info">Waiting for 2nd player…</p>}
+          {/* Players */}
+          <div className="nawafeth-players">
+            <p className="nawafeth-players-title">
+              Players ({players.length}/2)
+              {ready && <span className="nawafeth-ready-tag">READY</span>}
+            </p>
+            <div className="nawafeth-players-list">
+              {players.map((p) => (
+                <div key={p.id} className="nawafeth-player-row">
+                  <span className="nawafeth-player-dot" />
+                  <span className="nawafeth-player-name">{p.name}</span>
+                  {p.isAdmin && <span className="nawafeth-tag nawafeth-tag-host">HOST</span>}
+                  {p.id === playerId && <span className="nawafeth-tag nawafeth-tag-you">YOU</span>}
+                </div>
+              ))}
+              {players.length < 2 && (
+                <div className="nawafeth-player-row nawafeth-player-waiting">
+                  <span className="nawafeth-player-dot" style={{ background: "rgba(44,10,74,0.2)" }} />
+                  <span className="nawafeth-player-name" style={{ opacity: 0.45 }}>Waiting for opponent…</span>
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <p className="lobby-waiting">Waiting for host to start…</p>
-        )}
+
+          {/* Rules */}
+          <div className="nawafeth-rules">
+            <p className="nawafeth-rule-line">🔴 Thief — hold windows to light them</p>
+            <p className="nawafeth-rule-line">🔵 Catcher — find where the thief is hiding</p>
+            <p className="nawafeth-rule-line">⏱ 45 seconds · 2 rounds · swap roles</p>
+          </div>
+
+          {/* Status */}
+          {isAdmin ? (
+            !ready && <p className="nawafeth-waiting">Waiting for 2nd player…</p>
+          ) : (
+            <p className="nawafeth-waiting">Waiting for host to start…</p>
+          )}
+        </div>
 
         {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={!ready} />}
 
-        <button className="back-btn" style={{ margin: "4px 22px 18px" }} onClick={onBack}>
+        <button className="nawafeth-back-btn" style={{ marginTop: 12 }} onClick={onBack}>
           ← Change Game
         </button>
       </div>

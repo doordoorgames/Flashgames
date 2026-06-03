@@ -24,24 +24,11 @@ interface Props {
 
 function cellKey(x: number, y: number) { return `${x},${y}`; }
 
-function isAdjacent(a: Pos, b: Pos) {
-  return (Math.abs(a.x - b.x) === 1 && a.y === b.y) ||
-         (Math.abs(a.y - b.y) === 1 && a.x === b.x);
-}
-
-function getDir(from: Pos, to: Pos): "up" | "down" | "left" | "right" {
-  if (to.x < from.x) return "left";
-  if (to.x > from.x) return "right";
-  if (to.y < from.y) return "up";
-  return "down";
-}
-
 export default function DotsGame({
   code, playerId, role, cellColors,
-  initialThiefPos, roundEndTime, round,
+  roundEndTime, round,
   thiefId, catcherId, playerNames,
 }: Props) {
-  const [thiefPos, setThiefPos] = useState<Pos | null>(initialThiefPos ?? null);
   const [claimedCells, setClaimedCells] = useState<Set<string>>(new Set());
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(() =>
@@ -75,10 +62,10 @@ export default function DotsGame({
   }, [roundEndTime]);
 
   useEffect(() => {
-    const onMoved = ({ pos }: { pos: Pos }) => setThiefPos(pos);
     const onClaimed = ({ x, y, score: s }: { x: number; y: number; score: number }) => {
       setClaimedCells((prev) => new Set([...prev, cellKey(x, y)]));
       setScore(s);
+      DotsAudio.claim();
     };
     const onMiss = ({ x, y }: { x: number; y: number }) => {
       const k = cellKey(x, y);
@@ -100,12 +87,10 @@ export default function DotsGame({
       if (caught) DotsAudio.caught();
     };
 
-    socket.on("dots:moved", onMoved);
     socket.on("dots:cell-claimed", onClaimed);
     socket.on("dots:search-miss", onMiss);
     socket.on("dots:round-over", onRoundOver);
     return () => {
-      socket.off("dots:moved", onMoved);
       socket.off("dots:cell-claimed", onClaimed);
       socket.off("dots:search-miss", onMiss);
       socket.off("dots:round-over", onRoundOver);
@@ -118,6 +103,17 @@ export default function DotsGame({
     setHoldKey(null);
     setHoldProgress(0);
   }, []);
+
+  const completeHold = useCallback((key: string) => {
+    const [xs, ys] = key.split(",");
+    const x = Number(xs), y = Number(ys);
+    if (role === "thief") {
+      socket.emit("dots:claim", { code, x, y });
+    } else {
+      socket.emit("dots:search", { code, x, y });
+      DotsAudio.searchMiss();
+    }
+  }, [role, code]);
 
   const startHold = useCallback((key: string) => {
     cancelHold();
@@ -141,34 +137,17 @@ export default function DotsGame({
       }
     };
     holdRafRef.current = requestAnimationFrame(animate);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role, code, cancelHold]);
-
-  const completeHold = useCallback((key: string) => {
-    const [xs, ys] = key.split(",");
-    const x = Number(xs), y = Number(ys);
-    if (role === "thief") {
-      socket.emit("dots:claim", { code, x, y });
-      DotsAudio.claim();
-    } else {
-      socket.emit("dots:search", { code, x, y });
-    }
-  }, [role, code]);
+  }, [cancelHold, completeHold]);
 
   const handlePointerDown = useCallback((x: number, y: number) => {
     if (!active) return;
     const key = cellKey(x, y);
     if (role === "thief") {
-      if (thiefPos && thiefPos.x === x && thiefPos.y === y) {
-        if (!claimedCells.has(key)) startHold(key);
-      } else if (thiefPos && isAdjacent(thiefPos, { x, y })) {
-        socket.emit("dots:move", { code, dir: getDir(thiefPos, { x, y }) });
-        DotsAudio.move();
-      }
+      if (!claimedCells.has(key)) startHold(key);
     } else {
       startHold(key);
     }
-  }, [active, role, thiefPos, claimedCells, code, startHold]);
+  }, [active, role, claimedCells, startHold]);
 
   const urgent = timeLeft <= 10;
   const minutes = Math.floor(timeLeft / 60);
@@ -180,9 +159,7 @@ export default function DotsGame({
     for (let x = 0; x < COLS; x++) {
       const idx = y * COLS + x;
       const key = cellKey(x, y);
-      const isCurrent = thiefPos && thiefPos.x === x && thiefPos.y === y;
       const isClaimed = claimedCells.has(key);
-      const isAdj = thiefPos && isAdjacent(thiefPos, { x, y });
       const isHolding = holdKey === key;
       const isFlash = flashKeys.has(key);
       const color = cellColors[idx];
@@ -192,26 +169,21 @@ export default function DotsGame({
       let extraClass = "";
 
       if (role === "thief") {
+        bg = color;
         if (isClaimed) {
-          bg = color;
+          opacity = 1;
           extraClass = "dots-cell-claimed";
-        } else if (isCurrent) {
-          bg = color;
-          extraClass = "dots-cell-current";
-        } else if (isAdj) {
-          bg = color;
-          opacity = 0.65;
-          extraClass = "dots-cell-adj";
         } else {
-          bg = color;
-          opacity = 0.28;
+          opacity = isHolding ? 0.85 : 0.4;
         }
       } else {
         if (isFlash) {
           bg = "#2a6aaa";
           extraClass = "dots-cell-flash";
         } else if (isClaimed) {
-          bg = "#1a2f4a";
+          bg = color;
+          opacity = 0.9;
+          extraClass = "dots-cell-claimed";
         } else {
           bg = "#0d1a2e";
         }
@@ -229,10 +201,7 @@ export default function DotsGame({
           onPointerCancel={cancelHold}
         >
           {isHolding && (
-            <svg
-              className="dots-progress-ring"
-              viewBox="0 0 44 44"
-            >
+            <svg className="dots-progress-ring" viewBox="0 0 44 44">
               <circle
                 cx="22" cy="22" r="18"
                 fill="none"
@@ -244,10 +213,7 @@ export default function DotsGame({
               />
             </svg>
           )}
-          {isCurrent && role === "thief" && (
-            <span className="dots-current-ring" />
-          )}
-          {isClaimed && role === "thief" && (
+          {isClaimed && (
             <span className="dots-claim-check">✓</span>
           )}
         </div>
@@ -291,8 +257,8 @@ export default function DotsGame({
 
       <div className="dots-hint-bar">
         {role === "thief"
-          ? "Tap adjacent dot to move · Hold your dot to claim"
-          : "Hold any dot to search · Find the thief!"}
+          ? "Hold any dot to claim it · Claim as many as you can!"
+          : "Hold any dot to search · Find the thief's last dot!"}
       </div>
 
       {overlay && (

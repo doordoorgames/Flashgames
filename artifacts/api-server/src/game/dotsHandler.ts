@@ -297,11 +297,11 @@ export function setupDotsHandlers(io: Server): void {
       if (room.phase !== "round1" && room.phase !== "round2") return;
       const playerId = room.socketToPlayer.get(socket.id);
       if (playerId !== room.thiefId) return;
-      if (room.thiefPos.x !== x || room.thiefPos.y !== y) return;
 
       const key = `${x},${y}`;
       if (room.claimedCells.has(key)) return;
       room.claimedCells.add(key);
+      room.thiefPos = { x, y };
       broadcastToRoom(io, room.code, "dots:cell-claimed", {
         x, y, score: room.claimedCells.size,
       });

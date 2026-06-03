@@ -87,7 +87,15 @@ export default function DotsGame({
   code, playerId, role, roundEndTime, round,
   thiefId, catcherId, playerNames,
 }: Props) {
-  const [claimedCells, setClaimedCells] = useState<Set<string>>(new Set());
+  // Server-confirmed cells (driven by socket events from all players)
+  const [claimedCells,   setClaimedCells]   = useState<Set<string>>(new Set());
+  // Optimistic cells: lit immediately on thief's screen, before server confirmation
+  const [optimisticCells, setOptimisticCells] = useState<Set<string>>(new Set());
+  // Cells awaiting confirmation — block double-tap
+  const pendingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  // Small error badge for rollbacks
+  const [rollbackErr, setRollbackErr] = useState<string | null>(null);
+
   const [score,        setScore]        = useState(0);
   const [timeLeft,     setTimeLeft]     = useState(() =>
     Math.max(0, Math.floor((roundEndTime - Date.now()) / 1000))
@@ -103,6 +111,12 @@ export default function DotsGame({
   const holdTargetRef = useRef<string | null>(null);
   const timerRef      = useRef(0);
   const socket = getSocket();
+
+  // Merged view: everything lit on screen (confirmed ∪ optimistic)
+  const litCells = useMemo(
+    () => new Set([...claimedCells, ...optimisticCells]),
+    [claimedCells, optimisticCells]
+  );
 
   const thiefName   = playerNames[thiefId]   ?? "Thief";
   const catcherName = playerNames[catcherId] ?? "Catcher";
@@ -123,7 +137,15 @@ export default function DotsGame({
   // ── Socket events ──────────────────────────────────────────────────────────
   useEffect(() => {
     const onClaimed = ({ x, y, score: s }: { x: number; y: number; score: number }) => {
-      setClaimedCells(prev => new Set([...prev, cellKey(x, y)]));
+      const k = cellKey(x, y);
+      // Move from optimistic → confirmed. Clear any pending rollback timer.
+      const pt = pendingTimeoutsRef.current.get(k);
+      if (pt !== undefined) {
+        clearTimeout(pt);
+        pendingTimeoutsRef.current.delete(k);
+      }
+      setOptimisticCells(prev => { const n = new Set(prev); n.delete(k); return n; });
+      setClaimedCells(prev => new Set([...prev, k]));
       setScore(s);
       DotsAudio.claim();
     };
@@ -170,8 +192,24 @@ export default function DotsGame({
   const completeHold = useCallback((key: string) => {
     const [xs, ys] = key.split(",");
     const x = Number(xs), y = Number(ys);
+
     if (role === "thief") {
-      socket.emit("dots:claim",  { code, x, y });
+      // ── Optimistic update: light the window NOW, before the socket round-trip ──
+      setOptimisticCells(prev => new Set([...prev, key]));
+
+      // Schedule a rollback if the server doesn't confirm within 6 s
+      const rollbackTimer = setTimeout(() => {
+        pendingTimeoutsRef.current.delete(key);
+        setOptimisticCells(prev => { const n = new Set(prev); n.delete(key); return n; });
+        setRollbackErr("Window not saved — try again");
+        setTimeout(() => setRollbackErr(null), 2500);
+      }, 6000);
+      pendingTimeoutsRef.current.set(key, rollbackTimer);
+
+      // Fire-and-forget — UI is already updated above
+      requestAnimationFrame(() => {
+        socket.emit("dots:claim", { code, x, y });
+      });
     } else {
       socket.emit("dots:search", { code, x, y });
     }
@@ -204,18 +242,19 @@ export default function DotsGame({
     if (!active) return;
     const key = cellKey(col, row);
     if (role === "thief") {
-      if (!claimedCells.has(key)) startHold(key);
+      // Block if already confirmed OR already optimistically lit (pending)
+      if (!claimedCells.has(key) && !optimisticCells.has(key)) startHold(key);
     } else {
       startHold(key);
     }
-  }, [active, role, claimedCells, startHold]);
+  }, [active, role, claimedCells, optimisticCells, startHold]);
 
   // ── CSS mask for precise lit-building reveal ───────────────────────────────
   // Each claimed cell unmasks exactly the glass area from the lit building image.
   // Uses the corrected mask-position formula so the reveal aligns pixel-perfectly.
   const litMask = useMemo(() => {
-    if (claimedCells.size === 0) return "";
-    return [...claimedCells].map(key => {
+    if (litCells.size === 0) return "";
+    return [...litCells].map(key => {
       const [c, r] = key.split(",").map(Number);
       const col = GLASS_COLS[c];
       const row = GLASS_ROWS[r];
@@ -223,7 +262,7 @@ export default function DotsGame({
       const py = maskPos(row.top,  row.h);
       return `linear-gradient(#fff 0 0) ${px.toFixed(4)}% ${py.toFixed(4)}% / ${col.w}% ${row.h}% no-repeat`;
     }).join(", ");
-  }, [claimedCells]);
+  }, [litCells]);
 
   // ── Timer display ──────────────────────────────────────────────────────────
   const urgent   = timeLeft <= 10;
@@ -315,6 +354,11 @@ export default function DotsGame({
           <div className="hud-round" aria-label="round">
             {round}/2
           </div>
+
+          {/* Optimistic rollback error */}
+          {rollbackErr && (
+            <div className="dots-rollback-err">{rollbackErr}</div>
+          )}
 
           {/* Round-end overlay */}
           {overlay && (

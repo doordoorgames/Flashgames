@@ -6550,3 +6550,27 @@ html, body, #root {
   margin: 0;
   font-weight: 600;
 }
+
+/* Optimistic rollback error toast */
+.dots-rollback-err {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(200, 30, 30, 0.92);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 20;
+  animation: dots-err-in 0.2s ease-out;
+}
+@keyframes dots-err-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

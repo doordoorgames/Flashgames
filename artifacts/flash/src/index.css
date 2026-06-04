@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -5656,29 +5657,38 @@ html, body, #root {
   z-index: 10;
 }
 
-/* Role badge – top-left */
+/* Role badge – top-left, handwritten style */
 .hud-role {
-  top: 10px;
-  left: 10px;
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 4px 9px;
-  border-radius: 4px;
-  border: 1.5px solid;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 6px;
+  background: none;
+  border: none;
 }
-.hud-role[data-role="thief"] {
-  color: #ff8fb8;
-  border-color: rgba(255,107,157,0.45);
-  background: rgba(10,6,20,0.55);
+.hud-role-text {
+  font-family: 'Caveat', cursive;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7), 0 0 12px rgba(0,0,0,0.4);
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
-.hud-role[data-role="catcher"] {
-  color: #7fc4ff;
-  border-color: rgba(84,160,255,0.45);
-  background: rgba(10,6,20,0.55);
+.hud-role-icon {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hud-role-icon .dots-role-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.6));
 }
 
 /* Timer – centered top */
@@ -5855,41 +5865,42 @@ html, body, #root {
 
 /* Switch Sides */
 .dots-switch-screen {
-  min-height: 100dvh;
-  background: #060d18;
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   cursor: pointer;
-  animation: dots-switch-bg 0.4s ease-out;
 }
-@keyframes dots-switch-bg {
-  0%  { background: #FF6B9D; }
-  30% { background: #FECA57; }
-  60% { background: #54A0FF; }
-  100%{ background: #060d18; }
+/* Blurred building background */
+.dots-switch-bg-blur {
+  position: absolute;
+  inset: -24px;
+  background-size: cover;
+  background-position: center top;
+  filter: blur(14px) brightness(0.75) saturate(1.1);
+  z-index: 0;
+}
+/* Dark overlay to keep text sharp */
+.dots-switch-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,4,24,0.55) 0%,
+    rgba(10,4,24,0.30) 40%,
+    rgba(10,4,24,0.65) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
 }
 .dots-switch-inner {
   position: relative;
+  z-index: 2;
   width: 100%;
   padding: 32px 24px;
   text-align: center;
-}
-.dots-switch-flash-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  animation: dots-flash-strobe 0.6s steps(1) forwards;
-}
-@keyframes dots-flash-strobe {
-  0%  { background: rgba(255,255,255,0.5); }
-  16% { background: rgba(255,107,157,0.3); }
-  33% { background: rgba(254,202,87,0.3); }
-  50% { background: rgba(84,160,255,0.3); }
-  66% { background: rgba(95,39,205,0.2); }
-  83% { background: rgba(0,0,0,0); }
-  100%{ background: rgba(0,0,0,0); }
 }
 .dots-switch-content {
   position: relative;
@@ -6621,4 +6632,16 @@ html, body, #root {
 @keyframes dots-ring-fill {
   from { stroke-dashoffset: 113.1; }
   to   { stroke-dashoffset: 0; }
+}
+
+/* Permanent thief icon on last-claimed window */
+.dots-last-icon {
+  animation: none;
+  opacity: 0.85;
+}
+.dots-last-icon .dots-role-svg {
+  width: 44%;
+  height: 44%;
+  filter: drop-shadow(0 0 4px rgba(190, 80, 255, 0.8))
+          drop-shadow(0 0 2px rgba(255,255,255,0.5));
 }

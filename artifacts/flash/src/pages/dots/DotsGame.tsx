@@ -130,6 +130,8 @@ export default function DotsGame({
   // Which cell is currently showing the tap animation (clears automatically)
   const [activeCell,   setActiveCell]   = useState<string | null>(null);
   const [animKey,      setAnimKey]      = useState(0); // bump to restart animation
+  // Thief's last claimed window — icon stays on it
+  const [lastLitKey,   setLastLitKey]   = useState<string | null>(null);
   const [flashKeys,    setFlashKeys]    = useState<Map<string, number>>(new Map());
   const [overlay,      setOverlay]      = useState<"caught" | "timeup" | null>(null);
   const [active,       setActive]       = useState(true);
@@ -213,13 +215,15 @@ export default function DotsGame({
     const x = Number(xs), y = Number(ys);
 
     if (role === "thief") {
-      // Optimistic: light the window instantly
+      // Optimistic: light the window instantly + move icon here
       setOptimisticCells(prev => new Set([...prev, key]));
+      setLastLitKey(key);
 
       // Rollback if server doesn't confirm in 6 s
       const rollbackTimer = setTimeout(() => {
         pendingTimeoutsRef.current.delete(key);
         setOptimisticCells(prev => { const n = new Set(prev); n.delete(key); return n; });
+        setLastLitKey(prev => (prev === key ? null : prev));
         setRollbackErr("Window not saved — try again");
         setTimeout(() => setRollbackErr(null), 2500);
       }, 6000);
@@ -286,6 +290,8 @@ export default function DotsGame({
         const isActive = activeCell === key;
         const isMiss   = flashKeys.has(key);
 
+        const isLastLit = key === lastLitKey && role === "thief";
+
         out.push(
           <div
             key={key}
@@ -298,6 +304,12 @@ export default function DotsGame({
             }}
             onPointerDown={(e) => { e.preventDefault(); handlePointerDown(c, r); }}
           >
+            {/* Permanent icon on the thief's last claimed window */}
+            {isLastLit && !isActive && (
+              <div className="dots-window-icon dots-last-icon">
+                <ThiefIcon />
+              </div>
+            )}
             {isActive && (
               <>
                 {/* Icon appears instantly */}
@@ -332,7 +344,7 @@ export default function DotsGame({
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCell, animKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
+  }, [activeCell, animKey, lastLitKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>
@@ -363,7 +375,10 @@ export default function DotsGame({
 
           {/* ── Floating HUD stickers ── */}
           <div className="hud-role" data-role={role} aria-label="role">
-            {role === "thief" ? "THIEF" : "CATCHER"}
+            <span className="hud-role-text">{role === "thief" ? "Thief" : "Catcher"}</span>
+            <div className="hud-role-icon">
+              {role === "thief" ? <ThiefIcon /> : <CatcherIcon />}
+            </div>
           </div>
 
           <div className={`hud-timer${urgent ? " hud-timer-urgent" : ""}`} aria-label="timer">

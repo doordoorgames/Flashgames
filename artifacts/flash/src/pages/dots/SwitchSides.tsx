@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DotsAudio } from "./DotsAudio";
+import litBuilding from "@assets/8FB02617-28A8-4F70-9E10-F24EE18E0E04_1780489207343.png";
 
 interface Props {
   round1Score: number;
@@ -41,8 +42,14 @@ export default function SwitchSides({ round1Score, round1ThiefId, playerNames, o
 
   return (
     <div className="dots-switch-screen" onClick={handleTap}>
+      {/* Blurred lit-building background — same as home/lobby */}
+      <div
+        className="dots-switch-bg-blur"
+        style={{ backgroundImage: `url(${litBuilding})` }}
+      />
+      {/* Dark overlay for text readability */}
+      <div className="dots-switch-bg-overlay" />
       <div className="dots-switch-inner">
-        <div className="dots-switch-flash-bg" />
 
         <div className="dots-switch-content">
           <p className="dots-switch-label">ROUND 1 RESULT</p>

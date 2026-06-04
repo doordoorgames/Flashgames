@@ -3,6 +3,7 @@ import { getSocket } from "@/lib/socket";
 import { DotsAudio } from "./DotsAudio";
 import darkBuilding from "@assets/D97470E6-AE6E-4295-84E3-A56D3F3E15D5_1780489207343.png";
 import litBuilding from "@assets/8FB02617-28A8-4F70-9E10-F24EE18E0E04_1780489207343.png";
+import thiefPng from "@assets/D930EB9B-6052-42FD-905B-F0E961C98085_1780587405839.png";
 
 // ─── Exact window measurements (pixel-analysed from 936 × 1681 source images) ─
 //
@@ -54,22 +55,21 @@ const CELL_ROWS = [
 
 const COLS           = 5;
 const ROWS           = 9;
-const THIEF_HOLD_MS  = 1000;
-const CATCHER_HOLD_MS = 500;
-const RING_CIRC      = 113.1; // 2π × 18
+const THIEF_CLAIM_MS  = 3000; // 3 s ring on thief tap (matches server CLAIM_MS)
+const CATCHER_ANIM_MS = 350;  // catcher ring is just UI flourish
+const MAX_ACTIVE      = 10;   // thief can work on up to 10 windows at once
+const RING_CIRC       = 113.1; // 2π × 18
 
-// ─── Role icons (flat vector silhouettes) ────────────────────────────────────
+// ─── Role icons ──────────────────────────────────────────────────────────────
 function ThiefIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="dots-role-svg" aria-hidden="true">
-      {/* balaclava head */}
-      <path d="M12 3C7.5 3 5 7 5 11c0 4 1.2 6 3 7v2h8v-2c1.8-1 3-3 3-7 0-4-2.5-8-7-8z" fill="white"/>
-      {/* mask band */}
-      <rect x="5" y="9.5" width="14" height="3.5" rx="1.75" fill="rgba(20,0,50,0.7)"/>
-      {/* eye holes */}
-      <ellipse cx="9" cy="11.25" rx="1.4" ry="1.2" fill="rgba(20,0,50,0.9)"/>
-      <ellipse cx="15" cy="11.25" rx="1.4" ry="1.2" fill="rgba(20,0,50,0.9)"/>
-    </svg>
+    <img
+      src={thiefPng}
+      className="dots-role-svg dots-thief-png"
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+    />
   );
 }
 
@@ -127,16 +127,15 @@ export default function DotsGame({
   const [timeLeft,     setTimeLeft]     = useState(() =>
     Math.max(0, Math.floor((roundEndTime - Date.now()) / 1000))
   );
-  // Which cell is currently showing the tap animation (clears automatically)
-  const [activeCell,   setActiveCell]   = useState<string | null>(null);
-  const [animKey,      setAnimKey]      = useState(0); // bump to restart animation
+  // Cells currently showing tap animation: key → per-cell animKey (to restart CSS)
+  const [activeCells,  setActiveCells]  = useState<Map<string, number>>(new Map());
   // Thief's last claimed window — icon stays on it
   const [lastLitKey,   setLastLitKey]   = useState<string | null>(null);
   const [flashKeys,    setFlashKeys]    = useState<Map<string, number>>(new Map());
   const [overlay,      setOverlay]      = useState<"caught" | "timeup" | null>(null);
   const [active,       setActive]       = useState(true);
 
-  const activeCellTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const activeCellTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const timerRef           = useRef(0);
   const socket = getSocket();
 
@@ -237,25 +236,37 @@ export default function DotsGame({
 
   const handlePointerDown = useCallback((col: number, row: number) => {
     if (!active) return;
-    if (activeCell !== null) return; // one animation at a time
     const key = cellKey(col, row);
 
     if (role === "thief") {
+      // Don't re-tap already lit or currently claiming windows
       if (claimedCells.has(key) || optimisticCells.has(key)) return;
+      if (activeCells.has(key)) return;
+      // Hard limit: max 10 concurrent pending windows
+      if (activeCells.size >= MAX_ACTIVE) return;
     }
 
-    // Show animation immediately
-    setActiveCell(key);
-    setAnimKey(k => k + 1);
+    // Add to active set with a fresh animKey so CSS animation restarts
+    setActiveCells(prev => {
+      const next = new Map(prev);
+      next.set(key, (prev.get(key) ?? 0) + 1);
+      return next;
+    });
 
     // Fire action on next frame so the paint happens first
     requestAnimationFrame(() => fireAction(key));
 
-    // Animation duration: thief 600 ms, catcher 350 ms
-    const animMs = role === "thief" ? 600 : 350;
-    clearTimeout(activeCellTimerRef.current);
-    activeCellTimerRef.current = setTimeout(() => setActiveCell(null), animMs);
-  }, [active, role, claimedCells, optimisticCells, activeCell, fireAction]);
+    // Ring duration: thief 3s (matches server timer), catcher 350ms
+    const animMs = role === "thief" ? THIEF_CLAIM_MS : CATCHER_ANIM_MS;
+    // Clear any existing timer for this key (shouldn't happen, but safety)
+    const existing = activeCellTimersRef.current.get(key);
+    if (existing !== undefined) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      setActiveCells(prev => { const n = new Map(prev); n.delete(key); return n; });
+      activeCellTimersRef.current.delete(key);
+    }, animMs);
+    activeCellTimersRef.current.set(key, timer);
+  }, [active, role, claimedCells, optimisticCells, activeCells, fireAction]);
 
   // ── CSS mask for precise lit-building reveal ───────────────────────────────
   // Each claimed cell unmasks exactly the glass area from the lit building image.
@@ -278,7 +289,7 @@ export default function DotsGame({
 
   // ── Window cells ───────────────────────────────────────────────────────────
   const ringStroke   = role === "thief" ? "rgba(190,80,255,0.95)" : "rgba(255,195,30,0.95)";
-  const ringDuration = role === "thief" ? "600ms" : "350ms";
+  const ringDuration = role === "thief" ? `${THIEF_CLAIM_MS}ms` : `${CATCHER_ANIM_MS}ms`;
 
   const windowCells = useMemo(() => {
     const out: React.ReactNode[] = [];
@@ -287,10 +298,10 @@ export default function DotsGame({
         const key     = cellKey(c, r);
         const cell    = CELL_COLS[c];
         const cellRow = CELL_ROWS[r];
-        const isActive = activeCell === key;
-        const isMiss   = flashKeys.has(key);
-
-        const isLastLit = key === lastLitKey && role === "thief";
+        const cellAnimKey = activeCells.get(key);
+        const isActive    = cellAnimKey !== undefined;
+        const isMiss      = flashKeys.has(key);
+        const isLastLit   = key === lastLitKey && role === "thief";
 
         out.push(
           <div
@@ -316,12 +327,12 @@ export default function DotsGame({
                 <div className={`dots-window-icon dots-window-icon-${role}`}>
                   {role === "thief" ? <ThiefIcon /> : <CatcherIcon />}
                 </div>
-                {/* Ring auto-fills via CSS — no holding required */}
+                {/* Ring auto-fills via CSS */}
                 <svg className="dots-progress-ring" viewBox="0 0 44 44">
                   <circle cx="22" cy="22" r="18" fill="none"
                     stroke="rgba(255,255,255,0.12)" strokeWidth="3" />
                   <circle
-                    key={animKey}
+                    key={cellAnimKey}
                     cx="22" cy="22" r="18"
                     fill="none"
                     stroke={ringStroke}
@@ -332,7 +343,7 @@ export default function DotsGame({
                     style={{
                       transform: "rotate(-90deg)",
                       transformOrigin: "22px 22px",
-                      animation: `dots-ring-fill ${ringDuration} ease-out forwards`,
+                      animation: `dots-ring-fill ${ringDuration} linear forwards`,
                     }}
                   />
                 </svg>
@@ -344,7 +355,7 @@ export default function DotsGame({
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCell, animKey, lastLitKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
+  }, [activeCells, lastLitKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>
@@ -416,8 +427,8 @@ export default function DotsGame({
       {/* ── Hint ── */}
       <div className="dots-hint-bar">
         {role === "thief"
-          ? "Hold any window to light it up · Claim as many as you can!"
-          : "Hold any window to search · Find where the thief is hiding!"}
+          ? "Tap windows to claim them · Up to 10 at once · You have 3 seconds each!"
+          : "Tap a window to search it · Catch the thief in the act!"}
       </div>
     </div>
   );

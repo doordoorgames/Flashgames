@@ -2,7 +2,9 @@ import type { Server, Socket } from "socket.io";
 
 const COLS = 5;
 const ROWS = 9;
-const ROUND_MS = 45_000;
+const ROUND_MS     = 60_000; // 1 minute per side, 2 minutes total
+const CLAIM_MS     = 3_000;  // 3 seconds to claim a window
+const MAX_PENDING  = 10;     // thief can work on up to 10 windows at once
 
 const DOT_COLORS = [
   "#FF6B9D","#FF9F43","#FECA57","#48DBFB","#54A0FF",
@@ -28,6 +30,7 @@ interface DotsRoom {
   catcherId: string;
   thiefPos: { x: number; y: number };
   claimedCells: Set<string>;
+  pendingClaims: Map<string, ReturnType<typeof setTimeout>>; // key → 3s claim timer
   round1ThiefId: string;
   round1Score: number;
   round2Score: number;
@@ -56,11 +59,17 @@ function broadcastToRoom(io: Server, roomCode: string, event: string, data: unkn
   io.to("DOTS" + roomCode).emit(event, data);
 }
 
+function clearPendingClaims(room: DotsRoom): void {
+  for (const timer of room.pendingClaims.values()) clearTimeout(timer);
+  room.pendingClaims.clear();
+}
+
 function startRound(io: Server, room: DotsRoom): void {
   const round = room.phase === "round2" ? 2 : 1;
   const roundEndTime = Date.now() + ROUND_MS;
   room.roundEndTime = roundEndTime;
   room.claimedCells = new Set();
+  clearPendingClaims(room);
   room.thiefPos = {
     x: Math.floor(Math.random() * COLS),
     y: Math.floor(Math.random() * ROWS),
@@ -103,6 +112,9 @@ function endRound(io: Server, room: DotsRoom, caught: boolean): void {
     clearTimeout(room.roundTimer);
     room.roundTimer = null;
   }
+
+  // Stop all in-progress claims
+  clearPendingClaims(room);
 
   const score = room.claimedCells.size;
 
@@ -155,6 +167,7 @@ function cleanupRoom(io: Server, roomKey: string) {
   const room = rooms.get(roomKey);
   if (!room) return;
   if (room.roundTimer) clearTimeout(room.roundTimer);
+  clearPendingClaims(room);
   rooms.delete(roomKey);
   broadcastToRoom(io, room.code, "dots:room-closed", {});
 }
@@ -192,6 +205,7 @@ export function setupDotsHandlers(io: Server): void {
         catcherId: "",
         thiefPos: { x: 0, y: 0 },
         claimedCells: new Set(),
+        pendingClaims: new Map(),
         round1ThiefId: "",
         round1Score: 0,
         round2Score: 0,
@@ -272,25 +286,6 @@ export function setupDotsHandlers(io: Server): void {
       startRound(io, room);
     });
 
-    socket.on("dots:move", ({ code, dir }: { code: string; dir: "up" | "down" | "left" | "right" }) => {
-      const room = rooms.get("DOTS" + code);
-      if (!room) return;
-      if (room.phase !== "round1" && room.phase !== "round2") return;
-      const playerId = room.socketToPlayer.get(socket.id);
-      if (playerId !== room.thiefId) return;
-
-      const { x, y } = room.thiefPos;
-      let nx = x, ny = y;
-      if (dir === "up") ny = y - 1;
-      if (dir === "down") ny = y + 1;
-      if (dir === "left") nx = x - 1;
-      if (dir === "right") nx = x + 1;
-      if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) return;
-
-      room.thiefPos = { x: nx, y: ny };
-      socket.emit("dots:moved", { pos: room.thiefPos });
-    });
-
     socket.on("dots:claim", ({ code, x, y }: { code: string; x: number; y: number }) => {
       const room = rooms.get("DOTS" + code);
       if (!room) return;
@@ -299,12 +294,27 @@ export function setupDotsHandlers(io: Server): void {
       if (playerId !== room.thiefId) return;
 
       const key = `${x},${y}`;
+      // Block if already fully claimed or currently pending
       if (room.claimedCells.has(key)) return;
-      room.claimedCells.add(key);
+      if (room.pendingClaims.has(key)) return;
+      // Max 10 simultaneous windows
+      if (room.pendingClaims.size >= MAX_PENDING) return;
+
+      // Start the 3-second claim timer
+      const timer = setTimeout(() => {
+        room.pendingClaims.delete(key);
+        // Only add if round is still in progress
+        if (room.phase !== "round1" && room.phase !== "round2") return;
+        room.claimedCells.add(key);
+        room.thiefPos = { x, y };
+        broadcastToRoom(io, room.code, "dots:cell-claimed", {
+          x, y, score: room.claimedCells.size,
+        });
+      }, CLAIM_MS);
+
+      room.pendingClaims.set(key, timer);
+      // Update thiefPos optimistically so catcher can still track rough position
       room.thiefPos = { x, y };
-      broadcastToRoom(io, room.code, "dots:cell-claimed", {
-        x, y, score: room.claimedCells.size,
-      });
     });
 
     socket.on("dots:search", ({ code, x, y }: { code: string; x: number; y: number }) => {
@@ -314,9 +324,16 @@ export function setupDotsHandlers(io: Server): void {
       const playerId = room.socketToPlayer.get(socket.id);
       if (playerId !== room.catcherId) return;
 
-      if (room.thiefPos.x === x && room.thiefPos.y === y) {
+      const key = `${x},${y}`;
+
+      if (room.pendingClaims.has(key)) {
+        // Thief is actively claiming this window — caught in the act!
+        const timer = room.pendingClaims.get(key)!;
+        clearTimeout(timer);
+        room.pendingClaims.delete(key);
         endRound(io, room, true);
       } else {
+        // Window not being claimed right now — miss
         socket.emit("dots:search-miss", { x, y });
       }
     });
@@ -342,6 +359,7 @@ export function setupDotsHandlers(io: Server): void {
       const playerId = room.socketToPlayer.get(socket.id);
       if (playerId !== room.adminId) return;
 
+      clearPendingClaims(room);
       room.phase = "lobby";
       room.cellColors = generateCellColors();
       room.claimedCells = new Set();
@@ -373,6 +391,7 @@ export function setupDotsHandlers(io: Server): void {
 
         if (room.players.size === 0) {
           if (room.roundTimer) clearTimeout(room.roundTimer);
+          clearPendingClaims(room);
           rooms.delete(roomKey);
         } else if (playerId === room.adminId) {
           cleanupRoom(io, roomKey);

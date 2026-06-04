@@ -26,26 +26,22 @@ export default function DotsLobby({ code, playerId, isAdmin, players, onStartGam
       <div className="nawafeth-bg" style={{ backgroundImage: `url(${litBuilding})` }} />
 
       <div className="nawafeth-content nawafeth-lobby-content">
-        {/* Brand */}
-        <div className="nawafeth-title-wrap" style={{ marginBottom: 16 }}>
+        {/* Brand — compact, no subtitle */}
+        <div className="nawafeth-title-wrap" style={{ marginBottom: 10, marginTop: 0 }}>
           <img src={nawafethLogo} alt="نوافذ" className="nawafeth-logo nawafeth-logo-sm" />
-          <p className="nawafeth-subtitle">NAWAFETH · LOBBY</p>
         </div>
 
-        {/* Lobby card */}
+        {/* Lobby card — code + players only, no QR inside */}
         <div className="nawafeth-card">
-          {/* Room code + QR */}
-          <div className="nawafeth-room-code-wrap">
+          {/* Room code */}
+          <div className="nawafeth-room-code-wrap" style={{ paddingBottom: 12 }}>
             <p className="nawafeth-rcd-label">Room Code</p>
             <p className="nawafeth-rcd-code">{code}</p>
             <p className="nawafeth-rcd-hint">Share with your opponent</p>
-            <div className="nawafeth-qr-wrap">
-              <RoomJoinQR roomCode={code} />
-            </div>
           </div>
 
           {/* Players */}
-          <div className="nawafeth-players">
+          <div className="nawafeth-players" style={{ paddingTop: 10, paddingBottom: 10 }}>
             <p className="nawafeth-players-title">
               Players ({players.length}/2)
               {ready && <span className="nawafeth-ready-tag">READY</span>}
@@ -66,26 +62,22 @@ export default function DotsLobby({ code, playerId, isAdmin, players, onStartGam
                 </div>
               )}
             </div>
+            {isAdmin ? (
+              !ready && <p className="nawafeth-waiting" style={{ marginTop: 6 }}>Waiting for 2nd player…</p>
+            ) : (
+              <p className="nawafeth-waiting" style={{ marginTop: 6 }}>Waiting for host to start…</p>
+            )}
           </div>
+        </div>
 
-          {/* Rules */}
-          <div className="nawafeth-rules">
-            <p className="nawafeth-rule-line">🔴 Thief — hold windows to light them</p>
-            <p className="nawafeth-rule-line">🔵 Catcher — find where the thief is hiding</p>
-            <p className="nawafeth-rule-line">⏱ 45 seconds · 2 rounds · swap roles</p>
-          </div>
-
-          {/* Status */}
-          {isAdmin ? (
-            !ready && <p className="nawafeth-waiting">Waiting for 2nd player…</p>
-          ) : (
-            <p className="nawafeth-waiting">Waiting for host to start…</p>
-          )}
+        {/* QR code — standalone, no box, generous size */}
+        <div className="nawafeth-qr-standalone">
+          <RoomJoinQR roomCode={code} />
         </div>
 
         {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={!ready} />}
 
-        <button className="nawafeth-back-btn" style={{ marginTop: 12 }} onClick={onBack}>
+        <button className="nawafeth-back-btn" style={{ marginTop: 8 }} onClick={onBack}>
           ← Change Game
         </button>
       </div>

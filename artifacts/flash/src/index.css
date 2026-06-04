@@ -6254,7 +6254,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -6291,15 +6291,15 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 48px;
+  padding: 24px 20px 40px;
   gap: 0;
-  min-height: 100dvh;
 }
 
-/* Lobby pushes card more visible */
+/* Lobby — compact, no-scroll layout */
 .nawafeth-lobby-content {
   justify-content: flex-start;
-  padding-top: 40px;
+  padding-top: 16px;
+  padding-bottom: 20px;
 }
 
 /* ── Logo ── */
@@ -6321,8 +6321,8 @@ html, body, #root {
 /* ── Title ── */
 .nawafeth-title-wrap {
   text-align: center;
-  margin-bottom: 28px;
-  margin-top: 20px;
+  margin-bottom: 24px;
+  margin-top: 0;
 }
 .nawafeth-title {
   font-family: 'Noto Naskh Arabic', 'Scheherazade New', 'Arabic Typesetting', serif;
@@ -6521,6 +6521,24 @@ html, body, #root {
   border-radius: 8px;
   background: rgba(255,255,255,0.85) !important;
   padding: 8px;
+}
+
+/* Standalone QR — no card, no box, just the code */
+.nawafeth-qr-standalone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 14px;
+  width: 100%;
+}
+.nawafeth-qr-standalone canvas,
+.nawafeth-qr-standalone svg {
+  width: min(180px, 46vw) !important;
+  height: min(180px, 46vw) !important;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.92) !important;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
 }
 
 /* Players section */

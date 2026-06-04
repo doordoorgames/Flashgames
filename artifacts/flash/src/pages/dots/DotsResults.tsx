@@ -50,14 +50,14 @@ export default function DotsResults({
             <p className="dots-results-round-label">Round 1 — Thief</p>
             <p className="dots-results-round-player">{round1ThiefName}</p>
             <p className="dots-results-round-score">{round1Score}</p>
-            <p className="dots-results-round-unit">dots claimed</p>
+            <p className="dots-results-round-unit">windows claimed</p>
           </div>
           <div className="dots-results-vs">VS</div>
           <div className="dots-results-round">
             <p className="dots-results-round-label">Round 2 — Thief</p>
             <p className="dots-results-round-player">{round2ThiefName}</p>
             <p className="dots-results-round-score">{round2Score}</p>
-            <p className="dots-results-round-unit">dots claimed</p>
+            <p className="dots-results-round-unit">windows claimed</p>
           </div>
         </div>
 

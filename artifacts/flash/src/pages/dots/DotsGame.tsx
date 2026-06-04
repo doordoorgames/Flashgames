@@ -134,6 +134,8 @@ export default function DotsGame({
   const [flashKeys,    setFlashKeys]    = useState<Map<string, number>>(new Map());
   const [overlay,      setOverlay]      = useState<"caught" | "timeup" | null>(null);
   const [active,       setActive]       = useState(true);
+  // The specific window cell where the thief was caught (thief screen only)
+  const [caughtCellKey, setCaughtCellKey] = useState<string | null>(null);
 
   const activeCellTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const timerRef           = useRef(0);
@@ -192,10 +194,13 @@ export default function DotsGame({
       }, 700);
     };
 
-    const onRoundOver = ({ caught }: { caught: boolean }) => {
+    const onRoundOver = ({ caught, caughtCell }: { caught: boolean; caughtCell?: { x: number; y: number } }) => {
       setActive(false);
       setOverlay(caught ? "caught" : "timeup");
-      if (caught) DotsAudio.caught();
+      if (caught) {
+        DotsAudio.caught();
+        if (caughtCell) setCaughtCellKey(cellKey(caughtCell.x, caughtCell.y));
+      }
     };
 
     socket.on("dots:cell-claimed", onClaimed);
@@ -298,10 +303,11 @@ export default function DotsGame({
         const key     = cellKey(c, r);
         const cell    = CELL_COLS[c];
         const cellRow = CELL_ROWS[r];
-        const cellAnimKey = activeCells.get(key);
-        const isActive    = cellAnimKey !== undefined;
-        const isMiss      = flashKeys.has(key);
-        const isLastLit   = key === lastLitKey && role === "thief";
+        const cellAnimKey  = activeCells.get(key);
+        const isActive     = cellAnimKey !== undefined;
+        const isMiss       = flashKeys.has(key);
+        const isLastLit    = key === lastLitKey && role === "thief";
+        const isCaughtHere = key === caughtCellKey && role === "thief";
 
         out.push(
           <div
@@ -315,8 +321,12 @@ export default function DotsGame({
             }}
             onPointerDown={(e) => { e.preventDefault(); handlePointerDown(c, r); }}
           >
+            {/* Caught cell — blinking golden ! for 3 s */}
+            {isCaughtHere && (
+              <div className="dots-caught-exclaim" aria-hidden="true">!</div>
+            )}
             {/* Permanent icon on the thief's last claimed window */}
-            {isLastLit && !isActive && (
+            {isLastLit && !isActive && !isCaughtHere && (
               <div className="dots-window-icon dots-last-icon">
                 <ThiefIcon />
               </div>
@@ -355,7 +365,7 @@ export default function DotsGame({
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeCells, lastLitKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
+  }, [activeCells, lastLitKey, caughtCellKey, flashKeys, handlePointerDown, role, ringStroke, ringDuration]);
 
   return (
     <div className="dots-game-screen" style={{ touchAction: "none" }}>

@@ -6653,3 +6653,25 @@ html, body, #root {
   filter: drop-shadow(0 0 4px rgba(190, 80, 255, 0.8))
           drop-shadow(0 0 2px rgba(255,255,255,0.5));
 }
+
+/* Caught-window exclamation mark — thief screen only */
+.dots-caught-exclaim {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
+  font-weight: 900;
+  color: #FECA57;
+  text-shadow:
+    0 0 6px rgba(254, 202, 87, 0.9),
+    0 0 14px rgba(254, 150, 0, 0.7);
+  animation: dots-exclaim-blink 0.35s ease-in-out 8 alternate forwards;
+}
+@keyframes dots-exclaim-blink {
+  from { opacity: 1;   transform: scale(1.15); }
+  to   { opacity: 0.1; transform: scale(0.9); }
+}

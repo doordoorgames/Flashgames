@@ -107,7 +107,7 @@ function startRound(io: Server, room: DotsRoom): void {
   room.roundTimer = setTimeout(() => endRound(io, room, false), ROUND_MS);
 }
 
-function endRound(io: Server, room: DotsRoom, caught: boolean): void {
+function endRound(io: Server, room: DotsRoom, caught: boolean, caughtCell?: { x: number; y: number }): void {
   if (room.roundTimer) {
     clearTimeout(room.roundTimer);
     room.roundTimer = null;
@@ -127,6 +127,7 @@ function endRound(io: Server, room: DotsRoom, caught: boolean): void {
       round: 1,
       score,
       caught,
+      caughtCell: caught ? caughtCell : undefined,
       thiefPos: room.thiefPos,
     });
 
@@ -158,6 +159,7 @@ function endRound(io: Server, room: DotsRoom, caught: boolean): void {
       winnerId,
       winnerName: winnerId ? room.players.get(winnerId)?.name : null,
       caught,
+      caughtCell: caught ? caughtCell : undefined,
       thiefPos: room.thiefPos,
     });
   }
@@ -331,7 +333,7 @@ export function setupDotsHandlers(io: Server): void {
         const timer = room.pendingClaims.get(key)!;
         clearTimeout(timer);
         room.pendingClaims.delete(key);
-        endRound(io, room, true);
+        endRound(io, room, true, { x, y });
       } else {
         // Window not being claimed right now — miss
         socket.emit("dots:search-miss", { x, y });

@@ -413,6 +413,13 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
   const outsideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insideTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Stable refs so timer callbacks never capture stale closures
+  // (avoids the glitch where new fn references re-run the effect and reset timers)
+  const onCompleteRef   = useRef(onComplete);
+  const onPunishmentRef = useRef(onPunishment);
+  useEffect(() => { onCompleteRef.current   = onComplete;   }, [onComplete]);
+  useEffect(() => { onPunishmentRef.current = onPunishment; }, [onPunishment]);
+
   // Steady cooling: −1 degree every 0.5s
   useEffect(() => {
     const iv = setInterval(() => {
@@ -423,6 +430,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
   }, []);
 
   // Win / lose timers — lose only activates after player reaches safe zone first
+  // NOTE: onComplete / onPunishment intentionally NOT in deps — use refs instead
   useEffect(() => {
     if (done.current) return;
     const inSafe = temp >= safeMin && temp <= safeMax;
@@ -431,7 +439,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
       if (outsideTimer.current) { clearTimeout(outsideTimer.current); outsideTimer.current = null; }
       if (!insideTimer.current) {
         insideTimer.current = setTimeout(() => {
-          if (!done.current) { done.current = true; bombSounds.reactorCorrect(); setTimeout(onComplete, 500); }
+          if (!done.current) { done.current = true; bombSounds.reactorCorrect(); setTimeout(() => onCompleteRef.current(), 500); }
           insideTimer.current = null;
         }, 10000);
       }
@@ -440,12 +448,13 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
       // only penalise after player has first reached safe zone
       if (hasEnteredSafe.current && !outsideTimer.current) {
         outsideTimer.current = setTimeout(() => {
-          if (!done.current) { done.current = true; bombSounds.reactorWrong(); setTimeout(onPunishment, 200); }
+          if (!done.current) { done.current = true; bombSounds.reactorWrong(); setTimeout(() => onPunishmentRef.current(), 200); }
           outsideTimer.current = null;
         }, 3000);
       }
     }
-  }, [temp, safeMin, safeMax, onComplete, onPunishment]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [temp, safeMin, safeMax]);
 
   // Clean up timers on unmount
   useEffect(() => () => {
@@ -455,14 +464,14 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
 
   const heat = useCallback(() => {
     if (done.current) return;
-    const delta = 1 + Math.floor(Math.random() * 5); // 1–5
+    const delta = 1 + Math.floor(Math.random() * 3); // 1–3 (smaller zone needs finer control)
     setTemp(prev => Math.min(99, prev + delta));
     bombSounds.reactorClick();
   }, []);
 
   const cool = useCallback(() => {
     if (done.current) return;
-    const delta = 1 + Math.floor(Math.random() * 6); // 1–6
+    const delta = 1 + Math.floor(Math.random() * 3); // 1–3
     setTemp(prev => Math.max(1, prev - delta));
     bombSounds.reactorClick();
   }, []);

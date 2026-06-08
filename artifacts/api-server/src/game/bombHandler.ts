@@ -81,8 +81,8 @@ const REACTOR_CONTROLS_POOL = [
 ];
 
 function generateReactorAction(): ReactorAction {
-  const safeMin = 32 + Math.floor(Math.random() * 18);
-  const safeMax = Math.min(safeMin + 20 + Math.floor(Math.random() * 12), 88);
+  const safeMin = 32 + Math.floor(Math.random() * 22);
+  const safeMax = Math.min(safeMin + 10 + Math.floor(Math.random() * 6), 88);
   const startOutside = Math.random() < 0.55;
   let startTemp: number;
   void startOutside;

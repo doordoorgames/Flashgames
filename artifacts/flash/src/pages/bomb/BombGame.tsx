@@ -697,6 +697,11 @@ function CutWireAction({ wires, targetWord, onComplete, onPunishment }: {
   const [wrongIdx, setWrongIdx] = useState<number | null>(null);
   const [showInstruction, setShowInstruction] = useState(false);
   const done = useRef(false);
+  // Randomly pick one of two phrasings once per action mount
+  const phraseB = useRef(Math.random() < 0.5);
+
+  // Find the color of the target wire
+  const targetColor = (wires.find(w => w.word === targetWord)?.color ?? targetWord).toUpperCase();
 
   useEffect(() => {
     const t = setTimeout(() => setShowInstruction(true), 550);
@@ -721,8 +726,10 @@ function CutWireAction({ wires, targetWord, onComplete, onPunishment }: {
   return (
     <div className="bomb-action-wire">
       <div className={`wire-instruction ${showInstruction ? "wire-instruction-visible" : ""}`}>
-        CUT THE WIRE THAT SAYS
-        <span className="wire-target-word">"{targetWord}"</span>
+        {phraseB.current
+          ? <>CUT THE <span className="wire-target-word">{targetColor}</span> WIRE</>
+          : <>CUT THE WIRE WITH THE COLOR <span className="wire-target-word">{targetColor}</span></>
+        }
       </div>
       <div className="wire-grid" style={{ gridTemplateColumns: `repeat(${wires.length}, 1fr)` }}>
         {wires.map((wire, idx) => {

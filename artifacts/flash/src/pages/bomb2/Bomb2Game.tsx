@@ -283,6 +283,8 @@ function WiresTask({ task, onComplete, onFail, onInput }: {
   const [cut, setCut] = useState<string | null>(null);
   const done = useRef(false);
   const deadline = useRef(Date.now() + 10000);
+  // Randomly pick one of two phrasings once per task mount
+  const phraseB = useRef(Math.random() < 0.5);
   useEffect(() => {
     const iv = setInterval(() => { if (!done.current && Date.now() > deadline.current) { done.current = true; clearInterval(iv); failBeep(); onFail(); } }, 200);
     return () => clearInterval(iv);
@@ -298,7 +300,12 @@ function WiresTask({ task, onComplete, onFail, onInput }: {
   return (
     <div className="b2-task-wrap">
       <p className="b2-task-label">WIRE DISCONNECT</p>
-      <p className="b2-task-instruction">CUT THE <span style={{ color: WIRE_COLORS[task.correctWire] ?? "#fff" }}>{task.correctWire}</span> WIRE</p>
+      <p className="b2-task-instruction">
+        {phraseB.current
+          ? <>CUT THE <span style={{ color: WIRE_COLORS[task.correctWire] ?? "#fff" }}>{task.correctWire}</span> WIRE</>
+          : <>CUT THE WIRE WITH THE COLOR <span style={{ color: WIRE_COLORS[task.correctWire] ?? "#fff" }}>{task.correctWire}</span></>
+        }
+      </p>
       <div className="b2-wires-grid">
         {task.wires.map(w => (
           <button key={w} className={`b2-wire-btn ${cut === w ? (w === task.correctWire ? "b2-wire-correct" : "b2-wire-wrong") : ""}`}

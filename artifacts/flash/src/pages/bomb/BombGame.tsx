@@ -15,7 +15,7 @@ export type BombAction =
   | { type: "memory"; letters: string[] }
   | { type: "reactor"; safeMin: number; safeMax: number; startTemp: number }
   | { type: "code"; digits: string; direction: "ltr" | "rtl" }
-  | { type: "wire"; wires: Array<{ color: string; word: string }>; targetWord: string }
+  | { type: "wire"; words: string[]; taskType: "color" | "word"; target: string }
   | { type: "country"; target: string; choices: string[] };
 
 export type InputProgress =
@@ -43,10 +43,13 @@ interface Props {
 const FLAP_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 const FLAP_KEYBOARD = Array.from(FLAP_CHARS);
 
-const WIRE_COLOR_MAP: Record<string, string> = {
-  red: "#ff2244", green: "#00ff41", blue: "#0099ff", yellow: "#ffee00",
-  purple: "#cc44ff", orange: "#ff8800", white: "#e8e8e8", cyan: "#00ffff", pink: "#ff44cc",
+// Fixed physical colors per position (0=top-left … 5=bottom-right) — matches IMG_2019.png
+const WIRE_PHYSICAL = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange"] as const;
+const WIRE_LABEL_CSS: Record<string, string> = {
+  Red: "#ff3344", Blue: "#3388ff", Green: "#00ff88",
+  Yellow: "#ffee00", Purple: "#cc44ff", Orange: "#ff8800",
 };
+const WIRE_IMAGE = "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/backgrounds/IMG_2019.png";
 
 /* ── Mute Button ── */
 function MuteButton() {
@@ -599,6 +602,79 @@ function CodeAction({ digits, direction, onComplete, onPunishment, onProgress }:
   );
 }
 
+/* ── Cut the Wire Action (Stroop image version) ── */
+function CutWireAction({ words, taskType, target, onComplete, onPunishment }: {
+  words: string[];
+  taskType: "color" | "word";
+  target: string;
+  onComplete: () => void;
+  onPunishment: () => void;
+}) {
+  const [tappedIdx, setTappedIdx] = useState<number | null>(null);
+  const [wrongIdx, setWrongIdx]   = useState<number | null>(null);
+  const [showInstr, setShowInstr] = useState(false);
+  const done = useRef(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowInstr(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Color task → correct position is the fixed physical slot; word task → find which slot has that label
+  const correctIdx = taskType === "color"
+    ? (WIRE_PHYSICAL as readonly string[]).indexOf(target)
+    : words.indexOf(target);
+
+  const handleTap = useCallback((idx: number) => {
+    if (done.current || tappedIdx !== null || wrongIdx !== null) return;
+    if (idx === correctIdx) {
+      done.current = true;
+      setTappedIdx(idx);
+      bombSounds.wireSlice();
+      setTimeout(onComplete, 750);
+    } else {
+      setWrongIdx(idx);
+      bombSounds.wireWrong();
+      setTimeout(() => setWrongIdx(null), 600);
+      onPunishment();
+    }
+  }, [correctIdx, onComplete, onPunishment, tappedIdx, wrongIdx]);
+
+  const accentColor = WIRE_LABEL_CSS[target] ?? "#ffffff";
+
+  return (
+    <div className="bomb-action-wire">
+      <div className={`wire-instruction ${showInstr ? "wire-instruction-visible" : ""}`}>
+        {taskType === "color"
+          ? <>CUT THE{" "}<span className="wire-target-word" style={{ color: accentColor, textShadow: `0 0 16px ${accentColor}` }}>{target.toUpperCase()}</span>{" "}WIRE</>
+          : <>CUT THE WIRE THAT SAYS{" "}<span className="wire-target-word" style={{ color: accentColor, textShadow: `0 0 16px ${accentColor}` }}>{target.toUpperCase()}</span></>
+        }
+      </div>
+      <div className="wire-image-container">
+        <img src={WIRE_IMAGE} alt="" className="wire-bg-img" draggable={false} />
+        <div className="wire-tap-grid">
+          {words.map((word, idx) => {
+            const isCorrect = tappedIdx === idx;
+            const isWrong   = wrongIdx  === idx;
+            const wColor = WIRE_LABEL_CSS[word] ?? "#ffffff";
+            return (
+              <div
+                key={idx}
+                className={`wire-tap-cell${isCorrect ? " wire-tap-correct" : ""}${isWrong ? " wire-tap-wrong" : ""}`}
+                onPointerDown={() => handleTap(idx)}
+              >
+                <span className="wire-tap-label" style={{ color: wColor, textShadow: `0 0 10px ${wColor}88` }}>
+                  {word.toUpperCase()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Ask Country Action ── */
 function AskCountryAction({ target, choices, onComplete, onPunishment }: {
   target: string;
@@ -672,88 +748,6 @@ function AskCountryAction({ target, choices, onComplete, onPunishment }: {
   );
 }
 
-/* ── Cut the Wire Action ── */
-function CutWireAction({ wires, targetWord, onComplete, onPunishment }: {
-  wires: Array<{ color: string; word: string }>;
-  targetWord: string;
-  onComplete: () => void;
-  onPunishment: () => void;
-}) {
-  const [cutIdx, setCutIdx] = useState<number | null>(null);
-  const [wrongIdx, setWrongIdx] = useState<number | null>(null);
-  const [showInstruction, setShowInstruction] = useState(false);
-  const done = useRef(false);
-  // Randomly pick one of two phrasings once per action mount
-  const phraseB = useRef(Math.random() < 0.5);
-
-  // Find the color of the target wire
-  const targetColor = (wires.find(w => w.word === targetWord)?.color ?? targetWord).toUpperCase();
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowInstruction(true), 550);
-    return () => clearTimeout(t);
-  }, []);
-
-  const handleCut = useCallback((idx: number) => {
-    if (done.current || cutIdx !== null || wrongIdx !== null) return;
-    if (wires[idx].word === targetWord) {
-      done.current = true;
-      setCutIdx(idx);
-      bombSounds.wireSlice();
-      setTimeout(onComplete, 750);
-    } else {
-      setWrongIdx(idx);
-      bombSounds.wireWrong();
-      setTimeout(() => setWrongIdx(null), 600);
-      onPunishment();
-    }
-  }, [wires, targetWord, onComplete, onPunishment, cutIdx, wrongIdx]);
-
-  return (
-    <div className="bomb-action-wire">
-      <div className={`wire-instruction ${showInstruction ? "wire-instruction-visible" : ""}`}>
-        {phraseB.current
-          ? <>CUT THE <span className="wire-target-word">{targetColor}</span> WIRE</>
-          : <>CUT THE WIRE WITH THE COLOR <span className="wire-target-word">{targetColor}</span></>
-        }
-      </div>
-      <div className="wire-grid" style={{ gridTemplateColumns: `repeat(${wires.length}, 1fr)` }}>
-        {wires.map((wire, idx) => {
-          const neon = WIRE_COLOR_MAP[wire.color] ?? "#ffffff";
-          const isCut = cutIdx === idx;
-          const isWrong = wrongIdx === idx;
-          return (
-            <div
-              key={idx}
-              className={`wire-item ${isCut ? "wire-cut-correct" : ""} ${isWrong ? "wire-cut-wrong" : ""}`}
-              style={{ animationDelay: `${idx * 0.22}s` }}
-              onPointerDown={() => handleCut(idx)}
-            >
-              <div className="wire-connector wire-top-connector" style={{ background: neon, boxShadow: `0 0 8px ${neon}` }} />
-              <div className="wire-cable" style={{
-                background: `linear-gradient(180deg, ${neon}cc 0%, ${neon} 50%, ${neon}cc 100%)`,
-                boxShadow: `0 0 10px ${neon}88, 0 0 20px ${neon}44`,
-              }}>
-                {isCut && (
-                  <>
-                    <div className="wire-cut-top" style={{ background: neon, boxShadow: `0 0 10px ${neon}` }} />
-                    <div className="wire-cut-bottom" style={{ background: neon, boxShadow: `0 0 10px ${neon}` }} />
-                    <div className="wire-spark-burst" style={{ color: neon }}>✦</div>
-                  </>
-                )}
-              </div>
-              <div className="wire-label-chip" style={{ borderColor: neon, color: neon, textShadow: `0 0 8px ${neon}` }}>
-                {wire.word}
-              </div>
-              <div className="wire-connector wire-bot-connector" style={{ background: neon, boxShadow: `0 0 8px ${neon}` }} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /* ── Watch Challenge (spectator live view) ── */
 function WatchChallenge({ action, progress }: { action: BombAction; progress: InputProgress | null }) {
   if (action.type === "tap") {
@@ -808,12 +802,15 @@ function WatchChallenge({ action, progress }: { action: BombAction; progress: In
     );
   }
   if (action.type === "wire") {
+    const accentColor = WIRE_LABEL_CSS[action.target] ?? "#fff";
     return (
       <div className="watch-challenge-content">
         <span className="watch-challenge-type">CUT THE WIRE</span>
-        <span className="watch-challenge-value">"{action.targetWord}"</span>
+        <span className="watch-challenge-value" style={{ color: accentColor, textShadow: `0 0 12px ${accentColor}` }}>
+          {action.target.toUpperCase()}
+        </span>
         <span className="watch-challenge-type" style={{ fontSize: "0.6rem", opacity: 0.6 }}>
-          {action.wires.length} WIRES
+          BY {action.taskType.toUpperCase()}
         </span>
       </div>
     );
@@ -1047,8 +1044,9 @@ export default function BombGame({
                         )}
                         {action.type === "wire" && (
                           <CutWireAction
-                            wires={action.wires}
-                            targetWord={action.targetWord}
+                            words={action.words}
+                            taskType={action.taskType}
+                            target={action.target}
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
                           />

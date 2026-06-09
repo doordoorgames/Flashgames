@@ -9,7 +9,7 @@ interface BombPlayer {
 
 interface TapAction    { type: "tap";     required: number; }
 interface CodeAction   { type: "code";    digits: string; direction: "ltr" | "rtl"; }
-interface WireAction   { type: "wire";    wires: Array<{ color: string; word: string }>; targetWord: string; }
+interface WireAction   { type: "wire";    words: string[]; taskType: "color" | "word"; target: string; }
 interface CountryAction{ type: "country"; target: string; choices: string[]; }
 interface MemoryAction { type: "memory";  letters: string[]; }
 interface ReactorAction{ type: "reactor"; safeMin: number; safeMax: number; startTemp: number; }
@@ -35,21 +35,16 @@ function generateCode(): string {
   return code;
 }
 
-const WIRE_COLORS = ["red", "green", "blue", "yellow", "purple", "orange", "white", "cyan", "pink"];
-const WIRE_WORDS  = ["RED", "GREEN", "BLUE", "YELLOW", "PURPLE", "ORANGE", "WHITE", "CYAN", "PINK"];
+// Fixed physical colors per position (top-left → top-right, bottom-left → bottom-right)
+// These must match the wire positions in the IMG_2019.png image.
+const WIRE_PHYSICAL = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange"] as const;
 
 function generateWireAction(): WireAction {
-  const count = 4 + Math.floor(Math.random() * 3); // 4, 5, or 6
-  // Pick `count` unique words
-  const shuffledWords = [...WIRE_WORDS].sort(() => Math.random() - 0.5).slice(0, count);
-  // Pick one as the target
-  const targetWord = shuffledWords[Math.floor(Math.random() * shuffledWords.length)];
-  // Assign random colors independently — wire color ≠ wire word by design (misleading)
-  const wires = shuffledWords.map(word => {
-    const color = WIRE_COLORS[Math.floor(Math.random() * WIRE_COLORS.length)];
-    return { color, word };
-  });
-  return { type: "wire", wires, targetWord };
+  // Shuffle physical color names as tape-label words (Stroop: label ≠ physical color)
+  const words = [...WIRE_PHYSICAL].sort(() => Math.random() - 0.5);
+  const taskType: "color" | "word" = Math.random() < 0.5 ? "color" : "word";
+  const target = WIRE_PHYSICAL[Math.floor(Math.random() * WIRE_PHYSICAL.length)];
+  return { type: "wire", words, taskType, target };
 }
 
 const COUNTRY_POOL = [

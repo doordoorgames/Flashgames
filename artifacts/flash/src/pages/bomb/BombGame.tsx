@@ -416,9 +416,10 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
   const hasEnteredSafe = useRef(false);
   const outsideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insideTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mirrors temp state so timer callbacks can read the current value without stale closures
+  const tempRef = useRef(startTemp);
 
   // Stable refs so timer callbacks never capture stale closures
-  // (avoids the glitch where new fn references re-run the effect and reset timers)
   const onCompleteRef   = useRef(onComplete);
   const onPunishmentRef = useRef(onPunishment);
   useEffect(() => { onCompleteRef.current   = onComplete;   }, [onComplete]);
@@ -436,6 +437,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
   // Win / lose timers — lose only activates after player reaches safe zone first
   // NOTE: onComplete / onPunishment intentionally NOT in deps — use refs instead
   useEffect(() => {
+    tempRef.current = temp; // keep ref in sync for use inside timer callbacks
     if (done.current) return;
     const inSafe = temp >= safeMin && temp <= safeMax;
     if (inSafe) {
@@ -452,7 +454,18 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
       // only penalise after player has first reached safe zone
       if (hasEnteredSafe.current && !outsideTimer.current) {
         outsideTimer.current = setTimeout(() => {
-          if (!done.current) { done.current = true; bombSounds.reactorWrong(); setTimeout(() => onPunishmentRef.current(), 200); }
+          if (!done.current) {
+            // If player managed to get back into the safe zone before the 3s expired, pass instead of punish
+            const stillInSafe = tempRef.current >= safeMin && tempRef.current <= safeMax;
+            done.current = true;
+            if (stillInSafe) {
+              bombSounds.reactorCorrect();
+              setTimeout(() => onCompleteRef.current(), 500);
+            } else {
+              bombSounds.reactorWrong();
+              setTimeout(() => onPunishmentRef.current(), 200);
+            }
+          }
           outsideTimer.current = null;
         }, 3000);
       }
@@ -500,7 +513,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
           </div>
           <div className="reactor-sweet-label" style={{ bottom: `${(safeMin + safeMax) / 2}%` }}>
             <span className="reactor-sweet-arrow">◄</span>
-            <div className="reactor-plaster">keep here<br/>10 sec!</div>
+            <div className="reactor-plaster">MAKE IT<br/>STAY HERE</div>
           </div>
         </div>
         <div className="reactor-temp-big" style={{ color: fillColor }}>{temp}°</div>

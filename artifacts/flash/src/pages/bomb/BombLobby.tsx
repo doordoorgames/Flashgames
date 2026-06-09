@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import RoomJoinQR from "@/components/RoomJoinQR";
 import FloatingStartBtn from "@/components/FloatingStartBtn";
 
@@ -18,7 +19,27 @@ interface Props {
   onBack: () => void;
 }
 
+const SUPABASE_BASE = "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/backgrounds";
+const COUNTRY_NAMES = [
+  "Italy","Japan","United Kingdom","India","Australia",
+  "United States","Canada","China","Brazil","Mexico",
+  "South Africa","France","Spain","Madagascar","Greenland",
+  "Argentina","Chile","New Zealand","Saudi Arabia","Egypt",
+];
+const BOMB_PRELOAD_URLS = [
+  `${SUPABASE_BASE}/IMG_2019.png`,
+  ...COUNTRY_NAMES.map(c => `${SUPABASE_BASE}/${encodeURIComponent(c)}.jpeg`),
+];
+
 export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, onStartGame, onBack }: Props) {
+  // Silently prefetch all game images while players are entering nicknames in the lobby
+  useEffect(() => {
+    BOMB_PRELOAD_URLS.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, []);
+
   return (
     <div className="bomb-crt-device">
       <div className="screen-safe-area">

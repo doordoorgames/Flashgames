@@ -27,7 +27,7 @@ const COUNTRY_NAMES = [
   "Argentina","Chile","New Zealand","Saudi Arabia","Egypt",
 ];
 const BOMB_PRELOAD_URLS = [
-  `${SUPABASE_BASE}/IMG_2019.png`,
+  `${SUPABASE_BASE}/Wires.png`,
   ...COUNTRY_NAMES.map(c => `${SUPABASE_BASE}/${encodeURIComponent(c)}.jpeg`),
 ];
 

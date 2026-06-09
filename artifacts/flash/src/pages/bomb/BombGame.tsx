@@ -49,7 +49,7 @@ const WIRE_LABEL_CSS: Record<string, string> = {
   Red: "#ff3344", Blue: "#3388ff", Green: "#00ff88",
   Yellow: "#ffee00", Purple: "#cc44ff", Orange: "#ff8800",
 };
-const WIRE_IMAGE = "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/backgrounds/IMG_2019.png";
+const WIRE_IMAGE = "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/backgrounds/Wires.png";
 
 /* ── Mute Button ── */
 function MuteButton() {

@@ -53,10 +53,10 @@ function generateWireAction(): WireAction {
 }
 
 const COUNTRY_POOL = [
-  "Russia", "Oman", "Congo", "Brazil", "Japan", "Canada", "Saudi Arabia",
-  "India", "Egypt", "Argentina", "Australia", "Mexico", "Turkey", "France",
-  "Italy", "China", "South Korea", "South Africa", "Norway", "Germany",
-  "Chile", "USA", "Peru", "Colombia",
+  "Italy", "Japan", "United Kingdom", "India", "Australia",
+  "United States", "Canada", "China", "Brazil", "Mexico",
+  "South Africa", "France", "Spain", "Madagascar", "Greenland",
+  "Argentina", "Chile", "New Zealand", "Saudi Arabia", "Egypt",
 ];
 
 function generateCountryAction(): CountryAction {

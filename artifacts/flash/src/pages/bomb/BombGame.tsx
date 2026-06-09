@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { bombSounds } from "./BombSounds";
-import { COUNTRY_PATHS } from "./CountrySilhouettes";
+const SUPABASE_MAP_BASE = "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/backgrounds";
+function countryMapUrl(name: string) { return `${SUPABASE_MAP_BASE}/${encodeURIComponent(name)}.jpeg`; }
 
 export interface BombPlayer {
   id: string;
@@ -598,35 +599,6 @@ function CodeAction({ digits, direction, onComplete, onPunishment, onProgress }:
   );
 }
 
-/* ── Country Silhouette SVG ── */
-function CountryShape({ country }: { country: string }) {
-  const path = COUNTRY_PATHS[country];
-  const id = `cg-${country.replace(/\s+/g, "-")}`;
-  return (
-    <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ overflow: "visible" }}>
-      <defs>
-        <filter id={id} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      {path ? (
-        <path
-          d={path}
-          fill="rgba(0,255,200,0.14)"
-          stroke="#00ffc8"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          filter={`url(#${id})`}
-          className="country-silhouette-path"
-        />
-      ) : (
-        <rect x="15" y="15" width="70" height="70" fill="rgba(0,255,200,0.1)" stroke="#00ffc8" strokeWidth="1.5" />
-      )}
-    </svg>
-  );
-}
-
 /* ── Ask Country Action ── */
 function AskCountryAction({ target, choices, onComplete, onPunishment }: {
   target: string;
@@ -676,17 +648,22 @@ function AskCountryAction({ target, choices, onComplete, onPunishment }: {
       <div className="country-grid">
         {choices.map((country, idx) => {
           const isCorrect = result?.idx === idx && result.correct;
-          const isWrong = result?.idx === idx && !result.correct;
+          const isWrong   = result?.idx === idx && !result.correct;
           return (
             <div
               key={country}
               className={`country-card ${isCorrect ? "country-card-correct" : ""} ${isWrong ? "country-card-wrong" : ""}`}
               onPointerDown={() => handleChoice(country, idx)}
             >
-              <div className="country-svg-wrap">
-                <CountryShape country={country} />
+              <div className="country-map-wrap">
+                <img
+                  src={countryMapUrl(country)}
+                  alt=""
+                  className="country-map-img"
+                  draggable={false}
+                />
+                <div className="country-crt-overlay" />
               </div>
-              <div className="country-label">{country}</div>
             </div>
           );
         })}

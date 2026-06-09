@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Press+Start+2P&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -4121,17 +4121,48 @@ html, body, #root {
 }
 .bomb-explode-icon { font-size: 3rem; animation: explode-icon 0.5s ease-out; }
 @keyframes explode-icon { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-.bomb-explode-title {
-  font-size: 1.4rem;
-  font-weight: 900;
-  color: #ff2200;
-  margin: 0;
-  font-family: 'Bebas Neue', monospace;
-  letter-spacing: 0.18em;
-  text-shadow: 0 0 14px rgba(255,34,0,0.6);
+/* RIP pixelated 90s block */
+.bomb-rip-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 8px;
+}
+.bomb-rip-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 2.2rem;
+  color: #ffffff;
+  /* thick pixel shadow: offset in 4 directions + down-right drop */
+  text-shadow:
+    3px 3px 0 #000,
+    -2px  2px 0 #000,
+     2px -2px 0 #000,
+    -2px -2px 0 #000,
+     5px  5px 0 #000;
+  letter-spacing: 0.12em;
+  animation: rip-pulse 2s steps(1) infinite;
+}
+@keyframes rip-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.82; }
+}
+.bomb-rip-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  color: #ffffff;
+  text-shadow:
+    2px 2px 0 #000,
+    -1px  1px 0 #000,
+     1px -1px 0 #000,
+    -1px -1px 0 #000,
+     3px  3px 0 #000;
+  letter-spacing: 0.06em;
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.6;
 }
 .bomb-explode-sub { font-size: 0.68rem; color: rgba(255,200,180,0.55); margin: 0; letter-spacing: 0.08em; text-transform: uppercase; }
-.bomb-explode-sub strong { color: rgba(255,200,180,0.85); }
 .bomb-score-list { display: flex; flex-direction: column; gap: 5px; }
 .bomb-score-row {
   display: flex;

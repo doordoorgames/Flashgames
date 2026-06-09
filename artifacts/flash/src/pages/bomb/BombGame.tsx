@@ -952,11 +952,12 @@ export default function BombGame({
             <div className="bomb-explode-screen">
               <div className="bomb-explode-card">
                 <div className="bomb-explode-icon">[!]</div>
-                <h2 className="bomb-explode-title">
-                  {playerId === loserId ? "YOU HELD THE BOMB" : "DETONATED"}
-                </h2>
+                <div className="bomb-rip-block">
+                  <div className="bomb-rip-text">RIP</div>
+                  <div className="bomb-rip-name">"{loserName}"</div>
+                </div>
                 <p className="bomb-explode-sub">
-                  <strong>{loserName}</strong> was holding the bomb when it detonated
+                  was holding the bomb when it detonated
                 </p>
                 <div className="bomb-score-list">
                   {[...players].sort((a, b) => a.losses - b.losses).map((p, i) => (

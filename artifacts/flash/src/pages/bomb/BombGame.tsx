@@ -663,26 +663,22 @@ function CutWireAction({ words, taskType, target, onComplete, onPunishment }: {
           : <>CUT THE WIRE THAT SAYS{" "}<span className="wire-target-word" style={{ color: accentColor, textShadow: `0 0 16px ${accentColor}` }}>{target.toUpperCase()}</span></>
         }
       </div>
+      {/* Full image — no cropping, natural proportions, object-fit: contain */}
       <div className="wire-image-container">
         <img src={WIRE_IMAGE} alt="" className="wire-bg-img" draggable={false} />
-        <div className="wire-tap-grid">
-          {words.map((word, idx) => {
-            const isCorrect = tappedIdx === idx;
-            const isWrong   = wrongIdx  === idx;
-            const wColor = WIRE_LABEL_CSS[word] ?? "#ffffff";
-            return (
-              <div
-                key={idx}
-                className={`wire-tap-cell${isCorrect ? " wire-tap-correct" : ""}${isWrong ? " wire-tap-wrong" : ""}`}
-                onPointerDown={() => handleTap(idx)}
-              >
-                <span className="wire-tap-label" style={{ color: wColor, textShadow: `0 0 10px ${wColor}88` }}>
-                  {word.toUpperCase()}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        {/* 6 invisible hitboxes, percentage-positioned over the actual wire bundles.
+            Top row (0-2): Red / Blue / Green  |  Bottom row (3-5): Yellow / Purple / Orange */}
+        {[0, 1, 2, 3, 4, 5].map(idx => {
+          const isCorrect = tappedIdx === idx;
+          const isWrong   = wrongIdx  === idx;
+          return (
+            <div
+              key={idx}
+              className={`wire-hitbox wire-hitbox-${idx}${isCorrect ? " wire-hitbox-correct" : ""}${isWrong ? " wire-hitbox-wrong" : ""}`}
+              onPointerDown={() => handleTap(idx)}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -1,0 +1,61 @@
+Fix the Bomb game “Cut the Wire” task.
+
+Current problem:
+The wire image is cropped inside a viewing box. Do NOT crop it. Do NOT put the image inside another framed picture box. The full uploaded bomb image must appear, because the important clickable wires are in the top third and bottom third.
+
+Image display:
+- Use the full Supabase image.
+- Show the full image from top to bottom.
+- Use object-fit: contain, not cover.
+- No cropping.
+- The image should scale to mobile width while keeping its original vertical proportion.
+- Remove any extra inner frame/container that cuts off the top or bottom wires.
+
+Tap/click areas:
+Create 6 accurate invisible hitboxes directly over the 6 wire bundles:
+1. Top left = red wire
+2. Top middle = blue wire
+3. Top right = green wire
+4. Bottom left = yellow wire
+5. Bottom middle = purple wire
+6. Bottom right = orange wire
+
+The player should tap the actual wire location, not floating labels.
+Remove the floating labels from the image area.
+
+Task logic:
+There are 12 possible prompts.
+
+COLOR prompts:
+- Cut the red wire
+- Cut the blue wire
+- Cut the green wire
+- Cut the yellow wire
+- Cut the purple wire
+- Cut the orange wire
+
+WORD prompts:
+- Cut the wire that says RED
+- Cut the wire that says BLUE
+- Cut the wire that says GREEN
+- Cut the wire that says YELLOW
+- Cut the wire that says PURPLE
+- Cut the wire that says ORANGE
+
+Important logic:
+- If prompt says “Cut the red wire”, correct answer = physical red wire.
+- If prompt says “Cut the wire that says RED”, correct answer = the wire/tape with the word RED written on it.
+- These are different challenge types. Do not mix them.
+
+Make the answer mapping explicit in code:
+red wire = top left
+blue wire = top middle
+green wire = top right
+yellow wire = bottom left
+purple wire = bottom middle
+orange wire = bottom right
+
+For the WORD version, map the written word to the correct wire position based on the uploaded final image.
+
+The hitboxes must resize correctly with the image on all phones.
+Use percentage-based coordinates relative to the image, not fixed pixels.

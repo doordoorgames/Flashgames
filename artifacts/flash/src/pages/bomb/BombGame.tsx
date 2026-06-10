@@ -404,12 +404,13 @@ function MemoryScramble({ letters, onComplete, onPunishment }: {
 /* ── Reactor Temperature Control ── */
 const REACTOR_DELTAS = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
 
-function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment }: {
+function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment, onSafeChange }: {
   safeMin: number;
   safeMax: number;
   startTemp: number;
   onComplete: () => void;
   onPunishment: () => void;
+  onSafeChange?: (inSafe: boolean) => void;
 }) {
   const [temp, setTemp] = useState(startTemp);
   const done = useRef(false);
@@ -440,6 +441,7 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment 
     tempRef.current = temp; // keep ref in sync for use inside timer callbacks
     if (done.current) return;
     const inSafe = temp >= safeMin && temp <= safeMax;
+    onSafeChange?.(inSafe); // let parent know current safe status for challenge-timer expiry
     if (inSafe) {
       hasEnteredSafe.current = true;
       if (outsideTimer.current) { clearTimeout(outsideTimer.current); outsideTimer.current = null; }
@@ -866,6 +868,8 @@ export default function BombGame({
   const isGlitchingRef = useRef(false);
   const glitchTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickStageRef = useRef(-1);
+  // Tracks reactor safe state so the challenge-timer expiry can pass instead of punish
+  const reactorInSafeRef = useRef(false);
 
   const isHolder = playerId === bombHolderId;
   const holder = players.find(p => p.id === bombHolderId);
@@ -941,6 +945,17 @@ export default function BombGame({
     setTimeout(() => setCompletionGlitch(false), 700);
   }, []);
 
+  // For the reactor task: if the challenge timer runs out while the gauge is in the
+  // green zone, treat it as a success instead of punishing the player.
+  const handleChallengeExpire = useCallback(() => {
+    if (action?.type === "reactor" && reactorInSafeRef.current) {
+      bombSounds.reactorCorrect();
+      setTimeout(() => onCompleteAction(), 500);
+    } else {
+      triggerPunishment();
+    }
+  }, [action?.type, onCompleteAction, triggerPunishment]);
+
   const timerClass = globalPct < 0.25 ? "bomb-timer-crit" : globalPct < 0.5 ? "bomb-timer-warn" : "";
   const isWatching = !isHolder && gamePhase !== "exploded";
 
@@ -1015,7 +1030,7 @@ export default function BombGame({
                       <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
                         <ChallengeTimer
                           timeLimit={Math.max(1, 16 - penaltyCount)}
-                          onExpire={triggerPunishment}
+                          onExpire={handleChallengeExpire}
                           penaltyCount={penaltyCount}
                         />
                         {action.type === "tap" && (
@@ -1041,6 +1056,7 @@ export default function BombGame({
                             startTemp={action.startTemp}
                             onComplete={onCompleteAction}
                             onPunishment={triggerPunishment}
+                            onSafeChange={(s) => { reactorInSafeRef.current = s; }}
                           />
                         )}
                         {action.type === "code" && (

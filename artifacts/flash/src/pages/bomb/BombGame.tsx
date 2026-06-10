@@ -998,17 +998,20 @@ export default function BombGame({
             </div>
           ) : (
             <>
-              <div className="bomb-top-bar">
-                <div className="bomb-player-strip">
-                  {players.map(p => (
-                    <div key={p.id} className={`bomb-player-pill ${p.id === bombHolderId ? "bomb-pill-active" : ""} ${p.id === playerId ? "bomb-pill-me" : ""}`}>
-                      {p.id === bombHolderId && <span className="bomb-pill-icon">◉</span>}
-                      <span>{p.name.toUpperCase()}</span>
-                      {p.losses > 0 && <span className="bomb-pill-losses">×{p.losses}</span>}
-                    </div>
-                  ))}
+              {/* Hide player names during wire task — full image needs all the space */}
+              {action?.type !== "wire" && (
+                <div className="bomb-top-bar">
+                  <div className="bomb-player-strip">
+                    {players.map(p => (
+                      <div key={p.id} className={`bomb-player-pill ${p.id === bombHolderId ? "bomb-pill-active" : ""} ${p.id === playerId ? "bomb-pill-me" : ""}`}>
+                        {p.id === bombHolderId && <span className="bomb-pill-icon">◉</span>}
+                        <span>{p.name.toUpperCase()}</span>
+                        {p.losses > 0 && <span className="bomb-pill-losses">×{p.losses}</span>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {isHolder ? (
                 <div className="bomb-holder-zone">
@@ -1022,17 +1025,23 @@ export default function BombGame({
                   <div className="bomb-play-container">
                     <div className="bomb-corners" aria-hidden="true" />
                     {isGlitching && <PunishmentOverlay countdown={glitchCountdown} />}
-                    <div className="bomb-visual">
-                      <div className={`bomb-body ${timerClass}`}>◉</div>
-                      <div className="bomb-fuse-text">// ARMED //</div>
-                    </div>
+                    {/* Hide bomb body + fuse text during wire task to reclaim vertical space */}
+                    {action?.type !== "wire" && (
+                      <div className="bomb-visual">
+                        <div className={`bomb-body ${timerClass}`}>◉</div>
+                        <div className="bomb-fuse-text">// ARMED //</div>
+                      </div>
+                    )}
                     {!isBriefing && !isGlitching && (
                       <div className="bomb-action-zone" key={`${bombHolderId}-${challengeAttempt}`}>
-                        <ChallengeTimer
-                          timeLimit={Math.max(1, 16 - penaltyCount)}
-                          onExpire={handleChallengeExpire}
-                          penaltyCount={penaltyCount}
-                        />
+                        {/* Hide challenge timer during wire task */}
+                        {action?.type !== "wire" && (
+                          <ChallengeTimer
+                            timeLimit={Math.max(1, 16 - penaltyCount)}
+                            onExpire={handleChallengeExpire}
+                            penaltyCount={penaltyCount}
+                          />
+                        )}
                         {action.type === "tap" && (
                           <TapAction
                             required={action.required}

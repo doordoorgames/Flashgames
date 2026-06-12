@@ -76,13 +76,15 @@ const REACTOR_CONTROLS_POOL = [
 ];
 
 function generateReactorAction(): ReactorAction {
-  const safeMin = 32 + Math.floor(Math.random() * 22);
-  const safeMax = Math.min(safeMin + 10 + Math.floor(Math.random() * 6), 88);
-  const startOutside = Math.random() < 0.55;
-  let startTemp: number;
-  void startOutside;
-  startTemp = 0;
-  return { type: "reactor", safeMin, safeMax, startTemp };
+  // Sweet spot appears in one of three zones so it's sometimes very low,
+  // sometimes dead centre, and sometimes very high on the gauge.
+  const zone = Math.floor(Math.random() * 3);
+  const safeMin =
+    zone === 0 ? 8  + Math.floor(Math.random() * 14) :  // low:    8–21
+    zone === 1 ? 38 + Math.floor(Math.random() * 18) :  // centre: 38–55
+                 65 + Math.floor(Math.random() * 14);   // high:   65–78
+  const safeMax = Math.min(safeMin + 10 + Math.floor(Math.random() * 6), 94);
+  return { type: "reactor", safeMin, safeMax, startTemp: 0 };
 }
 
 function generateAction(): BombAction {

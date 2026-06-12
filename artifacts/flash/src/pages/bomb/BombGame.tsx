@@ -426,13 +426,24 @@ function ReactorControl({ safeMin, safeMax, startTemp, onComplete, onPunishment,
   useEffect(() => { onCompleteRef.current   = onComplete;   }, [onComplete]);
   useEffect(() => { onPunishmentRef.current = onPunishment; }, [onPunishment]);
 
-  // Steady cooling: −1 degree every 0.5s
+  // Chaotic drift: random up/down, random size, random timing — player must fight it
   useEffect(() => {
-    const iv = setInterval(() => {
-      if (done.current) return;
-      setTemp(prev => Math.max(0, prev - 1));
-    }, 500);
-    return () => clearInterval(iv);
+    let cancelled = false;
+    function tick() {
+      if (cancelled || done.current) return;
+      setTemp(prev => {
+        const dir = Math.random() < 0.5 ? 1 : -1;
+        // 15 % chance of a big surge (5–9), otherwise a small nudge (1–4)
+        const mag = Math.random() < 0.15
+          ? 5 + Math.floor(Math.random() * 5)
+          : 1 + Math.floor(Math.random() * 4);
+        return Math.min(99, Math.max(0, prev + dir * mag));
+      });
+      // Next tick in 150–450 ms — unpredictable rhythm
+      setTimeout(tick, 150 + Math.floor(Math.random() * 300));
+    }
+    tick();
+    return () => { cancelled = true; };
   }, []);
 
   // Win / lose timers — lose only activates after player reaches safe zone first

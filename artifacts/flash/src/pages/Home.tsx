@@ -8,7 +8,7 @@ export default function Home({ onCreateGame, onJoinGame, onBack }: HomeProps) {
   return (
     <div className="home-screen">
       <div className="home-inner">
-        {onBack && <button className="back-btn" style={{ alignSelf: "flex-start" }} onClick={onBack}>← Games</button>}
+        {onBack && <button className="back-btn" style={{ alignSelf: "flex-start" }} onClick={onBack}>← Back to Dordor.games</button>}
         <div className="home-logo">
           <span className="logo-flash">Flash</span>
           <span className="logo-sep">/</span>

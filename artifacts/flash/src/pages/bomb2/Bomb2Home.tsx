@@ -50,7 +50,7 @@ export default function Bomb2Home({ onBack, onJoined, initialCode = "" }: Props)
           <div className="b2-reactor-ring b2-ring-3" />
           <div className="b2-entry-card">
             <button className="b2-back-btn" onClick={sub === "choose" ? onBack : () => { setSub("choose"); setError(""); }}>
-              ← ABORT
+              {sub === "choose" ? "← Back to Dordor.games" : "← ABORT"}
             </button>
             {sub === "choose" && (
               <div className="b2-entry-choose">

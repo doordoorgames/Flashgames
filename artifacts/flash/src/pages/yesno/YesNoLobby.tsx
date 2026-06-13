@@ -64,7 +64,7 @@ export default function YesNoLobby({ session, lobbyState, errorMsg, onStartGame,
         )}
         {session.isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={!isReady} />}
 
-        <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Change Game</button>
+        <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Back to Dordor.games</button>
       </div>
     </div>
   );

@@ -70,25 +70,22 @@ function FlashApp({ onBack }: { onBack: () => void }) {
   return null;
 }
 
+const goToDordor = () => { window.location.href = "https://dordor.games/"; };
+
 function FlashRoute() {
-  const [, navigate] = useLocation();
-  return <div className="app-root"><FlashApp onBack={() => navigate("/")} /></div>;
+  return <div className="app-root"><FlashApp onBack={goToDordor} /></div>;
 }
 function YesNoRoute() {
-  const [, navigate] = useLocation();
-  return <div className="app-root"><YesNoApp onBack={() => navigate("/")} /></div>;
+  return <div className="app-root"><YesNoApp onBack={goToDordor} /></div>;
 }
 function BombRoute() {
-  const [, navigate] = useLocation();
-  return <div className="app-root"><BombApp onBack={() => navigate("/")} /></div>;
+  return <div className="app-root"><BombApp onBack={goToDordor} /></div>;
 }
 function ReactorRoute() {
-  const [, navigate] = useLocation();
-  return <div className="app-root"><Bomb2App onBack={() => navigate("/")} /></div>;
+  return <div className="app-root"><Bomb2App onBack={goToDordor} /></div>;
 }
 function DotsRoute() {
-  const [, navigate] = useLocation();
-  return <div className="app-root"><DotsApp onBack={() => navigate("/")} /></div>;
+  return <div className="app-root"><DotsApp onBack={goToDordor} /></div>;
 }
 
 export default function App() {

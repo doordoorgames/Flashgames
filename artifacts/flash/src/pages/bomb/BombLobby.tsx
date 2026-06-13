@@ -82,7 +82,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
             )}
             {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={players.length < 2} />}
 
-            <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Change Game</button>
+            <button className="back-btn" style={{ marginTop: 12 }} onClick={onBack}>← Back to Dordor.games</button>
           </div>
         </div>
       </div>

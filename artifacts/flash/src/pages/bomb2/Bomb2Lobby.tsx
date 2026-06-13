@@ -22,7 +22,7 @@ export default function Bomb2Lobby({ code, playerId, isAdmin, players, errorMsg,
           <div className="b2-reactor-ring b2-ring-1" />
           <div className="b2-reactor-ring b2-ring-2" />
           <div className="b2-lobby-card">
-            <button className="b2-back-btn" onClick={onBack}>← ABORT</button>
+            <button className="b2-back-btn" onClick={onBack}>← Back to Dordor.games</button>
             <div className="b2-lobby-header">
               <span className="b2-lobby-icon">☢</span>
               <h1 className="b2-lobby-title">REACTOR ONLINE</h1>

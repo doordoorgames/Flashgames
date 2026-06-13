@@ -44,7 +44,9 @@ export default function YesNoHome({ onBack, onJoined, initialCode = "" }: Props)
   return (
     <div className="yn-entry-screen">
       <div className="yn-entry-card">
-        <button className="back-btn" onClick={sub === "choose" ? onBack : () => { setSub("choose"); setError(""); }}>← Back</button>
+        <button className="back-btn" onClick={sub === "choose" ? onBack : () => { setSub("choose"); setError(""); }}>
+          {sub === "choose" ? "← Back to Dordor.games" : "← Back"}
+        </button>
 
         {sub === "choose" && (
           <>

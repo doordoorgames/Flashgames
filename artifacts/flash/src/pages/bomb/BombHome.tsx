@@ -47,7 +47,9 @@ export default function BombHome({ onBack, onJoined, initialCode = "" }: Props) 
       <div className="screen-safe-area">
         <div className="bomb-screen-content bomb-screen-centered">
           <div className="bomb-entry-card">
-            <button className="back-btn" onClick={sub === "choose" ? onBack : () => { setSub("choose"); setError(""); }}>← Back</button>
+            <button className="back-btn" onClick={sub === "choose" ? onBack : () => { setSub("choose"); setError(""); }}>
+              {sub === "choose" ? "← Back to Dordor.games" : "← Back"}
+            </button>
 
             {sub === "choose" && (
               <>

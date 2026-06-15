@@ -79,7 +79,7 @@ export default function DotsResults({
             </button>
           )}
           <button className="back-btn" style={{ marginTop: 8 }} onClick={onBack}>
-            ← Change Game
+            ← Back to Dordor.games
           </button>
         </div>
       </div>

@@ -78,7 +78,7 @@ export default function DotsLobby({ code, playerId, isAdmin, players, onStartGam
         {isAdmin && <FloatingStartBtn onClick={onStartGame} disabled={!ready} />}
 
         <button className="nawafeth-back-btn" style={{ marginTop: 8 }} onClick={onBack}>
-          ← Change Game
+          ← Back to Dordor.games
         </button>
       </div>
     </div>

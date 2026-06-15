@@ -61,7 +61,7 @@ export default function DotsHome({ initialCode = "", onCreated, onJoined, onBack
       <div className="nawafeth-content">
         {onBack && (
           <button className="nawafeth-back-btn" onClick={onBack}>
-            ← Games
+            ← Back to Dordor.games
           </button>
         )}
 

@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const TRACTOR_URL =
-  "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/Flash/Tractor.jpeg";
-const BIRDS_URL =
-  "https://qvzxjtyvbfexuhmmqbzl.supabase.co/storage/v1/object/public/Flash/Birds.png";
+const TRACTOR_URL = "/tractor.jpeg";
+const BIRDS_URL = "/birds.png";
 
 const TRACTOR_ANIM_MS = 9000;
 const BIRDS_ANIM_MS = 7000;

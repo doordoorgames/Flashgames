@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const TRACTOR_URL = "/tractor.jpeg";
+const TRACTOR_URL = "/tractor.png";
 const BIRDS_URL = "/birds.png";
 
 const TRACTOR_ANIM_MS = 9000;

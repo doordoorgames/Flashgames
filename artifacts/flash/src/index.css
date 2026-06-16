@@ -6727,10 +6727,9 @@ html, body, #root {
   animation: ambient-rtl 9s linear forwards;
 }
 .ambient-tractor-wrap img {
-  width: clamp(110px, 16vw, 180px);
-  height: auto;
-  opacity: 0.82;
-  border-radius: 6px;
+  height: 33vh;
+  width: auto;
+  opacity: 0.92;
   display: block;
 }
 .ambient-tractor-wrap.dir-rtl img {
@@ -6750,9 +6749,9 @@ html, body, #root {
   animation: ambient-rtl 7s linear forwards;
 }
 .ambient-birds-wrap img {
-  width: clamp(90px, 13vw, 150px);
-  height: auto;
-  opacity: 0.78;
+  height: 33vh;
+  width: auto;
+  opacity: 0.88;
   display: block;
 }
 .ambient-birds-wrap.dir-rtl img {

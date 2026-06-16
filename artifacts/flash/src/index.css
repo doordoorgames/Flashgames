@@ -6679,3 +6679,66 @@ html, body, #root {
   from { opacity: 1;   transform: scale(1.15); }
   to   { opacity: 0.1; transform: scale(0.9); }
 }
+
+/* ── Ambient background animations (Flash gameplay only) ─────────────── */
+@keyframes ambient-ltr {
+  from { transform: translateX(-220px); }
+  to   { transform: translateX(calc(100vw + 220px)); }
+}
+@keyframes ambient-rtl {
+  from { transform: translateX(calc(100vw + 220px)); }
+  to   { transform: translateX(-220px); }
+}
+
+.ambient-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.ambient-tractor-wrap {
+  position: absolute;
+  bottom: 7%;
+  left: 0;
+  pointer-events: none;
+}
+.ambient-tractor-wrap.dir-ltr {
+  animation: ambient-ltr 9s linear forwards;
+}
+.ambient-tractor-wrap.dir-rtl {
+  animation: ambient-rtl 9s linear forwards;
+}
+.ambient-tractor-wrap img {
+  width: clamp(110px, 16vw, 180px);
+  height: auto;
+  opacity: 0.82;
+  border-radius: 6px;
+  display: block;
+}
+.ambient-tractor-wrap.dir-rtl img {
+  transform: scaleX(-1);
+}
+
+.ambient-birds-wrap {
+  position: absolute;
+  top: 6%;
+  left: 0;
+  pointer-events: none;
+}
+.ambient-birds-wrap.dir-ltr {
+  animation: ambient-ltr 7s linear forwards;
+}
+.ambient-birds-wrap.dir-rtl {
+  animation: ambient-rtl 7s linear forwards;
+}
+.ambient-birds-wrap img {
+  width: clamp(90px, 13vw, 150px);
+  height: auto;
+  opacity: 0.78;
+  display: block;
+}
+.ambient-birds-wrap.dir-rtl img {
+  transform: scaleX(-1);
+}

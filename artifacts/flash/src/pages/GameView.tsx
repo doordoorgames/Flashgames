@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { GameItem, Player, PlayerAnswer, Difficulty } from "@/lib/types";
 import { getSocket } from "@/lib/socket";
+import AmbientAnimations from "./AmbientAnimations";
 
 interface RoundInfo {
   roundNumber: number;
@@ -196,9 +197,13 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
     return null;
   })();
 
+  const animationsActive = phase === "flash" || phase === "answering";
+
   return (
     <div className="game-screen">
       <img src="/billboard-bg.png" className="game-bg" alt="" />
+
+      <AmbientAnimations active={animationsActive} />
 
       {roundInfo && phase !== "waiting" && (
         <div className="game-hud">

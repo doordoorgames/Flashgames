@@ -197,7 +197,7 @@ export default function GameView({ code, playerId, isAdmin }: GameViewProps) {
     return null;
   })();
 
-  const animationsActive = phase === "flash" || phase === "answering";
+  const animationsActive = phase !== "waiting";
 
   return (
     <div className="game-screen">

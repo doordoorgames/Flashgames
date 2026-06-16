@@ -40,6 +40,8 @@ export default function AmbientAnimations({ active }: Props) {
       return;
     }
 
+    // Don't restart timers if already running (active toggled within same session)
+    if (isActive.current) return;
     isActive.current = true;
 
     const doTractor = () => {
@@ -50,6 +52,7 @@ export default function AmbientAnimations({ active }: Props) {
       tractorAnim.current = setTimeout(() => {
         if (!isActive.current) return;
         setTractorDir(null);
+        // 7–12 seconds between passes
         const delay = (7 + Math.random() * 5) * 1000;
         tractorSchedule.current = setTimeout(doTractor, delay);
       }, TRACTOR_ANIM_MS);
@@ -63,13 +66,15 @@ export default function AmbientAnimations({ active }: Props) {
       birdsAnim.current = setTimeout(() => {
         if (!isActive.current) return;
         setBirdsDir(null);
+        // 6–14 seconds between passes
         const delay = (6 + Math.random() * 8) * 1000;
         birdsSchedule.current = setTimeout(doBirds, delay);
       }, BIRDS_ANIM_MS);
     };
 
-    tractorSchedule.current = setTimeout(doTractor, (7 + Math.random() * 5) * 1000);
-    birdsSchedule.current = setTimeout(doBirds, (6 + Math.random() * 8) * 1000);
+    // First appearance: 3–7 seconds after gameplay starts
+    tractorSchedule.current = setTimeout(doTractor, (3 + Math.random() * 4) * 1000);
+    birdsSchedule.current = setTimeout(doBirds, (2 + Math.random() * 5) * 1000);
 
     return () => {
       isActive.current = false;

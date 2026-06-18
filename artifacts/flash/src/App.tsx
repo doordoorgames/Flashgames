@@ -12,6 +12,7 @@ import YesNoApp from "@/pages/yesno/YesNoApp";
 import BombApp from "@/pages/bomb/BombApp";
 import Bomb2App from "@/pages/bomb2/Bomb2App";
 import DotsApp from "@/pages/dots/DotsApp";
+import NawasitApp from "@/pages/nawasit/NawasitApp";
 import { getSocket } from "@/lib/socket";
 import type { Player } from "@/lib/types";
 
@@ -87,6 +88,9 @@ function ReactorRoute() {
 function DotsRoute() {
   return <div className="app-root"><DotsApp onBack={goToDordor} /></div>;
 }
+function NawasitRoute() {
+  return <div className="app-root"><NawasitApp onBack={goToDordor} /></div>;
+}
 
 export default function App() {
   return (
@@ -98,7 +102,8 @@ export default function App() {
           <Route path="/yesno"   component={YesNoRoute} />
           <Route path="/bomb"    component={BombRoute} />
           <Route path="/reactor" component={ReactorRoute} />
-          <Route path="/dots"    component={DotsRoute} />
+          <Route path="/dots"      component={DotsRoute} />
+          <Route path="/nawasit"  component={NawasitRoute} />
           <Route>
             <div className="app-root">
               <ModeSelect />

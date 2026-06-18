@@ -7,6 +7,7 @@ import { setupYesNoHandlers } from "./game/yesnoHandler.js";
 import { setupBombHandlers } from "./game/bombHandler.js";
 import { setupBomb2Handlers } from "./game/bomb2Handler.js";
 import { setupDotsHandlers } from "./game/dotsHandler.js";
+import { setupNawasitHandlers } from "./game/nawasitHandler.js";
 import { loadConfusionEntries } from "./game/confusionStore.js";
 
 const rawPort = process.env["PORT"];
@@ -38,6 +39,7 @@ setupYesNoHandlers(io);
 setupBombHandlers(io);
 setupBomb2Handlers(io);
 setupDotsHandlers(io);
+setupNawasitHandlers(io);
 
 loadConfusionEntries().catch((err: Error) => {
   console.error(

@@ -64,6 +64,20 @@ export default function ModeSelect() {
             </div>
           </Link>
 
+          <Link href="/nawasit" className="mode-card mode-card-nawasit">
+            <div className="mode-card-icon">🕵️</div>
+            <div className="mode-card-content">
+              <span className="mode-card-name">Nawasit</span>
+              <span className="mode-card-ar">نواصيت</span>
+              <p className="mode-card-desc">1v1 hide-and-seek on a 5×9 grid. Thief steals the jewel. Catcher hunts blind with distance clues.</p>
+              <div className="mode-card-tags">
+                <span className="mode-tag nws-tag">1v1</span>
+                <span className="mode-tag nws-tag">Turn-based</span>
+                <span className="mode-tag nws-tag">Hidden info</span>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/dots" className="mode-card mode-card-dots">
             <div className="mode-card-icon">🎯</div>
             <div className="mode-card-content">

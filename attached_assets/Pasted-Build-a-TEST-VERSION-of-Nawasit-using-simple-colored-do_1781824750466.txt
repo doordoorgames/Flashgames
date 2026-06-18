@@ -1,0 +1,130 @@
+Build a TEST VERSION of Nawasit using simple colored dots only. Do NOT use the existing window tapping mechanic. This is a completely new game mode.
+
+GOAL:
+Create the fastest possible playable prototype so I can test whether the movement and tension are fun before adding art assets.
+
+GRID:
+
+* 5 columns × 9 rows.
+* Columns labeled A-E.
+* Rows labeled 1-9.
+* A1 is bottom-left.
+* E9 is top-right.
+* Display coordinates visibly for testing.
+
+PLAYERS:
+
+1. Thief
+2. Catcher
+
+VISUALS:
+
+* Thief = indigo/purple dot.
+* Catcher = red dot.
+* Jewel = yellow/gold dot.
+* No sprites yet.
+* No animations yet except smooth movement between cells.
+
+STARTING POSITIONS:
+
+* Thief starts on a random edge cell.
+* Jewel starts on a different random edge cell.
+* Jewel must be at least 7 movement spaces away from the thief using Manhattan distance:
+    abs(x1-x2)+abs(y1-y2)
+* Catcher starts on a random edge cell.
+* Catcher cannot start within 3 spaces of the thief.
+
+VISIBILITY RULES:
+
+THIEF SCREEN:
+
+* Sees thief.
+* Sees catcher.
+* Sees jewel.
+
+CATCHER SCREEN:
+
+* Sees catcher.
+* Does NOT see thief.
+* Does NOT see jewel.
+
+MULTIPLAYER:
+
+* Use the existing room system if available.
+* One player is assigned thief.
+* One player is assigned catcher.
+
+MOVEMENT:
+
+THIEF TURN:
+
+* Show D-pad controls:
+    Up
+    Down
+    Left
+    Right
+* Move exactly one square.
+* No diagonal movement.
+* Cannot move outside grid.
+* After moving, control passes to catcher.
+
+CATCHER TURN:
+
+* 7 second timer.
+* Catcher moves exactly one square.
+* No diagonal movement.
+* Cannot move outside grid.
+* If timer expires, catcher automatically skips turn.
+
+DISTANCE FEEDBACK:
+
+After every catcher move:
+
+Distance 0:
+“CAUGHT!”
+
+Distance 1-2:
+“VERY CLOSE”
+
+Distance 3-4:
+“CLOSE”
+
+Distance 5+:
+“FAR”
+
+Only the catcher sees this feedback.
+
+WIN CONDITIONS:
+
+THIEF WINS:
+
+* Lands on jewel cell.
+
+CATCHER WINS:
+
+* Lands on thief cell.
+
+TESTING PANEL:
+
+Add a developer panel showing:
+
+* Thief coordinate.
+* Catcher coordinate.
+* Jewel coordinate.
+* Current distance.
+* Current turn.
+
+Developer panel should be visible only when TEST MODE = true.
+
+UI PRIORITY:
+Function over beauty.
+No backgrounds.
+No windows.
+No buildings.
+No artwork.
+No sound.
+No effects.
+
+I only want to test whether the movement loop is fun.
+
+Keep code clean and modular because later I will replace the dots with character sprites and add special abilities.

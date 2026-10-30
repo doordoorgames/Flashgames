@@ -1,0 +1,24 @@
+/* Bomb 3.0 — isolated visual experiment, preserving the original multiplayer game. */
+.bomb-v2{--b2-brass:#d9aa5b;--b2-red:#df4b43;--b2-ink:#121820;position:fixed;inset:0;isolation:isolate;font-family:Georgia,serif}
+.bomb-v2 .bomb-crt-device{background:radial-gradient(ellipse at 50% 28%,#39444b 0%,#192129 42%,#080e14 100%);color:#f6e8cd}
+.bomb-v2 .bomb-crt-device:before{border:2px solid rgba(217,170,91,.24);border-radius:22px;box-shadow:inset 0 0 55px #03070a,0 0 35px #05070b}
+.bomb-v2 .bomb-crt-device:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 96px,rgba(217,170,91,.035) 97px 98px),radial-gradient(ellipse at 50% 110%,rgba(207,79,55,.14),transparent 65%);z-index:1}
+.bomb-v2-masthead{position:fixed;z-index:10;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;white-space:nowrap;color:#d9aa5b;font:700 clamp(9px,2.5vw,13px) Georgia,serif;letter-spacing:.24em;pointer-events:none;text-shadow:0 2px 6px #000}
+.bomb-v2-bolt{color:#e44b42;font-size:20px}
+.bomb-v2 .bomb-entry-card,.bomb-v2 .bomb-lobby-card{background:linear-gradient(145deg,#28323a,#11191e);border:3px solid #a27b47;border-radius:25px;max-width:410px;padding:clamp(18px,5vw,32px);box-shadow:0 20px 65px #000a,inset 0 0 0 3px #141d23,inset 0 0 0 5px #4e4537}
+.bomb-v2 .bomb-entry-title{font-family:Georgia,serif;letter-spacing:.04em;color:#f8dfaa;font-size:clamp(30px,7vw,42px);text-shadow:0 3px 0 #523524}
+.bomb-v2 .bomb-entry-desc{color:#d8d1c3;line-height:1.6}
+.bomb-v2 .bomb-entry-icon{display:block;font-size:75px;color:#e45d4d;filter:drop-shadow(0 5px 0 #5d251e);animation:b2-pulse 2.4s ease-in-out infinite}
+.bomb-v2 .bomb-choice-btn,.bomb-v2 .bomb-submit-btn{border:2px solid #bb8d50;border-radius:12px;background:linear-gradient(#e6b76d,#9e632f);color:#1c1510;box-shadow:inset 0 2px 1px #ffe4a3,0 5px 0 #533920,0 10px 18px #0007;font-family:Georgia,serif;font-weight:900;min-height:50px;text-shadow:none;transition:transform .12s,filter .12s}
+.bomb-v2 .bomb-choice-btn:active,.bomb-v2 .bomb-submit-btn:active{transform:translateY(4px);box-shadow:inset 0 2px 5px #533920,0 1px 0 #533920}
+.bomb-v2 .bomb-choice-primary{background:linear-gradient(#f37e65,#b92f2c);border-color:#ffb7a0;color:#fff5e7}
+.bomb-v2 .bomb-input{border:2px solid #8f754f;border-radius:9px;background:#10171c;color:#fff4df;min-height:48px}
+.bomb-v2 .bomb-screen-content{color:#f5e8d0}
+.bomb-v2 .bomb-lobby-brand,.bomb-v2 .bomb-action-label{color:#f6c875!important;text-shadow:0 2px 7px #000!important}
+.bomb-v2 .bomb-tap-btn{border:8px solid #8b302b!important;border-radius:50%!important;background:radial-gradient(circle at 36% 28%,#ff8e78,#c83d37 55%,#762723)!important;box-shadow:inset 0 7px 9px #ffd0b888,0 8px 0 #4c1918,0 16px 25px #0009!important;color:#fff9e9!important;touch-action:manipulation;min-width:100px;min-height:100px}
+.bomb-v2 .bomb-tap-btn:active{transform:translateY(6px) scale(.98);box-shadow:inset 0 5px 15px #4c1918!important}
+.bomb-v2 button:focus-visible,.bomb-v2 input:focus-visible{outline:3px solid #ffe39d;outline-offset:3px}
+.bomb-v2 .screen-safe-area{z-index:2}
+@keyframes b2-pulse{50%{filter:drop-shadow(0 0 18px #ff684a);transform:scale(1.06)}}
+@media(max-width:420px){.bomb-v2 .bomb-entry-card,.bomb-v2 .bomb-lobby-card{max-width:min(94vw,410px);padding:16px}.bomb-v2-masthead{letter-spacing:.08em}}
+@media(prefers-reduced-motion:reduce){.bomb-v2 .bomb-entry-icon{animation:none}.bomb-v2 *{scroll-behavior:auto!important}}

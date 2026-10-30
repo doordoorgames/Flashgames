@@ -11,6 +11,7 @@ import AdminPage from "@/pages/AdminPage";
 import YesNoApp from "@/pages/yesno/YesNoApp";
 import BombApp from "@/pages/bomb/BombApp";
 import Bomb2App from "@/pages/bomb2/Bomb2App";
+import BombV2App from "@/pages/bomb-v2/BombV2App";
 import DotsApp from "@/pages/dots/DotsApp";
 import NawasitApp from "@/pages/nawasit/NawasitApp";
 import { getSocket } from "@/lib/socket";
@@ -82,6 +83,9 @@ function YesNoRoute() {
 function BombRoute() {
   return <div className="app-root"><BombApp onBack={goToDordor} /></div>;
 }
+function BombV2Route() {
+  return <div className="app-root"><BombV2App onBack={goToDordor} /></div>;
+}
 function ReactorRoute() {
   return <div className="app-root"><Bomb2App onBack={goToDordor} /></div>;
 }
@@ -102,6 +106,8 @@ export default function App() {
           <Route path="/yesno"   component={YesNoRoute} />
           <Route path="/bomb"    component={BombRoute} />
           <Route path="/reactor" component={ReactorRoute} />
+          <Route path="/bomb-v3" component={BombV2Route} />
+          <Route path="/bomb-v2" component={BombV2Route} />
           <Route path="/dots"      component={DotsRoute} />
           <Route path="/nawasit"  component={NawasitRoute} />
           <Route>

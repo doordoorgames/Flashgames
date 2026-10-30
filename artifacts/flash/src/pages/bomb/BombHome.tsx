@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getSocket } from "@/lib/socket";
 
 interface Props {
+  gameTitle?: string;
   onBack: () => void;
   onJoined: (code: string, playerId: string, name: string, isAdmin: boolean) => void;
   initialCode?: string;
@@ -9,7 +10,7 @@ interface Props {
 
 type SubPhase = "choose" | "create" | "join";
 
-export default function BombHome({ onBack, onJoined, initialCode = "" }: Props) {
+export default function BombHome({ onBack, onJoined, initialCode = "", gameTitle = "The Bomb" }: Props) {
   const [sub, setSub] = useState<SubPhase>(initialCode ? "join" : "choose");
   const [name, setName] = useState("");
   const [code, setCode] = useState(initialCode);
@@ -55,7 +56,7 @@ export default function BombHome({ onBack, onJoined, initialCode = "" }: Props) 
               <>
                 <div className="bomb-entry-header">
                   <span className="bomb-entry-icon">◉</span>
-                  <span className="bomb-entry-title">The Bomb</span>
+                  <span className="bomb-entry-title">{gameTitle}</span>
                   <p className="bomb-entry-desc">Pass the bomb before it explodes! Complete the challenge fast or you're holding it when time runs out.</p>
                 </div>
                 <div className="bomb-entry-btns">

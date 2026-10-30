@@ -10,6 +10,7 @@ interface BombPlayer {
 }
 
 interface Props {
+  gameTitle?: string;
   code: string;
   playerId: string;
   isAdmin: boolean;
@@ -31,7 +32,7 @@ const BOMB_PRELOAD_URLS = [
   ...COUNTRY_NAMES.map(c => `${SUPABASE_BASE}/${encodeURIComponent(c)}.jpeg`),
 ];
 
-export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, onStartGame, onBack }: Props) {
+export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, onStartGame, onBack, gameTitle = "The Bomb" }: Props) {
   // Silently prefetch all game images while players are entering nicknames in the lobby
   useEffect(() => {
     BOMB_PRELOAD_URLS.forEach(url => {
@@ -45,7 +46,7 @@ export default function BombLobby({ code, playerId, isAdmin, players, errorMsg, 
       <div className="screen-safe-area">
         <div className="bomb-screen-content bomb-screen-centered">
           <div className="bomb-lobby-card">
-            <div className="bomb-lobby-brand">[ THE BOMB ]</div>
+            <div className="bomb-lobby-brand">[ {gameTitle.toUpperCase()} ]</div>
 
             <div className="room-code-display bomb-room-code">
               <p className="rcd-label">Room Code</p>

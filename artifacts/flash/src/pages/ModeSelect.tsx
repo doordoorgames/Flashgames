@@ -5,7 +5,7 @@ export default function ModeSelect() {
     <div className="mode-screen">
       <div className="mode-inner">
         <h1 className="mode-title">Choose Your Game</h1>
-        <p className="mode-sub">Five games, one room code system</p>
+        <p className="mode-sub">Seven games, one room code system</p>
 
         <div className="mode-cards">
           <Link href="/flash" className="mode-card mode-card-flash">
@@ -47,6 +47,16 @@ export default function ModeSelect() {
                 <span className="mode-tag bomb-tag">Hidden timer</span>
                 <span className="mode-tag bomb-tag">Challenges</span>
               </div>
+            </div>
+          </Link>
+
+          <Link href="/bomb-v3" className="mode-card mode-card-bomb" style={{borderColor:"#d9aa5b",background:"linear-gradient(140deg,#273038,#15191d)"}}>
+            <div className="mode-card-icon" aria-hidden="true">⚙</div>
+            <div className="mode-card-content">
+              <span className="mode-card-name" style={{color:"#f5cf88"}}>Bomb 3.0</span>
+              <span className="mode-card-ar">MIDNIGHT WORKSHOP</span>
+              <p className="mode-card-desc">A dangerous little machine with terrible manners. Pass it, beat the challenge, and pray it doesn’t choose you.</p>
+              <div className="mode-card-tags"><span className="mode-tag">Workshop</span><span className="mode-tag">Multiplayer</span><span className="mode-tag">Experimental</span></div>
             </div>
           </Link>
 

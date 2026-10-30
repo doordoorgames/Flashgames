@@ -8,13 +8,13 @@ import "./BombV2.css";
  */
 export default function BombV2App({ onBack }: { onBack: () => void }) {
   return (
-    <main className="bomb-v2" aria-label="Bomb 2.0 — Midnight Workshop">
+    <main className="bomb-v2" aria-label="Bomb 3.0 — Midnight Workshop">
       <div className="bomb-v2-masthead" aria-hidden="true">
         <span className="bomb-v2-bolt">✦</span>
-        <span>THE MIDNIGHT WORKSHOP</span>
+        <span>BOMB 3.0 · MIDNIGHT WORKSHOP</span>
         <span className="bomb-v2-bolt">✦</span>
       </div>
-      <BombApp onBack={onBack} />
+      <BombApp gameTitle="Bomb 3.0" onBack={onBack} />
     </main>
   );
 }

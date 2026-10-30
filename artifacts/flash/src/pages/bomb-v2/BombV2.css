@@ -1,4 +1,4 @@
-/* Bomb 2.0 — isolated visual experiment, preserving the original multiplayer game. */
+/* Bomb 3.0 — isolated visual experiment, preserving the original multiplayer game. */
 .bomb-v2{--b2-brass:#d9aa5b;--b2-red:#df4b43;--b2-ink:#121820;position:fixed;inset:0;isolation:isolate;font-family:Georgia,serif}
 .bomb-v2 .bomb-crt-device{background:radial-gradient(ellipse at 50% 28%,#39444b 0%,#192129 42%,#080e14 100%);color:#f6e8cd}
 .bomb-v2 .bomb-crt-device:before{border:2px solid rgba(217,170,91,.24);border-radius:22px;box-shadow:inset 0 0 55px #03070a,0 0 35px #05070b}

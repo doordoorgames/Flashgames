@@ -13,10 +13,11 @@ interface BombSession {
 }
 
 interface Props {
+  gameTitle?: string;
   onBack: () => void;
 }
 
-export default function BombApp({ onBack }: Props) {
+export default function BombApp({ onBack, gameTitle = "The Bomb" }: Props) {
   const [initialCode] = useState(() => new URLSearchParams(window.location.search).get("room")?.replace(/\D/g, "").slice(0, 5) ?? "");
   const [phase, setPhase] = useState<BombPhase>("home");
   const [session, setSession] = useState<BombSession | null>(null);
@@ -135,6 +136,7 @@ export default function BombApp({ onBack }: Props) {
   if (phase === "lobby" && session) {
     return (
       <BombLobby
+        gameTitle={gameTitle}
         code={session.code}
         playerId={session.playerId}
         isAdmin={session.isAdmin}
@@ -146,5 +148,5 @@ export default function BombApp({ onBack }: Props) {
     );
   }
 
-  return <BombHome onBack={onBack} onJoined={handleJoined} initialCode={initialCode} />;
+  return <BombHome gameTitle={gameTitle} onBack={onBack} onJoined={handleJoined} initialCode={initialCode} />;
 }

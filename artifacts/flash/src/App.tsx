@@ -106,6 +106,7 @@ export default function App() {
           <Route path="/yesno"   component={YesNoRoute} />
           <Route path="/bomb"    component={BombRoute} />
           <Route path="/reactor" component={ReactorRoute} />
+          <Route path="/bomb-v3" component={BombV2Route} />
           <Route path="/bomb-v2" component={BombV2Route} />
           <Route path="/dots"      component={DotsRoute} />
           <Route path="/nawasit"  component={NawasitRoute} />

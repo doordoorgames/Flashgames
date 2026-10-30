@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase.js";
+import { getSupabase } from "../lib/supabase.js";
 import type { GameItem } from "./gameState.js";
 
 type Tier = "easy" | "medium" | "hard";
@@ -28,7 +28,7 @@ function normalizeTier(d: string): Tier | null {
 }
 
 export async function loadConfusionEntries(): Promise<void> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("flash_items")
     .select("id, category, answer, difficulty, active")
     .eq("active", true);
